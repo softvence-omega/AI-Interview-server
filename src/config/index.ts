@@ -24,5 +24,7 @@ const config={
     cloudinary_name:process.env.CLOUDNAME,
     cloudinary_api_key:process.env.APIkEY,
     cloudinary_api_secret:process.env.APISECRET,
+
+    OTP_TOKEN_DURATION:process.env.OTP_TOKEN_DURATION as string,
 }
 export default config;

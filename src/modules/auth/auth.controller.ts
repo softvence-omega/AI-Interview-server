@@ -95,8 +95,17 @@ const collectProfileData = catchAsync(async (req, res) => {
   });
 });
 
+const otpcrossCheck = catchAsync(async (req, res) =>{
+
+  const token = req.query.token as string
+  const recivedOTP = req.body.recivedOTP
+
+  const reasult = await authServices.otpcrossCheck()
+})
+
 const authController = {
   logIn,
+  otpcrossCheck,
   logOut,
   changePassword,
   refreshToken,

@@ -11,6 +11,8 @@ authRouter.post("/logIn", validator(logInValidator), authController.logIn)
 authRouter.post("/logOut", auth(userRole.admin, userRole.user), authController.logOut)
 authRouter.post("/changePassword", auth(userRole.admin,userRole.user), authController.changePassword)
 
+authRouter.post("/otpcrossCheck",authController.otpcrossCheck )
+
 authRouter.post("/refresh-token", authController.refreshToken)
 
 authRouter.post("/forgetPassword", authController.forgetPassword)

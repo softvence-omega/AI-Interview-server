@@ -325,6 +325,10 @@ const collectProfileData = async (id: string) => {
   return result;
 };
 
+const otpcrossCheck = async(token:string, OTP:string)=>{
+  const deTokenizeData = authUtill.decodeToken(token,config.OTP_TOKEN_DURATION)
+}
+
 const authServices = {
   logIn,
   logOut,

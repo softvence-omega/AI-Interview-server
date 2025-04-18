@@ -52,7 +52,7 @@ const sendOTPviaEmail = async (payload: Partial<TUser>) => {
       role: payload.role,
     },
     config.jwt_token_secret,
-    '5m',
+    config.OTP_TOKEN_DURATION,
   );
 
 //   const setOTPtotheUser= await UserModel.findOneAndUpdate({email:payload.email},{
@@ -103,6 +103,7 @@ const authUtil = {
   decodeAuthorizationToken,
   decodeRefreshToken,
   sendOTPviaEmail,
+  decodeToken
 };
 
 export default authUtil;
