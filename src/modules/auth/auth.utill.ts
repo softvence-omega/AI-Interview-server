@@ -31,16 +31,11 @@ const decodeAuthorizationToken = (token: string) =>
 const decodeRefreshToken = (token: string) =>
   decodeToken(token, config.jwt_refresh_Token_secret);
 
-
-
 const sendOTPviaEmail = async (payload: Partial<TUser>) => {
+  console.log('from send otp via email', payload);
 
-
-  console.log("from send otp via email",payload)
-
-  if(!payload.email || !payload.role)
-  {
-    throw new Error("!payload.email || !payload.role wnt missing")
+  if (!payload.email || !payload.role) {
+    throw new Error('!payload.email || !payload.role wnt missing');
   }
 
   const otp = crypto.randomInt(100000, 1000000); // 6-digit
@@ -55,16 +50,16 @@ const sendOTPviaEmail = async (payload: Partial<TUser>) => {
     config.OTP_TOKEN_DURATION,
   );
 
-//   const setOTPtotheUser= await UserModel.findOneAndUpdate({email:payload.email},{
-//     sentOTP:otp
-//   },{
-//     new:true
-//   })
+  //   const setOTPtotheUser= await UserModel.findOneAndUpdate({email:payload.email},{
+  //     sentOTP:otp
+  //   },{
+  //     new:true
+  //   })
 
-//   if(!setOTPtotheUser)
-//   {
-//     throw new Error("something went wrong setting OTP to the user")
-//   }
+  //   if(!setOTPtotheUser)
+  //   {
+  //     throw new Error("something went wrong setting OTP to the user")
+  //   }
 
   const html = `
   <div style="font-family: Arial, sans-serif; max-width: 600px; margin: auto; padding: 20px; border: 1px solid #e0e0e0; border-radius: 10px;">
@@ -82,20 +77,26 @@ const sendOTPviaEmail = async (payload: Partial<TUser>) => {
     <hr style="margin: 30px 0;" />
     <p style="font-size: 12px; color: #999;">Thank you,<br/>AI Interview Team</p>
   </div>
-`
+`;
 
-//   now send mail to the user with otp
- const sendEmailWithOtp = await sendEmail(payload.email, "OTP from AI_INTERVIEW", html)
-
-//  now give front end a redirection url
-
-const redirectionUrl = `${config.FrontEndHostedPort}/otpcrossCheck?token=${tokenizeData}`
-
-  return {
-    redirectionUrl:redirectionUrl,
-    OTP:otp
+  //   now send mail to the user with otp
+  const sendEmailWithOtp = await sendEmail(
+    payload.email,
+    'OTP from AI_INTERVIEW',
+    html,
+  );
+  if (!sendEmailWithOtp.success) {
+    throw new Error('email sending failed');  
   }
 
+  //  now give front end a redirection url
+
+  const redirectionUrl = `${config.FrontEndHostedPort}/otpcrossCheck?token=${tokenizeData}`;
+
+  return {
+    redirectionUrl: redirectionUrl,
+    OTP: otp,
+  };
 };
 
 const authUtil = {
@@ -103,7 +104,7 @@ const authUtil = {
   decodeAuthorizationToken,
   decodeRefreshToken,
   sendOTPviaEmail,
-  decodeToken
+  decodeToken,
 };
 
 export default authUtil;
