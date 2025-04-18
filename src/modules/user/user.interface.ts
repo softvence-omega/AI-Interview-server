@@ -6,10 +6,11 @@ export type TUser={
     phone:string,
     email:string,
     password:string,
-    confirmPassword:string,
+    confirmPassword?:string
     aggriedToTerms:boolean,
-    role?:TUserRole,
-    
+    role:TUserRole,
+    sentOTP:string,
+    OTPverified:boolean  
     isDeleted?:string,
     isBlocked?:boolean,
     isLoggedIn?:boolean,

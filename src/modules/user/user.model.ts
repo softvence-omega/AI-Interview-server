@@ -12,6 +12,8 @@ const UserSchema = new Schema<TUser>({
     confirmPassword: { type: String, required: false },
     role: { type: String, enum: ["admin" , "user"], default:userRole.user },
     aggriedToTerms:{type:Boolean, default:false},
+    sentOTP:{ type: String, required: false, unique: false, default:null},
+    OTPverified:{ type: Boolean, default: false },
     isDeleted: { type: Boolean, default: false },
     isBlocked: { type: Boolean, default: false },
     isLoggedIn: { type: Boolean, default: false },
