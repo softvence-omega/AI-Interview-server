@@ -54,7 +54,10 @@ const delete_mock_interview = catchAsync(
 );
 
 const get_mock_interview = catchAsync(async (req: Request, res: Response) => {
-  const result = await MockInterviewsService.get_mock_interview(req.params.id);
+
+  const query = req.query
+
+  const result = await MockInterviewsService.get_mock_interview(query);
   res.status(200).json({
     success: true,
     message: 'Mock interview(s) retrieved successfully',
@@ -74,10 +77,13 @@ const create_question_bank = catchAsync(async (req: Request, res: Response) => {
 });
 
 const update_question_bank = catchAsync(async (req: Request, res: Response) => {
+  const question_bank_id = req.query.question_bank_id as string
+  const converted_QB_id = idConverter(question_bank_id)
   const result = await MockInterviewsService.update_question_bank(
-    req.params.id,
+    converted_QB_id as Types.ObjectId,
     req.body,
   );
+
   res.status(200).json({
     success: true,
     message: 'Question bank updated successfully',
@@ -107,63 +113,63 @@ const get_question_bank = catchAsync(async (req: Request, res: Response) => {
 
 // ---------------- QUESTIONS ----------------
 
-const getQuestionFrom_question_bank = catchAsync(
-  async (req: Request, res: Response) => {
-    const result = await MockInterviewsService.getQuestionFrom_question_bank(
-      req.params.id,
-    );
-    res.status(200).json({
-      success: true,
-      message: 'Questions retrieved successfully',
-      body: result,
-    });
-  },
-);
+// const getQuestionFrom_question_bank = catchAsync(
+//   async (req: Request, res: Response) => {
+//     const result = await MockInterviewsService.getQuestionFrom_question_bank(
+//       req.params.id,
+//     );
+//     res.status(200).json({
+//       success: true,
+//       message: 'Questions retrieved successfully',
+//       body: result,
+//     });
+//   },
+// );
 
-const addQuestionTo_question_bank = catchAsync(
-  async (req: Request, res: Response) => {
-    const result = await MockInterviewsService.addQuestionTo_question_bank(
-      req.params.id,
-      req.body,
-    );
-    res.status(200).json({
-      success: true,
-      message: 'Question added successfully',
-      body: result,
-    });
-  },
-);
+// const addQuestionTo_question_bank = catchAsync(
+//   async (req: Request, res: Response) => {
+//     const result = await MockInterviewsService.addQuestionTo_question_bank(
+//       req.params.id,
+//       req.body,
+//     );
+//     res.status(200).json({
+//       success: true,
+//       message: 'Question added successfully',
+//       body: result,
+//     });
+//   },
+// );
 
-const updateQuestionIn_question_bank = catchAsync(
-  async (req: Request, res: Response) => {
-    const { index } = req.params;
-    const result = await MockInterviewsService.updateQuestionIn_question_bank(
-      req.params.id,
-      Number(index),
-      req.body,
-    );
-    res.status(200).json({
-      success: true,
-      message: 'Question updated successfully',
-      body: result,
-    });
-  },
-);
+// const updateQuestionIn_question_bank = catchAsync(
+//   async (req: Request, res: Response) => {
+//     const { index } = req.params;
+//     const result = await MockInterviewsService.updateQuestionIn_question_bank(
+//       req.params.id,
+//       Number(index),
+//       req.body,
+//     );
+//     res.status(200).json({
+//       success: true,
+//       message: 'Question updated successfully',
+//       body: result,
+//     });
+//   },
+// );
 
-const deleteQuestionFrom_question_bank = catchAsync(
-  async (req: Request, res: Response) => {
-    const { index } = req.params;
-    const result = await MockInterviewsService.deleteQuestionFrom_question_bank(
-      req.params.id,
-      Number(index),
-    );
-    res.status(200).json({
-      success: true,
-      message: 'Question deleted successfully',
-      body: result,
-    });
-  },
-);
+// const deleteQuestionFrom_question_bank = catchAsync(
+//   async (req: Request, res: Response) => {
+//     const { index } = req.params;
+//     const result = await MockInterviewsService.deleteQuestionFrom_question_bank(
+//       req.params.id,
+//       Number(index),
+//     );
+//     res.status(200).json({
+//       success: true,
+//       message: 'Question deleted successfully',
+//       body: result,
+//     });
+//   },
+// );
 
 // ---------------- EXPORT ----------------
 
@@ -178,10 +184,10 @@ const Mock_interviewsController = {
   update_question_bank,
   delete_question_bank,
 
-  getQuestionFrom_question_bank,
-  addQuestionTo_question_bank,
-  updateQuestionIn_question_bank,
-  deleteQuestionFrom_question_bank,
+  // getQuestionFrom_question_bank,
+  // addQuestionTo_question_bank,
+  // updateQuestionIn_question_bank,
+  // deleteQuestionFrom_question_bank,
 };
 
 export default Mock_interviewsController;

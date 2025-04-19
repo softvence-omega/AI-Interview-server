@@ -23,7 +23,7 @@ const QuestionBankSchema = new Schema<TQuestion_Bank>({
   difficulty_level: { type: String, required: true },
   question_Type: { type: String, required: true },
   description: { type: String, required: true },
-  total_questions: { type: Number, required: true },
+  total_questions: { type: Number, required:false },
   what_to_expect: { type: [String], default: [] },
   isDeleted:{type:Boolean,default:false},
   question_bank: { type: [EachQuestionSchema], default: [] },

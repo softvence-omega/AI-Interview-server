@@ -16,10 +16,10 @@ MockInterviewRoutes.post('/update_question_bank', Mock_interviewsController.upda
 MockInterviewRoutes.delete('/delete_question_bank', Mock_interviewsController.delete_question_bank);
 
 
-MockInterviewRoutes.get('/getQuestionFrom_question_bank', Mock_interviewsController.getQuestionFrom_question_bank);
-MockInterviewRoutes.post('/addQuestionTo_question_bank', Mock_interviewsController.addQuestionTo_question_bank);
-MockInterviewRoutes.post('/updateQuestionIn_question_bank', Mock_interviewsController.updateQuestionIn_question_bank);
-MockInterviewRoutes.delete('/deleteQuestionFrom_question_bank', Mock_interviewsController.deleteQuestionFrom_question_bank);
+// MockInterviewRoutes.get('/getQuestionFrom_question_bank', Mock_interviewsController.getQuestionFrom_question_bank);
+// MockInterviewRoutes.post('/addQuestionTo_question_bank', Mock_interviewsController.addQuestionTo_question_bank);
+// MockInterviewRoutes.post('/updateQuestionIn_question_bank', Mock_interviewsController.updateQuestionIn_question_bank);
+// MockInterviewRoutes.delete('/deleteQuestionFrom_question_bank', Mock_interviewsController.deleteQuestionFrom_question_bank);
 
 
 export default MockInterviewRoutes;
