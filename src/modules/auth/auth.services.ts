@@ -6,6 +6,7 @@ import idConverter from '../../util/idConvirter';
 import jwt, { JwtPayload } from 'jsonwebtoken';
 import { sendEmail } from '../../util/sendEmail';
 import userServices from '../user/user.service';
+import { Types } from 'mongoose';
 
 const logIn = async (
   email: string,
@@ -14,13 +15,10 @@ const logIn = async (
 ) => {
   let user = await UserModel.findOne({ email }).select('+password');
 
-  // console.log("user is",user)
-
- 
-  if ((user?.isBlocked || user?.isDeleted || !user) && (method === 'google' || method === 'facebook')) {
-    // Optional: archive/rename old user, or just ignore
-
-    // Register a fresh user
+  if (
+    (user?.isBlocked || user?.isDeleted || !user) &&
+    (method === 'google' || method === 'facebook')
+  ) {
     await userServices.createUser(
       {
         email,
@@ -55,18 +53,17 @@ const logIn = async (
     }
   }
 
-
   const updatedUser = await UserModel.findOneAndUpdate(
     { email },
     { isLoggedIn: true },
     { new: true },
   );
 
-
   const tokenizeData = {
     id: user._id.toHexString(),
     role: user.role,
     username: updatedUser?.name,
+    OTPverified: updatedUser?.OTPverified,
   };
 
   const approvalToken = authUtill.createToken(
@@ -81,9 +78,15 @@ const logIn = async (
     config.rifresh_expairsIn,
   );
 
-  return { approvalToken, refreshToken, updatedUser };
-};
+  let message = 'access_all';
 
+  if (!user.OTPverified) {
+    message =
+      'you are not a verified user. You wont be able to use some services. Please verify';
+  }
+
+  return { approvalToken, refreshToken, updatedUser, message };
+};
 
 const logOut = async (userId: string) => {
   const convertedId = idConverter(userId);
@@ -233,7 +236,7 @@ const forgetPassword = async (email: string) => {
   const resetToken = authUtill.createToken(
     tokenizeData,
     config.jwt_token_secret as string,
-    config.token_expairsIn as string
+    config.token_expairsIn as string,
   );
 
   const resetLink = `${config.FrontEndHostedPort}?id=${user._id}&token=${resetToken}`;
@@ -252,7 +255,11 @@ const forgetPassword = async (email: string) => {
     </div>
   `;
 
-  const emailResponse = await sendEmail(user.email, 'Reset Your Password', passwordResetHtml);
+  const emailResponse = await sendEmail(
+    user.email,
+    'Reset Your Password',
+    passwordResetHtml,
+  );
 
   if (emailResponse.success) {
     return {
@@ -325,6 +332,67 @@ const collectProfileData = async (id: string) => {
   return result;
 };
 
+const otpcrossCheck = async (token: string, OTP: string) => {
+  console.log('here i am ', token, OTP);
+
+  if (!token || !OTP) {
+    throw new Error('!token || !OTP');
+  }
+
+  const deTokenizeData = authUtill.decodeToken(token, config.jwt_token_secret);
+
+  if (
+    typeof deTokenizeData !== 'object' ||
+    deTokenizeData === null ||
+    !('email' in deTokenizeData) ||
+    !('role' in deTokenizeData)
+  ) {
+    throw new Error('OTP VERIFICATION FAILED: Invalid token data');
+  }
+
+  const { email } = deTokenizeData as JwtPayload;
+
+  const findUser = await UserModel.findOne({ email });
+
+  if (!findUser || !findUser.sentOTP) {
+    throw new Error('User not found');
+  }
+
+  if (String(findUser.sentOTP) !== String(OTP)) {
+    throw new Error('Invalid OTP');
+  }
+
+  const updateUser = await UserModel.findOneAndUpdate(
+    { email: email },
+    {
+      OTPverified: true,
+    },
+    { new: true },
+  );
+
+  return {
+    message: 'OTP verified successfully,allow to log in',
+    user: updateUser,
+  };
+};
+
+const send_OTP = async (user_id: Types.ObjectId) => {
+
+  const findUser = await UserModel.findById(user_id);
+  console.log("i am find user",findUser)
+
+
+  if (!findUser || !findUser.email || !findUser.role) {
+    throw new Error('user or user email or Role is not found');
+  }
+  const sendOTP = await authUtill.sendOTPviaEmail({
+    email: findUser.email,
+    role: findUser.role,
+  });
+
+  return sendOTP.redirectionUrl;
+};
+
 const authServices = {
   logIn,
   logOut,
@@ -333,5 +401,7 @@ const authServices = {
   forgetPassword,
   resetPassword,
   collectProfileData,
+  otpcrossCheck,
+  send_OTP,
 };
 export default authServices;

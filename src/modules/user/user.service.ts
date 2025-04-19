@@ -2,6 +2,8 @@ import mongoose, { ClientSession, Types } from 'mongoose';
 import { TProfile, TUser } from './user.interface';
 import { ProfileModel, UserModel } from './user.model';
 import { uploadImgToCloudinary } from '../../util/uploadImgToCludinary';
+import authUtil from '../auth/auth.utill';
+import { userRole } from '../../constents';
 
 
 const createUser = async (payload: Partial<TUser>, method?: string) => {
@@ -24,43 +26,56 @@ const createUser = async (payload: Partial<TUser>, method?: string) => {
     }
   }
 
+  if(!payload.role)
+  {
+    payload = {...payload, role:userRole.user}
+  }
+
+
+
   const session: ClientSession = await mongoose.startSession();
 
   try {
     const result = await session.withTransaction(async () => {
       let user;
 
+      const { confirmPassword, ...rest } = payload;
+      const redirectionUrl = await authUtil.sendOTPviaEmail(rest)
+
       if (method) {
-        const created = await UserModel.create([payload], { session });
+        const created = await UserModel.create([rest], { session });
         user = created[0];
       } else {
-        const { confirmPassword, ...rest } = payload;
-        user = new UserModel(rest);
+        
+        user = new UserModel({...rest,sentOTP:redirectionUrl.OTP});
         await user.save({ session });
       }
 
       await ProfileModel.create(
         [
           {
-            name: payload.name ?? "user",
-            phone: payload.phone,
-            email: payload.email!,
+            name: rest.name ?? "user",
+            phone: rest.phone,
+            email: rest.email!,
             user_id: user._id,
           },
         ],
         { session }
       );
       
-      const { confirmPassword, ...safeUser} = user.toObject();
+     
+
 
       return {
         message: "User created successfully.",
-        data: safeUser,
+        data: user,
+        redirectionUrl:redirectionUrl.redirectionUrl
       };
     });
 
     return result;
-  } catch (error) {
+  } 
+  catch (error) {
     console.error("Error creating user:", error);
     return {
       message: "User creation failed due to an internal error.",

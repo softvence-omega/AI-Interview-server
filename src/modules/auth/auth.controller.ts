@@ -1,17 +1,21 @@
+import { Types } from 'mongoose';
 import catchAsync from '../../util/catchAsync';
+import idConverter from '../../util/idConvirter';
 import authServices from './auth.services';
 
 
 const logIn = catchAsync(async (req, res) => {
   const { email, password,method } = req.body;
   const result = await authServices.logIn(email, password,method);
-  const { approvalToken, refreshToken, updatedUser } = result;
+  const { approvalToken, refreshToken, updatedUser,message } = result;
 
   res.status(200).json({
     message: 'Log In Successful',
+    access_Message:message,
     approvalToken: approvalToken,
     refreshToken: refreshToken,
     user: updatedUser,
+    
   });
 });
 
@@ -95,13 +99,45 @@ const collectProfileData = catchAsync(async (req, res) => {
   });
 });
 
+const otpcrossCheck = catchAsync(async (req, res) =>{
+
+  const token = req.query.token as string
+  const recivedOTP = req.query.recivedOTP as string
+
+  console.log("yoo yooo",recivedOTP)
+
+
+
+  const result = await authServices.otpcrossCheck(token,recivedOTP)
+  res.status(200).json({
+    success: true,
+    message: 'OTP verified successfully,allowed to log in',
+    body: result.user,
+  });
+})
+
+const send_OTP = catchAsync(async(req, res) =>{
+const user_id = req.user.id as string
+const converted_id = idConverter(user_id)
+
+const result =await authServices.send_OTP(converted_id as Types.ObjectId)
+res.status(200).json({
+  success: true,
+  message: 'OTP verified successfully,allow to log in',
+  body: result,
+});
+
+})
+
 const authController = {
   logIn,
+  otpcrossCheck,
   logOut,
   changePassword,
   refreshToken,
   forgetPassword,
   resetPassword,
-  collectProfileData
+  collectProfileData,
+  send_OTP
 };
 export default authController;
