@@ -1,6 +1,7 @@
 import express from 'express';
 import authRouter from '../modules/auth/auth.routes';
 import userRoutes from '../modules/user/user.routes';
+import MockInterviewRoutes from '../modules/mock_interviews/mock_interviews.routes';
 
 
 const Routes = express.Router();
@@ -13,6 +14,10 @@ const moduleRouts = [
   {
     path: '/users',
     router:userRoutes,
+  },
+  {
+    path: '/interview',
+    router:MockInterviewRoutes,
   }
 ];
 

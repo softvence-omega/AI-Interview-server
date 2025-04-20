@@ -1,0 +1,28 @@
+import { Types } from "mongoose";
+
+export type TEach_Question = {
+  time_to_answer: number;
+  question: string;
+};
+
+export type TQuestion_Bank = {
+  interview_id: Types.ObjectId;
+  questionBank_name: string;
+  duration: number;
+  difficulty_level: string;
+  question_Type: string;
+  description: string;
+  total_questions: number;
+  what_to_expect: string[]; // assume it's an array of strings
+  isDeleted:boolean,
+  question_bank: TEach_Question[];
+};
+
+export type TMock_Interviews = {
+  img:string;
+  interview_name: string;
+  total_Positions: number;
+  description: string;
+  isDeleted:boolean,
+  question_bank_ids: Types.ObjectId[]; // Specify ObjectId array
+};
