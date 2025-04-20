@@ -33,6 +33,17 @@ const ProfileSchema = new Schema<TProfile>({
     emailNotification: { type: Boolean, default: false },
     interviewTaken: { type: Number, default: 0 },
     confidence: { type: Number, default: 0 },
+    progress: [
+        {
+            interviewId: {
+                type: Schema.Types.ObjectId,
+                ref: 'Interview',
+                required: false
+            },
+            isCompleted: { type: Boolean, default: false },
+            questionBank: { type: Number, default: 0 },
+        },
+    ],
 
     user_id: { type: Schema.Types.ObjectId, ref: 'User', required: true },
 
@@ -55,8 +66,4 @@ UserSchema.pre("save", async function (next) {
 
 export const UserModel = mongoose.model("UserCollection", UserSchema);
 export const ProfileModel = model('Profile', ProfileSchema);
-
-
-
-
 

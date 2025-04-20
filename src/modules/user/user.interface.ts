@@ -30,6 +30,13 @@ export type TProfile={
     emailNotification:boolean,
     interviewTaken:number,
     confidence:number,
+    progress: [
+        {
+            interviewId:Types.ObjectId,
+            isCompleted:boolean,
+            questionBank:number,
+        }
+    ]
 
     user_id:Types.ObjectId,
 

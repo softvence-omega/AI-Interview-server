@@ -11,11 +11,191 @@ if (!moduleName) {
 
 const basePath = path.join(__dirname, '..', 'src', 'modules', moduleName);
 const files = [
-  { name: `${moduleName}.controller.ts`, content: `import { Request, Response } from 'express';\n\nclass ${capitalizeFirstLetter(moduleName)}Controller {\n\n  static async getAll(req: Request, res: Response) {\n    // Implement Get All logic\n  }\n\n  static async create(req: Request, res: Response) {\n    // Implement Create logic\n  }\n\n}\n\nexport default ${capitalizeFirstLetter(moduleName)}Controller;\n` },
-  { name: `${moduleName}.service.ts`, content: `class ${capitalizeFirstLetter(moduleName)}Service {\n\n  static async getAll() {\n    // Implement Get All logic\n  }\n\n  static async create(data: any) {\n    // Implement Create logic\n  }\n\n}\n\nexport default ${capitalizeFirstLetter(moduleName)}Service;\n` },
-  { name: `${moduleName}.model.ts`, content: `// Model for ${moduleName} (e.g., using Mongoose or TypeORM)\n` },
-  { name: `${moduleName}.interface.ts`, content: `export interface ${capitalizeFirstLetter(moduleName)} {\n  id: string;\n  // Define properties\n}\n` },
-  { name: `${moduleName}.routes.ts`, content: `import { Router } from 'express';\nimport ${capitalizeFirstLetter(moduleName)}Controller from './${moduleName}.controller';\n\nconst router = Router();\n\nrouter.get('/', ${capitalizeFirstLetter(moduleName)}Controller.getAll);\nrouter.post('/', ${capitalizeFirstLetter(moduleName)}Controller.create);\n\nexport default router;\n` },
+  {
+    name: `${moduleName}.controller.ts`,
+    content: `import { Request, Response } from 'express';
+import ${capitalizeFirstLetter(moduleName)}Service from './${moduleName}.service';
+import catchAsync from '../../utils/catchAsync';
+import sendResponse from '../../utils/sendResponse';
+
+const create = catchAsync(async (req: Request, res: Response) => {
+  const result = await ${capitalizeFirstLetter(moduleName)}Service.create(req.body);
+  sendResponse(res, {
+    statusCode: 201,
+    success: true,
+    message: '${capitalizeFirstLetter(moduleName)} created successfully',
+    data: result,
+  });
+});
+
+const getAll = catchAsync(async (req: Request, res: Response) => {
+  const result = await ${capitalizeFirstLetter(moduleName)}Service.getAll();
+  sendResponse(res, {
+    statusCode: 200,
+    success: true,
+    message: '${capitalizeFirstLetter(moduleName)}s retrieved successfully',
+    data: result,
+  });
+});
+
+const getById = catchAsync(async (req: Request, res: Response) => {
+  const result = await ${capitalizeFirstLetter(moduleName)}Service.getById(req.params.id);
+  sendResponse(res, {
+    statusCode: 200,
+    success: true,
+    message: '${capitalizeFirstLetter(moduleName)} retrieved successfully',
+    data: result,
+  });
+});
+
+const update = catchAsync(async (req: Request, res: Response) => {
+  const result = await ${capitalizeFirstLetter(moduleName)}Service.update(req.params.id, req.body);
+  sendResponse(res, {
+    statusCode: 200,
+    success: true,
+    message: '${capitalizeFirstLetter(moduleName)} updated successfully',
+    data: result,
+  });
+});
+
+const softDelete = catchAsync(async (req: Request, res: Response) => {
+  const result = await ${capitalizeFirstLetter(moduleName)}Service.softDelete(req.params.id);
+  sendResponse(res, {
+    statusCode: 200,
+    success: true,
+    message: '${capitalizeFirstLetter(moduleName)} soft deleted successfully',
+    data: result,
+  });
+});
+
+const ${moduleName}Controller = {
+  create,
+  getAll,
+  getById,
+  update,
+  softDelete,
+};
+
+export default ${moduleName}Controller;
+`,
+  },
+  {
+    name: `${moduleName}.validation.ts`,
+    content: `import { z } from 'zod';
+
+export const create${capitalizeFirstLetter(moduleName)}Schema = z.object({
+  name: z.string().min(1, 'Name is required'),
+  email: z.string().email('Invalid email format').min(1, 'Email is required'),
+});
+
+export const update${capitalizeFirstLetter(moduleName)}Schema = z.object({
+  name: z.string().min(1, 'Name is required').optional(),
+  email: z.string().email('Invalid email format').optional(),
+});
+`,
+  },
+  {
+    name: `${moduleName}.service.ts`,
+    content: `import ${capitalizeFirstLetter(moduleName)}Model from './${moduleName}.model';
+import { ${capitalizeFirstLetter(moduleName)} } from './${moduleName}.interface';
+
+const create = async (data: ${capitalizeFirstLetter(moduleName)}) => {
+  const ${moduleName} = await ${capitalizeFirstLetter(moduleName)}Model.create(data);
+  return ${moduleName};
+};
+
+const getAll = async () => {
+  const ${moduleName}s = await ${capitalizeFirstLetter(moduleName)}Model.find({ isDeleted: false });
+  return ${moduleName}s;
+};
+
+const getById = async (id: string) => {
+  const ${moduleName} = await ${capitalizeFirstLetter(moduleName)}Model.findOne({ _id: id, isDeleted: false });
+  return ${moduleName};
+};
+
+const update = async (id: string, data: Partial<${capitalizeFirstLetter(moduleName)}>) => {
+  const ${moduleName} = await ${capitalizeFirstLetter(moduleName)}Model.findOneAndUpdate(
+    { _id: id, isDeleted: false },
+    data,
+    { new: true }
+  );
+  return ${moduleName};
+};
+
+const softDelete = async (id: string) => {
+  const result = await ${capitalizeFirstLetter(moduleName)}Model.findByIdAndUpdate(id, { isDeleted: true }, { new: true });
+  return result;
+};
+
+const ${moduleName}Service = {
+  create,
+  getAll,
+  getById,
+  update,
+  softDelete,
+};
+
+export default ${moduleName}Service;
+`,
+  },
+  {
+    name: `${moduleName}.model.ts`,
+    content: `import mongoose, { Schema } from 'mongoose';
+
+const ${moduleName}Schema = new Schema(
+  {
+    name: {
+      type: String,
+      required: true,
+    },
+    email: {
+      type: String,
+      unique: true,
+      required: true,
+    },
+    isDeleted: {
+      type: Boolean,
+      default: false,
+    },
+  },
+  {
+    timestamps: true,
+  }
+);
+
+const ${capitalizeFirstLetter(moduleName)}Model = mongoose.model('${capitalizeFirstLetter(moduleName)}', ${moduleName}Schema);
+export default ${capitalizeFirstLetter(moduleName)}Model;
+`,
+  },
+  {
+    name: `${moduleName}.interface.ts`,
+    content: `export type ${capitalizeFirstLetter(moduleName)} = {
+  _id?: string;
+  name: string;
+  email: string;
+  isDeleted?: boolean;
+  createdAt?: Date;
+  updatedAt?: Date;
+}
+`,
+  },
+  {
+    name: `${moduleName}.routes.ts`,
+    content: `import { Router } from 'express';
+import ${moduleName}Controller from './${moduleName}.controller';
+
+const router = Router();
+
+router.post('/create', ${moduleName}Controller.create);
+router.get('/getAll', ${moduleName}Controller.getAll);
+router.get('/getSingle/:id', ${moduleName}Controller.getById);
+router.put('/update/:id', ${moduleName}Controller.update);
+router.delete('/delete/:id', ${moduleName}Controller.softDelete);
+
+export default router;
+`,
+  },
 ];
 
 function capitalizeFirstLetter(str) {
@@ -24,7 +204,7 @@ function capitalizeFirstLetter(str) {
 
 if (!fs.existsSync(basePath)) {
   fs.mkdirSync(basePath, { recursive: true });
-  files.forEach(file => {
+  files.forEach((file) => {
     fs.writeFileSync(path.join(basePath, file.name), file.content);
   });
   console.log(`✅ Module '${moduleName}' created successfully.`);
