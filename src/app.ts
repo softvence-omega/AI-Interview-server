@@ -1,5 +1,6 @@
 import express from 'express';
 const app = express();
+import path from "path";
 import cors from "cors";
 import globalErrorHandler from "./middlewares/globalErrorhandeler";
 import routeNotFound from "./middlewares/routNotFound";
