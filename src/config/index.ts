@@ -28,3 +28,7 @@ const config={
     OTP_TOKEN_DURATION:process.env.OTP_TOKEN_DURATION as string,
 }
 export default config;
+
+export const config2 = {
+    aiApiUrl: 'https://freepik.softvenceomega.com/in-prep/api/v1/extract-resume/extract-resume',
+};

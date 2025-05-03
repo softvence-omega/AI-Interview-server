@@ -1,5 +1,6 @@
 import mongoose from "mongoose";
 import app from "./app";
+import path from "path";
 import { Server } from "http";
 import adminSeeder from "./seeder/adminSeeder";
 import config from "./config";
