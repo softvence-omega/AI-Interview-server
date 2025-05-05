@@ -39,6 +39,7 @@ export type TProfile={
     ]
 
     user_id:Types.ObjectId,
+    currentPlan: string,
 
     isDeleted?:boolean,
 }
