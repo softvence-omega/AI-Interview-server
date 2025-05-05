@@ -3,6 +3,7 @@ import {
   TEach_Question,
   TMock_Interviews,
   TQuestion_Bank,
+  TQuestionList,
 } from './mock_interviews.interface';
 
 // Schema for each question inside a question bank
@@ -11,10 +12,23 @@ const EachQuestionSchema = new Schema<TEach_Question>({
   question: { type: String, required: true },
 });
 
+const QuestionListSchema = new Schema<TQuestionList>(
+  {
+    user_id: { type: Schema.Types.ObjectId, required: true, ref: 'User' },
+    question_bank_id: { type: Schema.Types.ObjectId, required: true, ref: 'QuestionBank' },
+    interview_id: { type: Schema.Types.ObjectId, required: true, ref: 'Interview' },
+    question_Set: { type: [EachQuestionSchema], required: true },
+  },
+  { timestamps: true }
+);
+
+
+
+
 // Question Bank Schema
 const QuestionBankSchema = new Schema<TQuestion_Bank>({
   interview_id: {
-    type: mongoose.Schema.Types.ObjectId,
+    type: Schema.Types.ObjectId,
     ref: 'MockInterview',
     required: true,
   },
@@ -26,7 +40,6 @@ const QuestionBankSchema = new Schema<TQuestion_Bank>({
   total_questions: { type: Number, required:false },
   what_to_expect: { type: [String], default: [] },
   isDeleted:{type:Boolean,default:false},
-  question_bank: { type: [EachQuestionSchema], default: [] },
 });
 
 // Mock Interview Schema
@@ -42,5 +55,6 @@ const MockInterviewSchema = new Schema<TMock_Interviews>({
 });
 
 // Models
+export const QuestionListModel = model<TQuestionList>('QuestionList', QuestionListSchema);
 export const QuestionBankModel = model('QuestionBank', QuestionBankSchema);
 export const MockInterviewModel = model('MockInterview', MockInterviewSchema);

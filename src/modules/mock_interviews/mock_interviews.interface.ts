@@ -5,6 +5,13 @@ export type TEach_Question = {
   question: string;
 };
 
+export type TQuestionList ={
+  user_id:Types.ObjectId;
+  question_bank_id:Types.ObjectId;
+  interview_id:Types.ObjectId;
+  question_Set:TEach_Question[];
+}
+
 export type TQuestion_Bank = {
   interview_id: Types.ObjectId;
   questionBank_name: string;
@@ -15,7 +22,6 @@ export type TQuestion_Bank = {
   total_questions: number;
   what_to_expect: string[]; // assume it's an array of strings
   isDeleted:boolean,
-  question_bank: TEach_Question[];
 };
 
 export type TMock_Interviews = {

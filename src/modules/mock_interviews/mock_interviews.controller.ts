@@ -103,7 +103,7 @@ const delete_question_bank = catchAsync(async (req: Request, res: Response) => {
 });
 
 const get_question_bank = catchAsync(async (req: Request, res: Response) => {
-  const result = await MockInterviewsService.get_question_bank(req.params.id);
+ const result = await MockInterviewsService.get_question_bank(req.query);
   res.status(200).json({
     success: true,
     message: 'Question bank(s) retrieved successfully',
@@ -111,67 +111,25 @@ const get_question_bank = catchAsync(async (req: Request, res: Response) => {
   });
 });
 
-// ---------------- QUESTIONS ----------------
 
-// const getQuestionFrom_question_bank = catchAsync(
-//   async (req: Request, res: Response) => {
-//     const result = await MockInterviewsService.getQuestionFrom_question_bank(
-//       req.params.id,
-//     );
-//     res.status(200).json({
-//       success: true,
-//       message: 'Questions retrieved successfully',
-//       body: result,
-//     });
-//   },
-// );
 
-// const addQuestionTo_question_bank = catchAsync(
-//   async (req: Request, res: Response) => {
-//     const result = await MockInterviewsService.addQuestionTo_question_bank(
-//       req.params.id,
-//       req.body,
-//     );
-//     res.status(200).json({
-//       success: true,
-//       message: 'Question added successfully',
-//       body: result,
-//     });
-//   },
-// );
+// ---------------- GENARATE QUESTION BY AI ----------------
 
-// const updateQuestionIn_question_bank = catchAsync(
-//   async (req: Request, res: Response) => {
-//     const { index } = req.params;
-//     const result = await MockInterviewsService.updateQuestionIn_question_bank(
-//       req.params.id,
-//       Number(index),
-//       req.body,
-//     );
-//     res.status(200).json({
-//       success: true,
-//       message: 'Question updated successfully',
-//       body: result,
-//     });
-//   },
-// );
+const   genarateQuestionSet_ByAi= catchAsync(async(req, res)=>{
+  const questionBank_id = req.query.questionBank_id as string
+  const converted_QB_id = idConverter(questionBank_id)
+  const user_id = req.user.id as string
+  const converted_user_id = idConverter(user_id)
 
-// const deleteQuestionFrom_question_bank = catchAsync(
-//   async (req: Request, res: Response) => {
-//     const { index } = req.params;
-//     const result = await MockInterviewsService.deleteQuestionFrom_question_bank(
-//       req.params.id,
-//       Number(index),
-//     );
-//     res.status(200).json({
-//       success: true,
-//       message: 'Question deleted successfully',
-//       body: result,
-//     });
-//   },
-// );
+  const result = await MockInterviewsService.genarateQuestionSet_ByAi(converted_QB_id as Types.ObjectId, converted_user_id as Types.ObjectId);
 
-// ---------------- EXPORT ----------------
+  res.status(200).json({   
+    success: true,
+    message: 'Question bank updated successfully',
+    body: result,
+  });
+})
+
 
 const Mock_interviewsController = {
   get_mock_interview,
@@ -184,10 +142,8 @@ const Mock_interviewsController = {
   update_question_bank,
   delete_question_bank,
 
-  // getQuestionFrom_question_bank,
-  // addQuestionTo_question_bank,
-  // updateQuestionIn_question_bank,
-  // deleteQuestionFrom_question_bank,
+  genarateQuestionSet_ByAi,
+
 };
 
 export default Mock_interviewsController;

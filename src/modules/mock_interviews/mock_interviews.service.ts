@@ -1,5 +1,5 @@
 import { startSession, Types } from 'mongoose';
-import { MockInterviewModel, QuestionBankModel } from './mock_interviews.model';
+import { MockInterviewModel, QuestionBankModel, QuestionListModel } from './mock_interviews.model';
 import { TMock_Interviews, TQuestion_Bank } from './mock_interviews.interface';
 import idConverter from '../../util/idConvirter';
 import { updateTotalQuestionsInBank } from '../../util/updateTotalQuestionInQB';
@@ -134,62 +134,79 @@ const delete_question_bank = async (id: string) => {
   return result;
 };
 
-const get_question_bank = async (id?: string) => {
-  if (id) {
-    return await QuestionBankModel.findById(id);
+const get_question_bank = async (Query: any) => {
+  const filter: Record<string, any> = {};
+
+  // Filter by questionBank_id if provided
+  if (Query?.questionBank_id) {
+    const convertedId = idConverter(Query.questionBank_id);
+    if (convertedId) {
+      filter._id = convertedId;
+    }
   }
-  return await QuestionBankModel.find();
+
+  // Filter by interview_id if provided
+  if (Query?.interview_id) {
+    const convertedId = idConverter(Query.interview_id);
+    if (convertedId) {
+      filter.interview_id = convertedId;
+    }
+  }
+
+  // Return matching results
+  return await QuestionBankModel.find(filter);
 };
 
-// ---------------- QUESTIONS INSIDE QUESTION BANK ----------------
+// ..................GENARATE QUESTION BY AI.........................
 
-// Get all questions from a question bank
-// const getQuestionFrom_question_bank = async (questionBankId: string) => {
-//   const questionBank = await QuestionBankModel.findById(questionBankId);
-//   return questionBank?.question_bank || [];
-// };
+const genarateQuestionSet_ByAi = async (questionBank_id: Types.ObjectId, user_id: Types.ObjectId) => {
+  const findQuestionBank = await QuestionBankModel.findOne({ _id: questionBank_id });
+  if (!findQuestionBank) {
+    throw new Error("Can't generate question set, no question bank found");
+  }
 
-// // Add a question to a question bank
-// const addQuestionTo_question_bank = async (
-//   questionBankId: string,
-//   newQuestion: any,
-// ) => {
-//   const updated = await QuestionBankModel.findByIdAndUpdate(
-//     questionBankId,
-//     { $push: { question_bank: newQuestion } },
-//     { new: true },
-//   );
-//   return updated;
-// };
+  // Combine the question bank name with expectations
+  const prompt = `${findQuestionBank.questionBank_name} ${findQuestionBank.what_to_expect.join(' ')}`;
+  const encodedPrompt = encodeURIComponent(prompt); // important!
 
-// // Update a specific question in a question bank
-// const updateQuestionIn_question_bank = async (
-//   questionBankId: string,
-//   questionIndex: number,
-//   updatedQuestion: any,
-// ) => {
-//   const questionBank = await QuestionBankModel.findById(questionBankId);
-//   if (!questionBank) return null;
+  const url = `https://freepik.softvenceomega.com/in-prep/api/v1/q_generator/generate-questions?topic=${encodedPrompt}`;
 
-//   questionBank.question_bank[questionIndex] = updatedQuestion;
-//   await questionBank.save();
-//   return questionBank;
-// };
+  try {
+    const response = await fetch(url, {
+      method: 'POST',
+      headers: {
+        'accept': 'application/json',
+      },
+      body: '', // empty body as per the documentation
+    });
 
-// // Delete a question by index from a question bank
-// const deleteQuestionFrom_question_bank = async (
-//   questionBankId: string,
-//   questionIndex: number,
-// ) => {
-//   const questionBank = await QuestionBankModel.findById(questionBankId);
-//   if (!questionBank) return null;
+    if (!response.ok) {
+      const errorText = await response.text();
+      throw new Error(`AI API request failed: ${response.status} - ${errorText}`);
+    }
 
-//   questionBank.question_bank.splice(questionIndex, 1);
-//   await questionBank.save();
-//   return questionBank;
-// };
+    const data = await response.json();
 
-// ---------------- EXPORT ALL ----------------
+
+    const makeQuestionList= await QuestionListModel.create({
+      user_id: user_id,
+      question_bank_id: questionBank_id,
+      interview_id: findQuestionBank.interview_id,
+      question_Set: data,
+    })
+
+
+
+    console.log("AI Response:", data);
+    return data;
+  } 
+  catch (error) {
+    console.error("Error generating question set:", error);
+    throw error;
+  }
+};
+ 
+
 
 export const MockInterviewsService = {
   create_mock_interview,
@@ -202,8 +219,7 @@ export const MockInterviewsService = {
   delete_question_bank,
   get_question_bank,
 
-  // getQuestionFrom_question_bank,
-  // addQuestionTo_question_bank,
-  // updateQuestionIn_question_bank,
-  // deleteQuestionFrom_question_bank,
-};
+  genarateQuestionSet_ByAi,
+
+
+}

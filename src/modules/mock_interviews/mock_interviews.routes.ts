@@ -1,5 +1,7 @@
 import express from "express"
 import Mock_interviewsController from './mock_interviews.controller';
+import auth from "../../middlewares/auth";
+import { userRole } from "../../constents";
 
 const MockInterviewRoutes = express.Router();
 
@@ -15,11 +17,7 @@ MockInterviewRoutes.post('/create_question_bank', Mock_interviewsController.crea
 MockInterviewRoutes.post('/update_question_bank', Mock_interviewsController.update_question_bank);
 MockInterviewRoutes.delete('/delete_question_bank', Mock_interviewsController.delete_question_bank);
 
-
-// MockInterviewRoutes.get('/getQuestionFrom_question_bank', Mock_interviewsController.getQuestionFrom_question_bank);
-// MockInterviewRoutes.post('/addQuestionTo_question_bank', Mock_interviewsController.addQuestionTo_question_bank);
-// MockInterviewRoutes.post('/updateQuestionIn_question_bank', Mock_interviewsController.updateQuestionIn_question_bank);
-// MockInterviewRoutes.delete('/deleteQuestionFrom_question_bank', Mock_interviewsController.deleteQuestionFrom_question_bank);
+MockInterviewRoutes.get("/genarateQuestionSet_ByAi",auth([userRole.admin, userRole.user]), Mock_interviewsController.genarateQuestionSet_ByAi)
 
 
 export default MockInterviewRoutes;
