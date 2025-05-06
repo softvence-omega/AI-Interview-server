@@ -4,6 +4,7 @@ import path from "path";
 import { Server } from "http";
 import adminSeeder from "./seeder/adminSeeder";
 import config from "./config";
+import "./modules/job/job.cron";
 
 let server: Server;
 

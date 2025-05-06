@@ -36,7 +36,9 @@ export type TProfile={
             isCompleted:boolean,
             questionBank:number,
         }
-    ]
+    ],
+
+    appliedJobs: Types.ObjectId[];
 
     user_id:Types.ObjectId,
     currentPlan: string,
