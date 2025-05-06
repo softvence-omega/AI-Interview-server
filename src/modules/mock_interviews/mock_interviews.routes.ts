@@ -18,6 +18,7 @@ MockInterviewRoutes.post('/update_question_bank', Mock_interviewsController.upda
 MockInterviewRoutes.delete('/delete_question_bank', Mock_interviewsController.delete_question_bank);
 
 MockInterviewRoutes.get("/genarateQuestionSet_ByAi",auth([userRole.admin, userRole.user]), Mock_interviewsController.genarateQuestionSet_ByAi)
+MockInterviewRoutes.post("/genarateSingleQuestion_ByAi_for_Retake",auth([userRole.admin, userRole.user]), Mock_interviewsController.genarateSingleQuestion_ByAi_for_Retake)
 
 
 export default MockInterviewRoutes;

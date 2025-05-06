@@ -1,8 +1,14 @@
-import { Types } from "mongoose";
+import { Document, Types } from "mongoose";
 
-export type TEach_Question = {
+export type TEach_Question  = Document & {
+
+  interview_id: Types.ObjectId;
+    questionBank_id:Types.ObjectId;
+    user_id:Types.ObjectId;
   time_to_answer: number;
   question: string;
+  isRetake?:boolean;
+  islast?:boolean;
 };
 
 export type TQuestionList ={

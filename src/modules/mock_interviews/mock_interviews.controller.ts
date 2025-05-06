@@ -120,8 +120,10 @@ const   genarateQuestionSet_ByAi= catchAsync(async(req, res)=>{
   const converted_QB_id = idConverter(questionBank_id)
   const user_id = req.user.id as string
   const converted_user_id = idConverter(user_id)
+  const isRetake = req.query.isRetake as string
+  const converted_isRetake = isRetake === 'true' ? true : false
 
-  const result = await MockInterviewsService.genarateQuestionSet_ByAi(converted_QB_id as Types.ObjectId, converted_user_id as Types.ObjectId);
+  const result = await MockInterviewsService.genarateQuestionSet_ByAi(converted_QB_id as Types.ObjectId, converted_user_id as Types.ObjectId,converted_isRetake);
 
   res.status(200).json({   
     success: true,
@@ -130,6 +132,27 @@ const   genarateQuestionSet_ByAi= catchAsync(async(req, res)=>{
   });
 })
 
+
+const genarateSingleQuestion_ByAi_for_Retake = catchAsync(async(req,res)=>{
+  
+  const questionBank_id = req.body.questionBank_id as string
+  const converted_QB_id = idConverter(questionBank_id)
+  const user_id = req.user.id as string
+  const converted_user_id = idConverter(user_id)
+  const interview_id = req.body.interview_id as string
+  const converted_interview_id = idConverter(interview_id)
+  const question_id = req.body.question_id as string
+  const converted_question_id   = idConverter(question_id)
+
+
+  const result = await MockInterviewsService.genarateSingleQuestion_ByAi_for_Retake(converted_QB_id as Types.ObjectId, converted_user_id as Types.ObjectId,converted_interview_id as Types.ObjectId,  converted_question_id as Types.ObjectId);
+
+  res.status(200).json({   
+    success: true,
+    message: 'Question bank updated successfully',
+    body: result,
+  });
+})
 
 const Mock_interviewsController = {
   get_mock_interview,
@@ -143,6 +166,8 @@ const Mock_interviewsController = {
   delete_question_bank,
 
   genarateQuestionSet_ByAi,
+  genarateSingleQuestion_ByAi_for_Retake
+  
 
 };
 
