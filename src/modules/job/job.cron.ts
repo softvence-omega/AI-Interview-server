@@ -9,4 +9,4 @@ export const startJobSyncCron = () => {
 };
 
 // automatic call the job every 10 seconds
-startJobSyncCron();
+// startJobSyncCron();
