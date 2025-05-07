@@ -192,6 +192,6 @@ const UpdateProgressOfSingleQuestionBank = async (
 };
 
 const progressUtill = {
-    updateProgress,UpdateProgressOfSingleQuestionBank
+    updateProgress,UpdateProgressOfSingleQuestionBank,updateInterviewIfAllTheQuestionBankCompleted
 }
 export default progressUtill;

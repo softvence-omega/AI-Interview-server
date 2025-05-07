@@ -40,14 +40,14 @@ const createUser = async (payload: Partial<TUser>, method?: string) => {
       let user;
 
       const { confirmPassword, ...rest } = payload;
-      const redirectionUrl = await authUtil.sendOTPviaEmail(rest)
+      const token = await authUtil.sendOTPviaEmail(rest)
 
       if (method) {
         const created = await UserModel.create([rest], { session });
         user = created[0];
       } else {
         
-        user = new UserModel({...rest,sentOTP:redirectionUrl.OTP});
+        user = new UserModel({...rest,sentOTP:token.OTP});
         await user.save({ session });
       }
 
@@ -69,7 +69,7 @@ const createUser = async (payload: Partial<TUser>, method?: string) => {
       return {
         message: "User created successfully.",
         data: user,
-        redirectionUrl:redirectionUrl.redirectionUrl
+        token:token.token
       };
     });
 

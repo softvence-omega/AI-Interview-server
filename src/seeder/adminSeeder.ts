@@ -10,7 +10,8 @@ const adminSeeder = async () => {
     confirmPassword:"1",
     email: 'admin@gmail.com',
     role: userRole.admin,
-    aggriedToTerms:true
+    aggriedToTerms:true,
+    OTPverified:true
   };
   
   const adminExist = await UserModel.findOne({ role: userRole.admin });

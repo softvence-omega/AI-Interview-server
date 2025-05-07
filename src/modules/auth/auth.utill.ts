@@ -91,10 +91,10 @@ const sendOTPviaEmail = async (payload: Partial<TUser>) => {
 
   //  now give front end a redirection url
 
-  const redirectionUrl = `${config.FrontEndHostedPort}/otpcrossCheck?token=${tokenizeData}`;
+  const token = `${tokenizeData}`;
 
   return {
-    redirectionUrl: redirectionUrl,
+    token: token,
     OTP: otp,
   };
 };

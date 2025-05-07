@@ -61,15 +61,17 @@ const ProfileSchema = new Schema(
     phone: { type: String, required: true },
     email: { type: String, required: true },
     img: { type: String },
-    experienceLevel: { type: String, required: true },
-    preferedInterviewFocus: { type: String, required: true },
-    emailNotification: { type: Boolean, default: true },
+    
+    experienceLevel: { type: String, default: null },
+    preferedInterviewFocus: { type: String, default: null },
+    emailNotification: { type: Boolean, default: false },
     interviewTaken: { type: Number, default: 0 },
     confidence: { type: Number, default: 0 },
+
     progress: { type: [InterviewProgressSchema], default: [] },
     appliedJobs: [{ type: Schema.Types.ObjectId, ref: 'Job' }],
-    user_id: { type: Schema.Types.ObjectId, required: true, ref: 'User' },
-    currentPlan: { type: String, required: true },
+    user_id: { type: Schema.Types.ObjectId, required: true, ref: 'UserCollection' },
+    currentPlan: { type: String, default: "free" },
     isDeleted: { type: Boolean, default: false },
   },
   {

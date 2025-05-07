@@ -10,6 +10,7 @@ import { updateTotalQuestionsInBank } from '../../util/updateTotalQuestionInQB';
 import mockInterviewUtill from './mock_interview.utill';
 import { AssessmentModel } from '../vodeoAnalytics/video.model';
 import progressUtill from '../../util/setAndUpdateprogress';
+import { ProfileModel } from '../user/user.model';
 
 // ---------------- MOCK INTERVIEW ----------------
 const create_mock_interview = async (data: any) => {
@@ -104,12 +105,8 @@ const create_question_bank = async (payload: Partial<TQuestion_Bank>) => {
     );
   }
 
-  const countQuestionsAndUpdate = await updateTotalQuestionsInBank(
-    createdQuestionBank._id,
-  );
-
   // Step 3: Return the created Question Bank
-  return countQuestionsAndUpdate;
+  return createdQuestionBank;
 };
 
 const update_question_bank = async (id: Types.ObjectId, payload: any) => {
@@ -172,9 +169,6 @@ const get_question_bank = async (Query: any) => {
 
 // ..................GENARATE QUESTION BY AI.........................
 
-
-
-
 const genarateQuestionSet_ByAi = async (
   questionBank_id: Types.ObjectId,
   user_id: Types.ObjectId,
@@ -186,13 +180,6 @@ const genarateQuestionSet_ByAi = async (
       user_id: user_id,
       question_bank_id: questionBank_id,
     });
-
-    if (!isRetake && existing) {
-      throw new Error(
-        'You have already attempted this test. Cannot generate questions again.',
-      );
-    }
-
     // Step 2: Get question bank
     const findQuestionBank = await QuestionBankModel.findOne({
       _id: questionBank_id,
@@ -202,14 +189,57 @@ const genarateQuestionSet_ByAi = async (
       throw new Error("Can't generate question set, no question bank found");
     }
 
+    if (!isRetake && existing) {
+      const profile = await ProfileModel.findOne({
+        user_id: user_id,
+        'progress.interviewId': findQuestionBank.interview_id,
+      });
+
+      const progressEntry = profile?.progress.find(
+        (p) =>
+          p.interviewId.toString() === findQuestionBank.interview_id.toString(),
+      );
+
+      const qbProgress = progressEntry?.questionBank_AndProgressTrack.find(
+        (qb) => qb.questionBaank_id.toString() === questionBank_id.toString(),
+      );
+
+      const lastAnswered = qbProgress?.lastQuestionAnswered_id;
+
+      // console.log('Last answered question ID:', lastAnswered);
+      const findQuestionList = await QuestionListModel.findOne({
+        user_id: user_id,
+        question_bank_id: questionBank_id,
+        interview_id: findQuestionBank.interview_id,
+      }).select('question_Set');
+
+      if (!findQuestionList) {
+        throw new Error('Question list not found');
+      }
+
+      // Find index of lastAnswered
+      const index = findQuestionList.question_Set.findIndex(
+        (q: any) => q._id.toString() === lastAnswered,
+      );
+
+      const remainingQuestions =
+        index === -1
+          ? findQuestionList.question_Set // return full list if not found
+          : findQuestionList.question_Set.slice(index + 1);
+
+      return {
+        message: 'remaining questions',
+        remainingQuestions,
+      };
+    }
+
     // if retake delete all the previous results that has been submited based on video analysis
     //delete history of previous question set
-    if(isRetake)
-    {
+    if (isRetake) {
       const deleteFromVidoAnalisis = await AssessmentModel.deleteMany({
         questionBank_id: questionBank_id,
         user_id: user_id,
-      })
+      });
     }
 
     // Step 3: Prepare prompt and generate questions
@@ -239,7 +269,7 @@ const genarateQuestionSet_ByAi = async (
           question_Set: modifyQuestionList,
           isRetake: true,
         },
-        { new: true }
+        { new: true },
       );
     } else {
       // Step 5: Otherwise, create a new question list
@@ -252,22 +282,18 @@ const genarateQuestionSet_ByAi = async (
       });
     }
 
-    await progressUtill.updateProgress(user_id,questionBank_id,isRetake)
+    await progressUtill.updateProgress(user_id, questionBank_id, isRetake);
+    await progressUtill.updateInterviewIfAllTheQuestionBankCompleted(
+      user_id,
+      findQuestionBank.interview_id,
+    );
 
     return result;
-  } 
-  catch (error) {
+  } catch (error) {
     console.error('Error generating question set:', error);
     throw error;
   }
 };
-
-
-
-
-
-
-
 
 const genarateSingleQuestion_ByAi_for_Retake = async (
   questionBank_id: Types.ObjectId,
@@ -364,16 +390,6 @@ const genarateSingleQuestion_ByAi_for_Retake = async (
     );
   }
 };
-
-
-
-
-
-
-
-
-
-
 
 export const MockInterviewsService = {
   create_mock_interview,

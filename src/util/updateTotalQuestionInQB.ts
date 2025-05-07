@@ -16,12 +16,12 @@ export const updateTotalQuestionsInBank = async (inputId: string | Types.ObjectI
     throw new Error('Question bank not found');
   }
 
-  // Count the number of questions
-  const totalQuestions = questionBank.question_bank.length;
+  // // Count the number of questions
+  // const totalQuestions = questionBank.question_bank.length;
 
-  // Update the total_questions field
-  questionBank.total_questions = totalQuestions;
-  await questionBank.save();
+  // // Update the total_questions field
+  // questionBank.total_questions = totalQuestions;
+  // await questionBank.save();
 
   return questionBank;
 };
