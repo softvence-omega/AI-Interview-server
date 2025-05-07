@@ -45,7 +45,15 @@ const ProfileSchema = new Schema<TProfile>({
         },
     ],
 
+    appliedJobs: [
+        {
+          type: mongoose.Schema.Types.ObjectId,
+          ref: 'Job',
+        }
+    ],
+
     user_id: { type: Schema.Types.ObjectId, ref: 'User', required: true },
+    currentPlan: { type: String, default: "free"},
 
     isDeleted: { type: Boolean, default: false }
 }, { timestamps: true });

@@ -1,6 +1,11 @@
 import mongoose from "mongoose";
 
 const resumeSchema = new mongoose.Schema({
+  userId: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'UserCollection',
+    required: true,
+  },
   name: String,
   summary: String,
   email: String,
