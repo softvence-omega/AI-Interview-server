@@ -4,6 +4,8 @@ import userRoutes from '../modules/user/user.routes';
 import MockInterviewRoutes from '../modules/mock_interviews/mock_interviews.routes';
 import resumeRoutes from '../modules/resume/resume.route';
 import path from "path";
+import graphRoutes from '../modules/graph/graph.route';
+import jobRoutes from '../modules/job/job.route';
 
 const Routes = express.Router();
 // Array of module routes
@@ -23,6 +25,14 @@ const moduleRouts = [
   {
     path: '/resume',
     router: resumeRoutes,
+  },
+  {
+    path: '/graph',
+    router: graphRoutes,
+  },
+  {
+    path: '/job',
+    router: jobRoutes,
   }
 ];
 
