@@ -1,3 +1,4 @@
+import progressUtill from '../../util/setAndUpdateprogress';
 import { TAssessmentPayload } from './video.interface';
 import { AssessmentModel } from './video.model';
 
@@ -50,6 +51,12 @@ const submitVideoAnalysisAndAummary = async (payLoad: TAssessmentPayload) => {
   
     // Create the assessment document
     const storeAssessment = await AssessmentModel.create(payLoad);
+    if(!isSummary)
+    {
+      await progressUtill.UpdateProgressOfSingleQuestionBank(interview_id, questionBank_id,user_id, islast,question_id)
+    }
+    
+
   
     return storeAssessment;
   };

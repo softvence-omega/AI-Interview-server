@@ -9,6 +9,7 @@ import idConverter from '../../util/idConvirter';
 import { updateTotalQuestionsInBank } from '../../util/updateTotalQuestionInQB';
 import mockInterviewUtill from './mock_interview.utill';
 import { AssessmentModel } from '../vodeoAnalytics/video.model';
+import progressUtill from '../../util/setAndUpdateprogress';
 
 // ---------------- MOCK INTERVIEW ----------------
 const create_mock_interview = async (data: any) => {
@@ -171,6 +172,9 @@ const get_question_bank = async (Query: any) => {
 
 // ..................GENARATE QUESTION BY AI.........................
 
+
+
+
 const genarateQuestionSet_ByAi = async (
   questionBank_id: Types.ObjectId,
   user_id: Types.ObjectId,
@@ -211,7 +215,7 @@ const genarateQuestionSet_ByAi = async (
     // Step 3: Prepare prompt and generate questions
     const prompt = `${findQuestionBank.questionBank_name} ${findQuestionBank.what_to_expect.join(' ')}`;
     const data = await mockInterviewUtill.generateQuestions(prompt);
-    console.log(data);
+    // console.log(data);
 
     const modifyQuestionList = data.questions.map((item: any) => ({
       interview_id: findQuestionBank.interview_id,
@@ -248,12 +252,21 @@ const genarateQuestionSet_ByAi = async (
       });
     }
 
+    await progressUtill.updateProgress(user_id,questionBank_id,isRetake)
+
     return result;
-  } catch (error) {
+  } 
+  catch (error) {
     console.error('Error generating question set:', error);
     throw error;
   }
 };
+
+
+
+
+
+
 
 
 const genarateSingleQuestion_ByAi_for_Retake = async (
@@ -351,6 +364,16 @@ const genarateSingleQuestion_ByAi_for_Retake = async (
     );
   }
 };
+
+
+
+
+
+
+
+
+
+
 
 export const MockInterviewsService = {
   create_mock_interview,

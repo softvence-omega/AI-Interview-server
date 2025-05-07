@@ -157,7 +157,17 @@ const uploadOrChangeImg = async (user_id: Types.ObjectId, imgFile: Express.Multe
 };
 
 const getProfile = async (user_id: Types.ObjectId) => {
-  const profile = await ProfileModel.findOne({ user_id });
+  const profile = await ProfileModel.findOne({ user_id }).populate([
+    { path: 'user_id', model: 'UserCollection' },
+    { path: 'appliedJobs', model: 'Job' },
+    { path: 'progress.interviewId', model: 'MockInterview' },
+    { path: 'progress.questionBank_AndProgressTrack.questionBaank_id', model: 'QuestionBank' },
+    { path: 'progress.questionBank_AndProgressTrack.lastQuestionAnswered_id', model: 'QuestionList' },
+  ]);
+
+  if (!profile) {
+    throw new Error('Profile not found for the given user_id');
+  }
 
   return profile;
 };

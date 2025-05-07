@@ -18,30 +18,32 @@ export type TUser={
     passwordChangeTime?:Date
 }
 
-export type TProfile={
-    name:string,
-    phone:string,
-    email:string,
 
-    img?:string,
-
-    experienceLevel:string,
-    preferedInterviewFocus:string,
-    emailNotification:boolean,
-    interviewTaken:number,
-    confidence:number,
-    progress: [
-        {
-            interviewId:Types.ObjectId,
-            isCompleted:boolean,
-            questionBank:number,
-        }
-    ],
-
+export type eachQuestionbankProgress = {
+    questionBaank_id: Types.ObjectId;
+    lastQuestionAnswered_id: Types.ObjectId | null;  // ✅ Now nullable
+    iscompleted: boolean;
+  };
+  
+  export type eachInterviewProgress = {
+    interviewId: Types.ObjectId;
+    isCompleted: boolean;
+    questionBank_AndProgressTrack: eachQuestionbankProgress[];
+  };
+  
+  export type TProfile = {
+    name: string;
+    phone: string;
+    email: string;
+    img?: string;
+    experienceLevel: string;
+    preferedInterviewFocus: string;
+    emailNotification: boolean;
+    interviewTaken: number;
+    confidence: number;
+    progress: eachInterviewProgress[];
     appliedJobs: Types.ObjectId[];
-
-    user_id:Types.ObjectId,
-    currentPlan: string,
-
-    isDeleted?:boolean,
-}
+    user_id: Types.ObjectId;
+    currentPlan: string;
+    isDeleted?: boolean;
+  };
