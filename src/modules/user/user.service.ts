@@ -40,14 +40,14 @@ const createUser = async (payload: Partial<TUser>, method?: string) => {
       let user;
 
       const { confirmPassword, ...rest } = payload;
-      const redirectionUrl = await authUtil.sendOTPviaEmail(rest)
+      const token = await authUtil.sendOTPviaEmail(rest)
 
       if (method) {
         const created = await UserModel.create([rest], { session });
         user = created[0];
       } else {
         
-        user = new UserModel({...rest,sentOTP:redirectionUrl.OTP});
+        user = new UserModel({...rest,sentOTP:token.OTP});
         await user.save({ session });
       }
 
@@ -69,7 +69,7 @@ const createUser = async (payload: Partial<TUser>, method?: string) => {
       return {
         message: "User created successfully.",
         data: user,
-        redirectionUrl:redirectionUrl.redirectionUrl
+        token:token.token
       };
     });
 
@@ -157,7 +157,18 @@ const uploadOrChangeImg = async (user_id: Types.ObjectId, imgFile: Express.Multe
 };
 
 const getProfile = async (user_id: Types.ObjectId) => {
-  const profile = await ProfileModel.findOne({ user_id });
+  const profile = await ProfileModel.findOne({ user_id }).populate([
+    { path: 'user_id', model: 'UserCollection' },
+    { path: 'notificationList_id', model: 'NotificationList' },
+    { path: 'appliedJobs', model: 'Job' },
+    { path: 'progress.interviewId', model: 'MockInterview' },
+    { path: 'progress.questionBank_AndProgressTrack.questionBaank_id', model: 'QuestionBank' },
+    { path: 'progress.questionBank_AndProgressTrack.lastQuestionAnswered_id', model: 'QuestionList' },
+  ]);
+
+  if (!profile) {
+    throw new Error('Profile not found for the given user_id');
+  }
 
   return profile;
 };

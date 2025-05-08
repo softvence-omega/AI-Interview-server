@@ -5,6 +5,7 @@ import { Server } from "http";
 import adminSeeder from "./seeder/adminSeeder";
 import config from "./config";
 import "./modules/job/job.cron";
+import "./modules/notifications/notifications.utill"
 
 let server: Server;
 

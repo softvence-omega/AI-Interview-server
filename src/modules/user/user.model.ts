@@ -2,6 +2,7 @@ import bcrypt from "bcrypt"
 import mongoose, { Schema, model } from 'mongoose';
 import { TProfile, TUser } from "./user.interface";
 import { userRole } from "../../constents";
+import { date } from "zod";
 
 
 const UserSchema = new Schema<TUser>({
@@ -21,42 +22,65 @@ const UserSchema = new Schema<TUser>({
     passwordChangeTime: { type: Date }
 }, { timestamps: true });
 
-const ProfileSchema = new Schema<TProfile>({
-    name: { type: String, required: false, default: "user" },
-    phone: { type: String, required: false, unique: false },
-    email: { type: String, required: false, unique: false },
-    
-    img: { type: String, default: null },
+const QuestionBankProgressSchema = new Schema({
+  questionBaank_id: {
+    type: Schema.Types.ObjectId,
+    required: true,
+    ref: 'QuestionBank',
+  },
+  lastQuestionAnswered_id: {
+    type: Schema.Types.ObjectId,
+    required: false,  
+    default: null,   
+    ref: 'QuestionList', 
+  },
+  iscompleted: {
+    type: Boolean,
+    default: false,
+  },
+});
+
+const InterviewProgressSchema = new Schema({
+  interviewId: {
+    type: Schema.Types.ObjectId,
+    required: true,
+    ref: 'MockInterview',
+  },
+  isCompleted: {
+    type: Boolean,
+    default: false,
+  },
+  questionBank_AndProgressTrack: {
+    type: [QuestionBankProgressSchema],
+    default: [],
+  },
+});
+
+const ProfileSchema = new Schema(
+  {
+    name: { type: String, required: true },
+    phone: { type: String, required: true },
+    email: { type: String, required: true },
+    img: { type: String },
     
     experienceLevel: { type: String, default: null },
     preferedInterviewFocus: { type: String, default: null },
     emailNotification: { type: Boolean, default: false },
     interviewTaken: { type: Number, default: 0 },
     confidence: { type: Number, default: 0 },
-    progress: [
-        {
-            interviewId: {
-                type: Schema.Types.ObjectId,
-                ref: 'Interview',
-                required: false
-            },
-            isCompleted: { type: Boolean, default: false },
-            questionBank: { type: Number, default: 0 },
-        },
-    ],
 
-    appliedJobs: [
-        {
-          type: mongoose.Schema.Types.ObjectId,
-          ref: 'Job',
-        }
-    ],
-
-    user_id: { type: Schema.Types.ObjectId, ref: 'User', required: true },
-    currentPlan: { type: String, default: "free"},
-
-    isDeleted: { type: Boolean, default: false }
-}, { timestamps: true });
+    progress: { type: [InterviewProgressSchema], default: [] },
+    appliedJobs: [{ type: Schema.Types.ObjectId, ref: 'Job' }],
+    user_id: { type: Schema.Types.ObjectId, required: true, ref: 'UserCollection' },
+    currentPlan: { type: String, default: "free" },
+    lastJobNotificationDate: { type: Date, default: null },
+    notificationList_id:{ type: Schema.Types.ObjectId, required: false, ref: 'NotificationList' },
+    isDeleted: { type: Boolean, default: false },
+  },
+  {
+    timestamps: true,
+  }
+);
 
 
 UserSchema.pre("save", async function (next) {
