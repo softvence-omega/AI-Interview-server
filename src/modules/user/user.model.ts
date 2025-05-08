@@ -2,6 +2,7 @@ import bcrypt from "bcrypt"
 import mongoose, { Schema, model } from 'mongoose';
 import { TProfile, TUser } from "./user.interface";
 import { userRole } from "../../constents";
+import { date } from "zod";
 
 
 const UserSchema = new Schema<TUser>({
@@ -72,6 +73,7 @@ const ProfileSchema = new Schema(
     appliedJobs: [{ type: Schema.Types.ObjectId, ref: 'Job' }],
     user_id: { type: Schema.Types.ObjectId, required: true, ref: 'UserCollection' },
     currentPlan: { type: String, default: "free" },
+    lastJobNotificationDate: { type: Date, default: null },
     isDeleted: { type: Boolean, default: false },
   },
   {

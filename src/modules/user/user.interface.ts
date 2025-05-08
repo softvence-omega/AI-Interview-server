@@ -45,5 +45,6 @@ export type eachQuestionbankProgress = {
     appliedJobs: Types.ObjectId[];
     user_id: Types.ObjectId;
     currentPlan: string;
+    lastJobNotificationDate:Date | null,
     isDeleted?: boolean;
   };
