@@ -6,7 +6,7 @@ import { userRole } from "../../constents";
 const MockInterviewRoutes = express.Router();
 
 
-MockInterviewRoutes.get('/get_mock_interview', Mock_interviewsController.get_mock_interview);
+MockInterviewRoutes.get('/get_mock_interview',auth([userRole.admin, userRole.user]), Mock_interviewsController.get_mock_interview);
 MockInterviewRoutes.post('/create_mock_interview',auth([userRole.admin]), Mock_interviewsController.create_mock_interview);
 MockInterviewRoutes.post('/update_mock_interview',auth([userRole.admin]), Mock_interviewsController.update_mock_interview);
 MockInterviewRoutes.delete('/delete_mock_interview',auth([userRole.admin]), Mock_interviewsController.delete_mock_interview);

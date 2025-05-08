@@ -13,14 +13,32 @@ const getAllNotifications = catchAsync(async(req, res)=>{
     golbalRespnseHandler(res, {
         statusCode: 200,
         success: true,
-        message: 'All users',
+        message: 'All Notification',
+        data: result,
+      });
+})
+
+
+const viewSpecificNotification = catchAsync(async(req, res)=>{
+
+    const user_id = req.user.id
+    const converted_user_id= idConverter(user_id)
+
+    const notification_id = req.query.notification_id as string
+    const converted_notification_id= idConverter(notification_id)
+
+    const result = await notificationServices.viewSpecificNotification(converted_notification_id as Types.ObjectId, converted_user_id as Types.ObjectId)
+    golbalRespnseHandler(res, {
+        statusCode: 200,
+        success: true,
+        message: 'founbd single notification',
         data: result,
       });
 })
 
 
 const notificationController = {
-    getAllNotifications
+    getAllNotifications,viewSpecificNotification
 }
 
 

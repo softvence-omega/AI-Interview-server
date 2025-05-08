@@ -74,6 +74,7 @@ const ProfileSchema = new Schema(
     user_id: { type: Schema.Types.ObjectId, required: true, ref: 'UserCollection' },
     currentPlan: { type: String, default: "free" },
     lastJobNotificationDate: { type: Date, default: null },
+    notificationList_id:{ type: Schema.Types.ObjectId, required: false, ref: 'NotificationList' },
     isDeleted: { type: Boolean, default: false },
   },
   {

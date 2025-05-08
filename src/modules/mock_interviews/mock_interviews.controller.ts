@@ -54,10 +54,11 @@ const delete_mock_interview = catchAsync(
 );
 
 const get_mock_interview = catchAsync(async (req: Request, res: Response) => {
-
+  const user_id = req.user.id as string
+  const convirtedUserId = idConverter(user_id)
   const query = req.query
 
-  const result = await MockInterviewsService.get_mock_interview(query);
+  const result = await MockInterviewsService.get_mock_interview(convirtedUserId as Types.ObjectId,query);
   res.status(200).json({
     success: true,
     message: 'Mock interview(s) retrieved successfully',

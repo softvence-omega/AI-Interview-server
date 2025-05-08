@@ -159,6 +159,7 @@ const uploadOrChangeImg = async (user_id: Types.ObjectId, imgFile: Express.Multe
 const getProfile = async (user_id: Types.ObjectId) => {
   const profile = await ProfileModel.findOne({ user_id }).populate([
     { path: 'user_id', model: 'UserCollection' },
+    { path: 'notificationList_id', model: 'NotificationList' },
     { path: 'appliedJobs', model: 'Job' },
     { path: 'progress.interviewId', model: 'MockInterview' },
     { path: 'progress.questionBank_AndProgressTrack.questionBaank_id', model: 'QuestionBank' },

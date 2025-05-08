@@ -7,6 +7,7 @@ import path from "path";
 import videoRoutes from '../modules/vodeoAnalytics/vodeo.routes';
 import graphRoutes from '../modules/graph/graph.route';
 import jobRoutes from '../modules/job/job.route';
+import notificationRouter from '../modules/notifications/notifiacations.routes';
 
 const Routes = express.Router();
 // Array of module routes
@@ -38,6 +39,10 @@ const moduleRouts = [
   {
     path: '/job',
     router: jobRoutes,
+  },
+  {
+    path: '/notifications',
+    router: notificationRouter,
   }
 ];
 
