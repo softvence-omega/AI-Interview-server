@@ -6,6 +6,8 @@ import resumeRoutes from '../modules/resume/resume.route';
 import path from "path";
 import graphRoutes from '../modules/graph/graph.route';
 import jobRoutes from '../modules/job/job.route';
+import planRoutes from '../modules/plan/plan.route';
+import paymentRoutes from '../modules/payment/payment.route';
 
 const Routes = express.Router();
 // Array of module routes
@@ -33,6 +35,14 @@ const moduleRouts = [
   {
     path: '/job',
     router: jobRoutes,
+  },
+  {
+    path: '/plan',
+    router: planRoutes,
+  },
+  {
+    path: '/payment',
+    router: paymentRoutes,
   }
 ];
 
