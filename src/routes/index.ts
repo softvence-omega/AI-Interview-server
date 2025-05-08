@@ -4,10 +4,12 @@ import userRoutes from '../modules/user/user.routes';
 import MockInterviewRoutes from '../modules/mock_interviews/mock_interviews.routes';
 import resumeRoutes from '../modules/resume/resume.route';
 import path from "path";
+import videoRoutes from '../modules/vodeoAnalytics/vodeo.routes';
 import graphRoutes from '../modules/graph/graph.route';
 import jobRoutes from '../modules/job/job.route';
 import planRoutes from '../modules/plan/plan.route';
 import paymentRoutes from '../modules/payment/payment.route';
+import notificationRouter from '../modules/notifications/notifiacations.routes';
 
 const Routes = express.Router();
 // Array of module routes
@@ -29,6 +31,10 @@ const moduleRouts = [
     router: resumeRoutes,
   },
   {
+    path: '/video',
+    router:videoRoutes,
+  },
+  {
     path: '/graph',
     router: graphRoutes,
   },
@@ -43,6 +49,10 @@ const moduleRouts = [
   {
     path: '/payment',
     router: paymentRoutes,
+  },
+  {
+    path: '/notifications',
+    router: notificationRouter,
   }
 ];
 

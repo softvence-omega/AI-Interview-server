@@ -6,6 +6,7 @@ import adminSeeder from "./seeder/adminSeeder";
 import config from "./config";
 import "./modules/job/job.cron";
 import planSeeder from "./seeder/planSeeder";
+import "./modules/notifications/notifications.utill"
 
 let server: Server;
 
