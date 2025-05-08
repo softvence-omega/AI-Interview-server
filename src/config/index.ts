@@ -17,6 +17,9 @@ const config={
     APIkEY:process.env.APIkEY,
     APISECRET:process.env.APISECRET,
 
+    stripe_secret_key:process.env.STRIPE_SECRET_KEY as string,
+    stripe_public_key:process.env.STRIPE_PUBLIC_KEY as string,
+
     companyGmail:process.env.COMPANY_GMAIL as string,
     GmailAppPassword:process.env.GMAIL_APP_PASSWORD as string,
 
