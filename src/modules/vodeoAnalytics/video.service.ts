@@ -106,6 +106,12 @@ const submitVideoAnalysisAndAummary = async (payLoad: TAssessmentPayload) => {
     });
   }
 
+  await progressUtill.updateProgress(user_id, questionBank_id, false);
+  await progressUtill.updateInterviewIfAllTheQuestionBankCompleted(
+    user_id,
+    interview_id,
+  );
+
   return storeAssessment;
 };
 
