@@ -7,9 +7,10 @@ export type TAssessmentPayload = {
   user_id: Types.ObjectId;
   islast: boolean;
   isSummary:boolean;
-  video_url: string;
+  video_url?: string;
 
   assessment: {
+    overall_score?: number;
     Articulation: {
       feedback: string;
       score: number;
@@ -28,5 +29,6 @@ export type TAssessmentPayload = {
     what_can_i_do_better: {
       overall_feedback: string;
     };
+    Content_Score: number;
   };
 };

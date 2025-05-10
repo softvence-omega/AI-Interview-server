@@ -10,25 +10,26 @@ const AssessmentSchema = new Schema({
     video_url: { type: String, required: true },
   
     assessment: {
-        Articulation: {
-          feedback: { type: String, required: true },
-          score: { type: Number, required: true },
-        },
-        Behavioural_Cue: {
-          feedback: { type: String, required: true },
-          score: { type: Number, required: true },
-        },
-        Problem_Solving: {
-          feedback: { type: String, required: true },
-          score: { type: Number, required: true },
-        },
-        Inprep_Score: {
-          total_score: { type: Number, required: true },
-        },
-        what_can_i_do_better: {
-          overall_feedback: { type: String, required: true },
-        },
+      Articulation: {
+        feedback: { type: String, required: true },
+        score: { type: Number, required: true },
       },
+      Behavioural_Cue: {
+        feedback: { type: String, required: true },
+        score: { type: Number, required: true },
+      },
+      Problem_Solving: {
+        feedback: { type: String, required: true },
+        score: { type: Number, required: true },
+      },
+      Inprep_Score: {
+        total_score: { type: Number, required: true },
+      },
+      what_can_i_do_better: {
+        overall_feedback: { type: String, required: true },
+      },
+      Content_Score: { type: Number, required: true }, // ✅ Added this field
+    }
   }, { timestamps: true });
   
   export const AssessmentModel = model('VideoAssessment', AssessmentSchema);

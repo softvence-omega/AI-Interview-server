@@ -231,11 +231,18 @@ const genarateQuestionSet_ByAi = async (
           p.interviewId.toString() === findQuestionBank.interview_id.toString(),
       );
 
+      console.log("progress entry*****",progressEntry)
+
       const qbProgress = progressEntry?.questionBank_AndProgressTrack.find(
         (qb) => qb.questionBaank_id.toString() === questionBank_id.toString(),
       );
 
+      console.log("qb progress****",qbProgress)
+
       const lastAnswered = qbProgress?.lastQuestionAnswered_id;
+
+
+    console.log("lastquestion answered***",lastAnswered)
 
       // console.log('Last answered question ID:', lastAnswered);
       const findQuestionList = await QuestionListModel.findOne({
@@ -248,15 +255,26 @@ const genarateQuestionSet_ByAi = async (
         throw new Error('Question list not found');
       }
 
+
+      console.log("find question List &&&&&", findQuestionList)
+
+
+
+
       // Find index of lastAnswered
       const index = findQuestionList.question_Set.findIndex(
-        (q: any) => q._id.toString() === lastAnswered,
+        (q: any) => q._id.toString() === lastAnswered!.toString(),
       );
+
+
+      console.log("find question List  index &&&&&", index)
 
       const remainingQuestions =
         index === -1
           ? findQuestionList.question_Set // return full list if not found
           : findQuestionList.question_Set.slice(index + 1);
+
+      console.log("remaining question", remainingQuestions)
 
       return {
         message: 'remaining questions',
