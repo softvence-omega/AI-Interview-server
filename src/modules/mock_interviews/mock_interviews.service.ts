@@ -1,3 +1,5 @@
+/* eslint-disable no-console */
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { startSession, Types } from 'mongoose';
 import {
   MockInterviewModel,

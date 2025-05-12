@@ -390,7 +390,7 @@ const send_OTP = async (user_id: Types.ObjectId) => {
     role: findUser.role,
   });
 
-  return sendOTP.redirectionUrl;
+  return sendOTP;
 };
 
 const authServices = {

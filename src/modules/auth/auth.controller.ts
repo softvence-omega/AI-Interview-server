@@ -101,8 +101,8 @@ const collectProfileData = catchAsync(async (req, res) => {
 
 const otpcrossCheck = catchAsync(async (req, res) =>{
 
-  const token = req.query.token as string
-  const recivedOTP = req.query.recivedOTP as string
+  const token = req.body.token as string
+  const recivedOTP = req.body.recivedOTP as string
 
   console.log("yoo yooo",recivedOTP)
 
