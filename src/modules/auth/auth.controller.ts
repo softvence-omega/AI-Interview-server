@@ -6,14 +6,15 @@ import authServices from './auth.services';
 
 const logIn = catchAsync(async (req, res) => {
   const { email, password,method } = req.body;
-  const result = await authServices.logIn(email, password,method);
-  const { approvalToken, refreshToken, updatedUser,message } = result;
+  const result = await authServices.logIn(email, password,method,);
+  const { approvalToken, refreshToken, updatedUser,message,meta } = result;
 
   res.status(200).json({
     message: 'Log In Successful',
     access_Message:message,
     approvalToken: approvalToken,
     refreshToken: refreshToken,
+    meta:meta,
     user: updatedUser,
     
   });

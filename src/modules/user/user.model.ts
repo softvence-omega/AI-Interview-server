@@ -1,26 +1,28 @@
-import bcrypt from "bcrypt"
+import bcrypt from 'bcrypt';
 import mongoose, { Schema, model } from 'mongoose';
-import { TProfile, TUser } from "./user.interface";
-import { userRole } from "../../constents";
-import { date } from "zod";
+import { TProfile, TUser } from './user.interface';
+import { userRole } from '../../constents';
+import { date } from 'zod';
 
-
-const UserSchema = new Schema<TUser>({
-    name: { type: String, required: false, default: "user" },
-    phone: { type: String, required: true, unique: false},
-    email: { type: String, required: true, unique: false},
+const UserSchema = new Schema<TUser>(
+  {
+    name: { type: String, required: false, default: 'user' },
+    phone: { type: String, required: true, unique: false },
+    email: { type: String, required: true, unique: false },
     password: { type: String, required: false },
     confirmPassword: { type: String, required: false },
-    role: { type: String, enum: ["admin" , "user"], default:userRole.user },
-    aggriedToTerms:{type:Boolean, default:false},
-    sentOTP:{ type: String, required: false, unique: false, default:null},
-    OTPverified:{ type: Boolean, default: false },
+    role: { type: String, enum: ['admin', 'user'], default: userRole.user },
+    aggriedToTerms: { type: Boolean, default: false },
+    sentOTP: { type: String, required: false, unique: false, default: null },
+    OTPverified: { type: Boolean, default: false },
     isDeleted: { type: Boolean, default: false },
     isBlocked: { type: Boolean, default: false },
     isLoggedIn: { type: Boolean, default: false },
     loggedOutTime: { type: Date },
-    passwordChangeTime: { type: Date }
-}, { timestamps: true });
+    passwordChangeTime: { type: Date },
+  },
+  { timestamps: true },
+);
 
 const QuestionBankProgressSchema = new Schema({
   questionBaank_id: {
@@ -30,9 +32,9 @@ const QuestionBankProgressSchema = new Schema({
   },
   lastQuestionAnswered_id: {
     type: Schema.Types.ObjectId,
-    required: false,  
-    default: null,   
-    ref: 'QuestionList', 
+    required: false,
+    default: null,
+    ref: 'QuestionList',
   },
   iscompleted: {
     type: Boolean,
@@ -60,42 +62,53 @@ const ProfileSchema = new Schema(
   {
     name: { type: String, required: true },
     phone: { type: String, required: true },
-    email: { type: String, required: true },
+    email: { type: String, required: true, unique: true },
     img: { type: String },
-    
+
     experienceLevel: { type: String, default: null },
     preferedInterviewFocus: { type: String, default: null },
     emailNotification: { type: Boolean, default: false },
     interviewTaken: { type: Number, default: 0 },
     confidence: { type: Number, default: 0 },
 
+    isResumeUploaded: { type: Boolean, default: false },
+    resume_id: { type: Schema.Types.ObjectId, required: false, ref: 'Resume' },
+    isAboutMeGenerated:{ type: Boolean, default: false },
+    generatedAboutMe:{ type: String, default: null },
+    isAboutMeVideoChecked: { type: Boolean, default: false },
+
     progress: { type: [InterviewProgressSchema], default: [] },
     appliedJobs: [{ type: Schema.Types.ObjectId, ref: 'Job' }],
-    user_id: { type: Schema.Types.ObjectId, required: true, ref: 'UserCollection' },
-    currentPlan: { type: String, default: "free" },
+    user_id: {
+      type: Schema.Types.ObjectId,
+      required: true,
+      ref: 'UserCollection',
+    },
+    currentPlan: { type: String, default: 'free' },
     lastJobNotificationDate: { type: Date, default: null },
-    notificationList_id:{ type: Schema.Types.ObjectId, required: false, ref: 'NotificationList' },
+    notificationList_id: {
+      type: Schema.Types.ObjectId,
+      required: false,
+      ref: 'NotificationList',
+    },
     isDeleted: { type: Boolean, default: false },
   },
   {
     timestamps: true,
-  }
+  },
 );
 
+UserSchema.pre('save', async function (next) {
+  if (!this.isModified('password')) return next(); // Hash only if password is modified
 
-UserSchema.pre("save", async function (next) {
-    if (!this.isModified("password")) return next(); // Hash only if password is modified
-
-    try {
-        const salt = await bcrypt.genSalt(10);
-        this.password = await bcrypt.hash(this.password, salt);
-        next();
-    } catch (error: any) {
-        return next(error);
-    }
+  try {
+    const salt = await bcrypt.genSalt(10);
+    this.password = await bcrypt.hash(this.password, salt);
+    next();
+  } catch (error: any) {
+    return next(error);
+  }
 });
 
-
-export const UserModel = mongoose.model("UserCollection", UserSchema);
+export const UserModel = mongoose.model('UserCollection', UserSchema);
 export const ProfileModel = model('Profile', ProfileSchema);
-
