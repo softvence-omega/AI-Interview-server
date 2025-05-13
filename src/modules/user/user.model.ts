@@ -60,7 +60,7 @@ const ProfileSchema = new Schema(
   {
     name: { type: String, required: true },
     phone: { type: String, required: true },
-    email: { type: String, required: true },
+    email: { type: String, required: true ,unique:true},
     img: { type: String },
     
     experienceLevel: { type: String, default: null },
