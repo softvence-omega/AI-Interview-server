@@ -74,6 +74,7 @@ const ProfileSchema = new Schema(
     isResumeUploaded: { type: Boolean, default: false },
     resume_id: { type: Schema.Types.ObjectId, required: false, ref: 'Resume' },
     isAboutMeGenerated:{ type: Boolean, default: false },
+    generatedAboutMe:{ type: String, default: null },
     isAboutMeVideoChecked: { type: Boolean, default: false },
 
     progress: { type: [InterviewProgressSchema], default: [] },

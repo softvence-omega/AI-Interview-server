@@ -4,6 +4,10 @@ import FormData from 'form-data';
 import axios from 'axios';
 import { Resume } from './resume.model';
 import { ProfileModel } from '../user/user.model';
+import catchAsync from '../../util/catchAsync';
+import idConverter from '../../util/idConvirter';
+import { genarateAboutMeService } from './resume.service';
+import { Types } from 'mongoose';
 
 export const uploadResume = async (
   req: Request,
@@ -124,3 +128,12 @@ export const deleteResume = async (
     res.status(500).json({ error: error.message });
   }
 };
+
+export const genarateAboutMe =catchAsync(async(req, res)=>{
+const user_id = req.user.id as string
+const convirtedUserId= idConverter(user_id)
+const result =  genarateAboutMeService(convirtedUserId as Types.ObjectId)
+
+res.status(200).json({ message: 'About me genartated',data:result });
+
+})

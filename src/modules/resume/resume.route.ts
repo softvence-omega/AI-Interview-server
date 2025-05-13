@@ -1,6 +1,6 @@
 import express from "express";
 import multer from "multer";
-import { deleteResume, getResumesByUser, updateResume, uploadResume } from "./resume.controller";
+import { deleteResume, getResumesByUser, updateResume, uploadResume,genarateAboutMe } from "./resume.controller";
 import auth from "../../middlewares/auth";
 import { userRole } from "../../constents";
 
@@ -18,7 +18,7 @@ router.put("/update-resume/:id", updateResume);
 // Delete resume by ID
 router.delete("/delete-resume/:id", deleteResume);
 
-// router.post("/genarateAboutMe", auth([userRole.admin, userRole.user]), )
+router.post("/genarateAboutMe", auth([userRole.admin, userRole.user]), genarateAboutMe )
 
 export default router;
 

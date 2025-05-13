@@ -9,8 +9,10 @@ export type TUser={
     confirmPassword?:string
     aggriedToTerms:boolean,
     role:TUserRole,
+
     sentOTP:string,
     OTPverified:boolean  
+    
     isDeleted?:string,
     isBlocked?:boolean,
     isLoggedIn?:boolean,
@@ -40,6 +42,7 @@ export type eachQuestionbankProgress = {
     isResumeUploaded:boolean;
     resume_id:Types.ObjectId;
     isAboutMeGenerated:boolean;
+    generatedAboutMe:string
     isAboutMeVideoChecked:boolean;
 
     experienceLevel: string;
