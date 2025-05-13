@@ -36,6 +36,12 @@ export type eachQuestionbankProgress = {
     phone: string;
     email: string;
     img?: string;
+
+    isResumeUploaded:boolean;
+    resume_id:Types.ObjectId;
+    isAboutMeGenerated:boolean;
+    isAboutMeVideoChecked:boolean;
+
     experienceLevel: string;
     preferedInterviewFocus: string;
     emailNotification: boolean;

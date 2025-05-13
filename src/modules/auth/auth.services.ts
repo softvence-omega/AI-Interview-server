@@ -1,7 +1,7 @@
 import bcrypt from 'bcrypt';
 import config from '../../config';
 import authUtill from './auth.utill';
-import { UserModel } from '../user/user.model';
+import { ProfileModel, UserModel } from '../user/user.model';
 import idConverter from '../../util/idConvirter';
 import jwt, { JwtPayload } from 'jsonwebtoken';
 import { sendEmail } from '../../util/sendEmail';
@@ -85,7 +85,19 @@ const logIn = async (
       'you are not a verified user. You wont be able to use some services. Please verify';
   }
 
-  return { approvalToken, refreshToken, updatedUser, message };
+  const findProfile = await ProfileModel.findOne({user_id:user._id}).select("isResumeUploaded isAboutMeVideoChecked isAboutMeGenerated -_id")
+  // console.log("find profile",findProfile)
+  if(!findProfile)
+  {
+    throw new Error("frofile is not found for resumy and about me video upload check")
+  }
+  const meta={
+    isResumeUploaded:findProfile.isResumeUploaded,
+    isAboutMeGenerated:findProfile.isAboutMeGenerated,
+    isAboutMeVideoChecked:findProfile.isAboutMeVideoChecked
+  }
+
+  return { approvalToken, refreshToken, updatedUser, message , meta};
 };
 
 const logOut = async (userId: string) => {
