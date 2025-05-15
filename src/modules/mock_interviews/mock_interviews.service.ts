@@ -131,10 +131,13 @@ const create_question_bank = async (payload: Partial<TQuestion_Bank>) => {
       payload.interview_id,
       {
         $addToSet: {
-          question_bank_ids: createdQuestionBank._id,
+          question_bank_ids: createdQuestionBank._id, // Add to array
+        },
+        $inc: {
+          total_Positions: 1, // Increment by 1
         },
       },
-      { new: true },
+      { new: true }
     );
   }
 
