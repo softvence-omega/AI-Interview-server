@@ -1,22 +1,21 @@
-import { Document, Types } from "mongoose";
+import { Document, Types } from 'mongoose';
 
-export type TEach_Question  = Document & {
-
+export type TEach_Question = Document & {
   interview_id: Types.ObjectId;
-    questionBank_id:Types.ObjectId;
-    user_id:Types.ObjectId;
+  questionBank_id: Types.ObjectId;
+  user_id: Types.ObjectId;
   time_to_answer: number;
   question: string;
-  isRetake?:boolean;
-  islast?:boolean;
+  isRetake?: boolean;
+  islast?: boolean;
 };
 
-export type TQuestionList ={
-  user_id:Types.ObjectId;
-  question_bank_id:Types.ObjectId;
-  interview_id:Types.ObjectId;
-  question_Set:TEach_Question[];
-}
+export type TQuestionList = {
+  user_id: Types.ObjectId;
+  question_bank_id: Types.ObjectId;
+  interview_id: Types.ObjectId;
+  question_Set: TEach_Question[];
+};
 
 export type TQuestion_Bank = {
   interview_id: Types.ObjectId;
@@ -27,14 +26,14 @@ export type TQuestion_Bank = {
   description: string;
   total_questions: number;
   what_to_expect: string[]; // assume it's an array of strings
-  isDeleted:boolean,
+  isDeleted: boolean;
 };
 
 export type TMock_Interviews = {
-  img:string;
+  img: string;
   interview_name: string;
   total_Positions: number;
   description: string;
-  isDeleted:boolean,
+  isDeleted: boolean;
   question_bank_ids: Types.ObjectId[]; // Specify ObjectId array
 };

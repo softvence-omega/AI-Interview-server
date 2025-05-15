@@ -64,8 +64,10 @@ const QuestionBankSchema = new Schema<TQuestion_Bank>({
 const MockInterviewSchema = new Schema<TMock_Interviews>({
   img: { type: String, required: true, default: 'img/link' },
   interview_name: { type: String, required: true },
-  total_Positions: { type: Number, required: false },
-  description: { type: String, required: true },
+  total_Positions: { type: Number, required: false , default:0},
+  description: { type: String, required: true 
+
+  },
   isDeleted: { type: Boolean, default: false },
   question_bank_ids: [
     { type: mongoose.Schema.Types.ObjectId, ref: 'QuestionBank', default: [] },
