@@ -176,6 +176,29 @@ const update_question_bank = async (id: Types.ObjectId, payload: any) => {
 };
 
 const delete_question_bank = async (id: string) => {
+  // Step 1: Find the question bank to get its interview_id
+  const questionBank = await QuestionBankModel.findById(id);
+  if (!questionBank) {
+    throw new Error("Question bank not found");
+  }
+
+  // Step 2: Remove the question bank ID from the MockInterviewModel and decrement total_Positions
+  if (questionBank.interview_id) {
+    await MockInterviewModel.findByIdAndUpdate(
+      questionBank.interview_id,
+      {
+        $pull: {
+          question_bank_ids: id, // Remove the question bank ID from the array
+        },
+        $inc: {
+          total_Positions: -1, // Decrement by 1
+        },
+      },
+      { new: true }
+    );
+  }
+
+  // Step 3: Delete the question bank
   const result = await QuestionBankModel.findByIdAndDelete(id);
   return result;
 };
