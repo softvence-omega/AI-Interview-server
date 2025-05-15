@@ -239,6 +239,7 @@ const genarateQuestionSet_ByAi = async (
       user_id: user_id,
       question_bank_id: questionBank_id,
     });
+
     // Step 2: Get question bank
     const findQuestionBank = await QuestionBankModel.findOne({
       _id: questionBank_id,
@@ -249,30 +250,30 @@ const genarateQuestionSet_ByAi = async (
     }
 
     if (!isRetake && existing) {
+      // Fetch user profile
       const profile = await ProfileModel.findOne({
         user_id: user_id,
         'progress.interviewId': findQuestionBank.interview_id,
       });
 
+      // Find the specific progress entry
       const progressEntry = profile?.progress.find(
         (p) =>
           p.interviewId.toString() === findQuestionBank.interview_id.toString(),
       );
 
-      console.log("progress entry*****",progressEntry)
+      console.log("progress entry*****", progressEntry);
 
       const qbProgress = progressEntry?.questionBank_AndProgressTrack.find(
         (qb) => qb.questionBaank_id.toString() === questionBank_id.toString(),
       );
 
-      console.log("qb progress****",qbProgress)
+      console.log("qb progress****", qbProgress);
 
       const lastAnswered = qbProgress?.lastQuestionAnswered_id;
 
+      console.log("last question answered***", lastAnswered);
 
-    console.log("lastquestion answered***",lastAnswered)
-
-      // console.log('Last answered question ID:', lastAnswered);
       const findQuestionList = await QuestionListModel.findOne({
         user_id: user_id,
         question_bank_id: questionBank_id,
@@ -283,26 +284,28 @@ const genarateQuestionSet_ByAi = async (
         throw new Error('Question list not found');
       }
 
+      console.log("find question List &&&&&", findQuestionList);
 
-      console.log("find question List &&&&&", findQuestionList)
+      // ✅ Safely determine the index
+      let index = 0;
+      if (lastAnswered) {
+        const foundIndex = findQuestionList.question_Set.findIndex(
+          (q: any) =>
+            q._id &&
+            q._id.toString() === lastAnswered.toString()
+        );
+        index = foundIndex !== -1 ? foundIndex : 0;
+      }
 
+      console.log("question index found:", index);
 
-
-
-      // Find index of lastAnswered
-      const index = findQuestionList.question_Set.findIndex(
-        (q: any) => q._id.toString() === lastAnswered!.toString(),
-      );
-
-
-      console.log("find question List  index &&&&&", index)
-
+      // Get remaining questions
       const remainingQuestions =
-        index === -1
-          ? findQuestionList.question_Set // return full list if not found
+        index === 0
+          ? findQuestionList.question_Set
           : findQuestionList.question_Set.slice(index + 1);
 
-      console.log("remaining question", remainingQuestions)
+      console.log("remaining questions", remainingQuestions);
 
       return {
         message: 'remaining questions',
@@ -310,19 +313,17 @@ const genarateQuestionSet_ByAi = async (
       };
     }
 
-    // if retake delete all the previous results that has been submited based on video analysis
-    //delete history of previous question set
+    // Step 3: If retake, delete previous assessment
     if (isRetake) {
-      const deleteFromVidoAnalisis = await AssessmentModel.deleteMany({
+      await AssessmentModel.deleteMany({
         questionBank_id: questionBank_id,
         user_id: user_id,
       });
     }
 
-    // Step 3: Prepare prompt and generate questions
+    // Step 4: Prepare prompt and generate new questions
     const prompt = `${findQuestionBank.questionBank_name} ${findQuestionBank.what_to_expect.join(' ')}`;
     const data = await mockInterviewUtill.generateQuestions(prompt);
-    // console.log(data);
 
     const modifyQuestionList = data.questions.map((item: any) => ({
       interview_id: findQuestionBank.interview_id,
@@ -335,7 +336,7 @@ const genarateQuestionSet_ByAi = async (
 
     let result;
 
-    // Step 4: If retake, update the existing record
+    // Step 5: Save or update question list
     if (isRetake && existing) {
       result = await QuestionListModel.findOneAndUpdate(
         {
@@ -349,7 +350,6 @@ const genarateQuestionSet_ByAi = async (
         { new: true },
       );
     } else {
-      // Step 5: Otherwise, create a new question list
       result = await QuestionListModel.create({
         user_id: user_id,
         question_bank_id: questionBank_id,
@@ -359,6 +359,7 @@ const genarateQuestionSet_ByAi = async (
       });
     }
 
+    // Step 6: Update progress
     await progressUtill.updateProgress(user_id, questionBank_id, isRetake);
     await progressUtill.updateInterviewIfAllTheQuestionBankCompleted(
       user_id,
@@ -371,6 +372,8 @@ const genarateQuestionSet_ByAi = async (
     throw error;
   }
 };
+
+
 
 const genarateSingleQuestion_ByAi_for_Retake = async (
   questionBank_id: Types.ObjectId,
