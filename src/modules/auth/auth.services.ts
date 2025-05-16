@@ -85,19 +85,22 @@ const logIn = async (
       'you are not a verified user. You wont be able to use some services. Please verify';
   }
 
-  const findProfile = await ProfileModel.findOne({user_id:user._id}).select("isResumeUploaded isAboutMeVideoChecked isAboutMeGenerated -_id")
+  const findProfile = await ProfileModel.findOne({ user_id: user._id }).select(
+    'isResumeUploaded isAboutMeVideoChecked isAboutMeGenerated -_id',
+  );
   // console.log("find profile",findProfile)
-  if(!findProfile)
-  {
-    throw new Error("frofile is not found for resumy and about me video upload check")
+  if (!findProfile) {
+    throw new Error(
+      'frofile is not found for resumy and about me video upload check',
+    );
   }
-  const meta={
-    isResumeUploaded:findProfile.isResumeUploaded,
-    isAboutMeGenerated:findProfile.isAboutMeGenerated,
-    isAboutMeVideoChecked:findProfile.isAboutMeVideoChecked
-  }
+  const meta = {
+    isResumeUploaded: findProfile.isResumeUploaded,
+    isAboutMeGenerated: findProfile.isAboutMeGenerated,
+    isAboutMeVideoChecked: findProfile.isAboutMeVideoChecked,
+  };
 
-  return { approvalToken, refreshToken, updatedUser, message , meta};
+  return { approvalToken, refreshToken, updatedUser, message, meta };
 };
 
 const logOut = async (userId: string) => {
@@ -389,10 +392,8 @@ const otpcrossCheck = async (token: string, OTP: string) => {
 };
 
 const send_OTP = async (user_id: Types.ObjectId) => {
-
   const findUser = await UserModel.findById(user_id);
-  console.log("i am find user",findUser)
-
+  console.log('i am find user', findUser);
 
   if (!findUser || !findUser.email || !findUser.role) {
     throw new Error('user or user email or Role is not found');
@@ -405,6 +406,38 @@ const send_OTP = async (user_id: Types.ObjectId) => {
   return sendOTP;
 };
 
+const reSend_OTP = async (token: string) => {
+  const decodedToken = authUtill.decodeAuthorizationToken(token);
+  const { email } = decodedToken as JwtPayload;
+
+  const findUser = await UserModel.findOne({ email: email });
+  console.log('i am find user', findUser);
+
+  if (!findUser || !findUser.email || !findUser.role) {
+    throw new Error('user or user email or Role is not found');
+  }
+
+  const sendOTP = await authUtill.sendOTPviaEmail({
+    email: findUser.email,
+    role: findUser.role,
+  });
+
+  const updateUser = await UserModel.findOneAndUpdate(
+    { email: email },
+    {
+      sentOTP: sendOTP.OTP,
+    },
+    { new: true },
+  );
+
+  if(!updateUser)
+  {
+    throw Error ("updating User failed after sending email")
+  }
+
+  return sendOTP.token;
+};
+
 const authServices = {
   logIn,
   logOut,
@@ -415,5 +448,6 @@ const authServices = {
   collectProfileData,
   otpcrossCheck,
   send_OTP,
+  reSend_OTP,
 };
 export default authServices;

@@ -121,10 +121,27 @@ const send_OTP = catchAsync(async(req, res) =>{
 const user_id = req.user.id as string
 const converted_id = idConverter(user_id)
 
+console.log("yooooo",converted_id)
+
 const result =await authServices.send_OTP(converted_id as Types.ObjectId)
 res.status(200).json({
   success: true,
   message: 'OTP verified successfully,allow to log in',
+  body: result,
+});
+
+})
+
+
+const reSend_OTP = catchAsync(async(req, res) =>{
+const resendOTPToken = req.body.resendOTPtoken as string
+
+console.log("yooooo",reSend_OTP)
+
+const result =await authServices.reSend_OTP(resendOTPToken)
+res.status(200).json({
+  success: true,
+  message: 'OTP is sent again !',
   body: result,
 });
 
@@ -139,6 +156,7 @@ const authController = {
   forgetPassword,
   resetPassword,
   collectProfileData,
-  send_OTP
+  send_OTP,
+  reSend_OTP
 };
 export default authController;

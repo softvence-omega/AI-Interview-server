@@ -50,16 +50,6 @@ const sendOTPviaEmail = async (payload: Partial<TUser>) => {
     config.OTP_TOKEN_DURATION,
   );
 
-  //   const setOTPtotheUser= await UserModel.findOneAndUpdate({email:payload.email},{
-  //     sentOTP:otp
-  //   },{
-  //     new:true
-  //   })
-
-  //   if(!setOTPtotheUser)
-  //   {
-  //     throw new Error("something went wrong setting OTP to the user")
-  //   }
 
   const html = `
   <div style="font-family: Arial, sans-serif; max-width: 600px; margin: auto; padding: 20px; border: 1px solid #e0e0e0; border-radius: 10px;">
@@ -89,7 +79,7 @@ const sendOTPviaEmail = async (payload: Partial<TUser>) => {
     throw new Error('email sending failed');  
   }
 
-  //  now give front end a redirection url
+
 
   const token = `${tokenizeData}`;
 

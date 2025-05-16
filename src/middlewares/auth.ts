@@ -16,6 +16,8 @@ const auth = (roles: TUserRole[], options?: AuthOptions) => {
   return catchAsync(async (req: Request, res: Response, next: NextFunction) => {
     const authorizationToken = req.headers.authorization;
 
+    console.log("yoo token",authorizationToken)
+
     if (!authorizationToken) {
       throw new Error('Unauthorized: Missing Authorization Token');
     }
@@ -27,6 +29,8 @@ const auth = (roles: TUserRole[], options?: AuthOptions) => {
     }
 
     const { id, role, iat, OTPverified } = decoded as JwtPayload;
+
+    console.log("bla bla",id, role,iat,OTPverified)
 
     if (!requestOTP && !OTPverified) {
       throw new Error('Unauthorized: Please verify your OTP to access this resource');
@@ -42,7 +46,6 @@ const auth = (roles: TUserRole[], options?: AuthOptions) => {
 
     const findUser = await UserModel.findOne({
       _id: idConverter(id),
-      isLoggedIn: true,
       isDeleted: false,
     });
 

@@ -40,6 +40,7 @@ const createUser = async (payload: Partial<TUser>, method?: string) => {
       let user;
 
       const { confirmPassword, ...rest } = payload;
+      
       const token = await authUtil.sendOTPviaEmail(rest)
 
       if (method) {
