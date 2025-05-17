@@ -5,6 +5,7 @@ import { uploadImgToCloudinary } from '../../util/uploadImgToCludinary';
 import authUtil from '../auth/auth.utill';
 import { userRole } from '../../constents';
 
+
 const createUser = async (payload: Partial<TUser>, method?: string) => {
   // Validate password match
   if (payload.password !== payload.confirmPassword) {
@@ -80,9 +81,7 @@ const createUser = async (payload: Partial<TUser>, method?: string) => {
     await session.commitTransaction();
 
     // Fetch the user after transaction (excluding sensitive fields)
-    const fetchedUser = await UserModel.findOne({
-      email: userData.email,
-    }).select('-password');
+    const fetchedUser = await UserModel.findOne({ email: userData.email }).select('-password');
     if (!fetchedUser) {
       return {
         success: false,
@@ -97,17 +96,18 @@ const createUser = async (payload: Partial<TUser>, method?: string) => {
     return {
       success: true,
       message: 'User created successfully and OTP sent.',
-      user: fetchedUser.toObject(),
-      token: token.token || null,
+      data: {
+        user: fetchedUser.toObject(),
+        token: token.token || null,
+      },
     };
-  } catch (error: any) {
+  } catch (error:any) {
     // Rollback the transaction on error
     await session.abortTransaction();
     console.error('Error creating user:', error);
     return {
       success: false,
-      message:
-        error.message || 'User creation failed due to an internal error.',
+      message: error.message || 'User creation failed due to an internal error.',
       data: { user: null, token: null },
     };
   } finally {
@@ -115,24 +115,24 @@ const createUser = async (payload: Partial<TUser>, method?: string) => {
   }
 };
 
-const getAllUsers = async () => {
-  const result = await UserModel.find();
-  return result;
-};
 
-const updateProfileData = async (
-  user_id: Types.ObjectId,
-  payload: Partial<TProfile>,
-) => {
+const getAllUsers= async()=>{
+ const result = await UserModel.find();
+ return result;
+}
+
+const updateProfileData = async (user_id: Types.ObjectId, payload: Partial<TProfile>) => {
+   
+
   try {
-    const updatedProfile = await ProfileModel.findOneAndUpdate(
-      { user_id },
-      { $set: payload },
-      { new: true },
-    );
-    return updatedProfile;
+      const updatedProfile = await ProfileModel.findOneAndUpdate(
+          { user_id },
+          { $set: payload },
+          { new: true }
+      );
+      return updatedProfile;
   } catch (error) {
-    throw error;
+      throw error;
   }
 };
 
@@ -140,37 +140,26 @@ const deleteSingleUser = async (user_id: Types.ObjectId) => {
   const session: ClientSession = await mongoose.startSession();
   session.startTransaction();
   try {
-    await UserModel.findOneAndUpdate(
-      { _id: user_id },
-      { isDeleted: true, email: null },
-      { session },
-    );
-    await ProfileModel.findOneAndUpdate(
-      { user_id },
-      { isDeleted: true, email: null },
-      { session },
-    );
-
-    await session.commitTransaction();
-    session.endSession();
+      await UserModel.findOneAndUpdate({ _id: user_id }, { isDeleted: true ,email:null}, { session });
+      await ProfileModel.findOneAndUpdate({ user_id }, { isDeleted: true, email:null }, { session });
+      
+      await session.commitTransaction();
+      session.endSession();
   } catch (error) {
-    await session.abortTransaction();
-    session.endSession();
-    throw error;
+      await session.abortTransaction();
+      session.endSession();
+      throw error;
   }
 };
 
-const selfDistuct = async (user_id: Types.ObjectId) => {
-  const result = deleteSingleUser(user_id);
-  return result;
-};
+const selfDistuct = async (user_id:Types.ObjectId) => {
+const result = deleteSingleUser(user_id)
+return result;
+}
 
-const uploadOrChangeImg = async (
-  user_id: Types.ObjectId,
-  imgFile: Express.Multer.File,
-) => {
+const uploadOrChangeImg = async (user_id: Types.ObjectId, imgFile: Express.Multer.File) => {
   if (!user_id || !imgFile) {
-    throw new Error('User ID and image file are required.');
+      throw new Error("User ID and image file are required.");
   }
 
   // Upload new image to Cloudinary
@@ -179,18 +168,18 @@ const uploadOrChangeImg = async (
   console.log(result);
 
   if (!result.secure_url) {
-    throw new Error('Image upload failed.');
+      throw new Error("Image upload failed.");
   }
 
   // Update user profile with new image URL
   const updatedUserProfile = await ProfileModel.findOneAndUpdate(
-    { user_id }, // Corrected query (find by user_id, not _id)
-    { img: result.secure_url },
-    { new: true },
+      { user_id },  // Corrected query (find by user_id, not _id)
+      { img: result.secure_url },
+      { new: true }
   );
 
   if (!updatedUserProfile) {
-    throw new Error('Profile not found or update failed.');
+      throw new Error("Profile not found or update failed.");
   }
 
   return updatedUserProfile;
@@ -202,14 +191,8 @@ const getProfile = async (user_id: Types.ObjectId) => {
     { path: 'notificationList_id', model: 'NotificationList' },
     { path: 'appliedJobs', model: 'Job' },
     { path: 'progress.interviewId', model: 'MockInterview' },
-    {
-      path: 'progress.questionBank_AndProgressTrack.questionBaank_id',
-      model: 'QuestionBank',
-    },
-    {
-      path: 'progress.questionBank_AndProgressTrack.lastQuestionAnswered_id',
-      model: 'QuestionList',
-    },
+    { path: 'progress.questionBank_AndProgressTrack.questionBaank_id', model: 'QuestionBank' },
+    { path: 'progress.questionBank_AndProgressTrack.lastQuestionAnswered_id', model: 'QuestionList' },
   ]);
 
   if (!profile) {
@@ -219,6 +202,7 @@ const getProfile = async (user_id: Types.ObjectId) => {
   return profile;
 };
 
+
 const userServices = {
   createUser,
   getAllUsers,
@@ -226,7 +210,7 @@ const userServices = {
   deleteSingleUser,
   selfDistuct,
   uploadOrChangeImg,
-  getProfile,
+  getProfile, 
 };
 
 export default userServices;
