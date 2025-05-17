@@ -50,7 +50,6 @@ const sendOTPviaEmail = async (payload: Partial<TUser>) => {
     config.OTP_TOKEN_DURATION,
   );
 
-
   const html = `
   <div style="font-family: Arial, sans-serif; max-width: 600px; margin: auto; padding: 20px; border: 1px solid #e0e0e0; border-radius: 10px;">
     <h2 style="color: #2c3e50;">AI Interview Verification Code</h2>
@@ -69,6 +68,17 @@ const sendOTPviaEmail = async (payload: Partial<TUser>) => {
   </div>
 `;
 
+  const updateUserWithOtp = await UserModel.findOneAndUpdate(
+    { email: payload.email },
+    {
+      sentOTP: otp,
+    },
+    { new: true },
+  );
+
+  if (!updateUserWithOtp) {
+    throw Error('faild to update user with OTP');
+  }
   //   now send mail to the user with otp
   const sendEmailWithOtp = await sendEmail(
     payload.email,
@@ -76,10 +86,8 @@ const sendOTPviaEmail = async (payload: Partial<TUser>) => {
     html,
   );
   if (!sendEmailWithOtp.success) {
-    throw new Error('email sending failed');  
+    throw new Error('email sending failed');
   }
-
-
 
   const token = `${tokenizeData}`;
 
