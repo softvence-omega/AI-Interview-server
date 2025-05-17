@@ -13,6 +13,8 @@ authRouter.post("/changePassword", auth([userRole.admin,userRole.user]), authCon
 authRouter.post("/otpcrossCheck",authController.otpcrossCheck )
 authRouter.post("/send_OTP", auth([userRole.admin, userRole.user],{requestOTP:true}), authController.send_OTP)
 
+authRouter.post("/reSend_OTP", authController.reSend_OTP)
+
 authRouter.post("/refresh-token", authController.refreshToken)
 
 authRouter.post("/forgetPassword", authController.forgetPassword)
