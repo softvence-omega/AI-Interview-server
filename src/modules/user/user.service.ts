@@ -101,7 +101,7 @@ const createUser = async (payload: Partial<TUser>, method?: string) => {
         token: token.token || null,
       },
     };
-  } catch (error) {
+  } catch (error:any) {
     // Rollback the transaction on error
     await session.abortTransaction();
     console.error('Error creating user:', error);
