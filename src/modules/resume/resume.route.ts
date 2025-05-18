@@ -3,12 +3,20 @@ import multer from "multer";
 import { deleteResume, getResumesByUser, updateResume, uploadResume,genarateAboutMe } from "./resume.controller";
 import auth from "../../middlewares/auth";
 import { userRole } from "../../constents";
+import { uploadPdf } from "../../util/uploadImgToCludinary";
 
 const router = express.Router();
 
 const upload = multer({ dest: "uploads/" });
 
-router.post("/upload-resume", auth([userRole.admin, userRole.user]), upload.single("file"), uploadResume);
+router.post("/upload-resume", 
+    auth([userRole.admin, userRole.user]), 
+    // upload.single("file"), 
+    uploadPdf.fields([
+        { name: "resumeFile", maxCount: 1 },
+        { name: "certificateFile", maxCount: 1 },
+      ]),
+    uploadResume);
 
 router.get("/my-resume", auth([userRole.admin, userRole.user]), getResumesByUser);
 

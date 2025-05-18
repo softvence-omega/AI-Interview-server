@@ -5,6 +5,7 @@ import { uploadImgToCloudinary } from '../../util/uploadImgToCludinary';
 import authUtil from '../auth/auth.utill';
 import { userRole } from '../../constents';
 import path from 'path';
+import { Resume } from '../resume/resume.model';
 
 const createUser = async (payload: Partial<TUser>, method?: string) => {
   // Validate password match
@@ -83,6 +84,18 @@ const createUser = async (payload: Partial<TUser>, method?: string) => {
           email: userData.email!,
           user_id: user._id,
           // img: defaultImageUpload.secure_url,
+        },
+      ],
+      { session },
+    );
+
+    await Resume.create(
+      [
+        {
+          name: userData.name ?? 'user',
+          phone: userData.phone,
+          email: userData.email!,
+          user_id: user._id,
         },
       ],
       { session },
