@@ -7,6 +7,7 @@ import config from "../config";
 // Function to delete a file from the local filesystem
 const deleteFile = async (filePath: string) => {
   try {
+    await fs.access(filePath)
     await fs.unlink(filePath);
     console.log(`File deleted successfully: ${filePath}`);
   } catch (err: any) {
@@ -66,14 +67,65 @@ export const uploadMultipleImages = async (filePaths: string[]) => {
   }
 };
 
+
+// Function to upload a PDF to Cloudinary
+export const uploadPdfToCloudinary = async (name: string, filePath: string) => {
+  cloudinary.config({
+    cloud_name: config.CLOUDNAME,
+    api_key: config.APIkEY,
+    api_secret: config.APISECRET,
+  });
+
+  try {
+    const uploadResult = await cloudinary.uploader.upload(filePath, {
+      public_id: `resumes/${name}-${Date.now()}`,
+      resource_type: "auto",
+    });
+
+    await deleteFile(filePath);
+    return uploadResult;
+  } catch (error) {
+    console.error("Error uploading PDF to Cloudinary:", error);
+    // Attempt to clean up file in case of upload failure
+    await deleteFile(filePath);
+    throw new Error("PDF upload failed");
+  }
+};
+
 // Multer storage configuration for local file saving
+// const storage = multer.diskStorage({
+//   destination: function (req, file, cb) {
+//     cb(null, path.join(process.cwd(), "uploads")); // Define folder for temporary file storage
+//   },
+//   filename: function (req, file, cb) {
+//     const uniqueSuffix = Date.now() + "-" + Math.round(Math.random() * 1e9);
+//     cb(null, file.fieldname + "-" + uniqueSuffix); // Generate unique file name
+//   },
+// });
+
 const storage = multer.diskStorage({
-  destination: function (req, file, cb) {
-    cb(null, path.join(process.cwd(), "uploads")); // Define folder for temporary file storage
+  destination: (req, file, cb) => {
+    cb(null, path.join(process.cwd(), "uploads"));
   },
-  filename: function (req, file, cb) {
+  filename: (req, file, cb) => {
     const uniqueSuffix = Date.now() + "-" + Math.round(Math.random() * 1e9);
-    cb(null, file.fieldname + "-" + uniqueSuffix); // Generate unique file name
+    cb(null, `${file.fieldname}-${uniqueSuffix}${path.extname(file.originalname)}`);
+  },
+});
+
+// Multer upload setup for PDF files
+export const uploadPdf = multer({
+  storage,
+  fileFilter: (req, file, cb) => {
+    const allowedTypes = ["application/pdf"];
+    if (!allowedTypes.includes(file.mimetype)) {
+      cb(new Error("Only PDF files are allowed!") as any, false);
+      return;
+    }
+    cb(null, true);
+  },
+  limits: {
+    fileSize: 10 * 1024 * 1024, // 10 MB
   },
 });
 

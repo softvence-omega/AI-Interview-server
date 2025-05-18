@@ -1,26 +1,33 @@
 import mongoose from "mongoose";
 
 const resumeSchema = new mongoose.Schema({
-  userId: {
+  user_id: {
     type: mongoose.Schema.Types.ObjectId,
-    ref: 'UserCollection',
+    ref: "UserCollection",
     required: true,
+    unique: true
   },
   name: String,
   summary: String,
   email: String,
   phone: String,
   address: Object,
-  education: Array,
-  experience: Array,
-  technical_skills: Array,
-  soft_skills: Array,
-  projects: Array,
-  languages: Array,
-  certifications: Array,
-  training: Array,
   linkedIn: String,
   github: String,
+  technicalSkills: [String],
+  softSkills: [String],
+  projects: [Object],
+  education: [Object],
+  awards: [String],
+  experience: [Object],
+  languages: [Object],
+  certifications: [{
+    certificateName: String,
+    certificateFile: String,
+  }],
+  training: [String],
 });
+
+resumeSchema.index({ user_id: 1 }, { unique: true });
 
 export const Resume = mongoose.model("Resume", resumeSchema);

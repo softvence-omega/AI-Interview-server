@@ -3,6 +3,8 @@ import catchAsync from '../../util/catchAsync';
 import golbalRespnseHandler from '../../util/globalResponseHandeler';
 import idConverter from '../../util/idConvirter';
 import userServices from './user.service';
+import sendResponse from '../../util/sendResponse';
+import { uploadImgToCloudinary } from '../../util/uploadImgToCludinary';
 
 const createUser = catchAsync(async (req, res) => {
   const user = req.body;
@@ -22,6 +24,31 @@ const getAllUsers = catchAsync(async (req, res) => {
     data: result,
   });
 });
+
+
+// update profile controller
+const updateUserProfile = catchAsync(async (req, res) => {
+  const user_id = req.user.id; // Assuming req.user.id is already an ObjectId from your auth middleware
+
+  // No need to convert to ObjectId since it's already an ObjectId
+  // Parse JSON data from 'data' field in form-data
+  const profileData = JSON.parse(req.body.data);
+  const imgFile = req.file; // Image file (if uploaded)
+
+  // Call the service to update the profile, passing the imgFile (optional)
+  const updatedProfile = await userServices.updateUserProfile(user_id, profileData, imgFile);
+
+  // Send the response with the updated profile data
+  golbalRespnseHandler(res, {
+    statusCode: 200,
+    success: true,
+    message: 'Profile updated successfully',
+    data: updatedProfile,
+  });
+});
+
+
+
 
 const updateProfileData = catchAsync(async (req, res) => {
 
@@ -121,6 +148,7 @@ const userController = {
   selfDistuct,
   uploadOrChangeImg,
   getProfile,
+  updateUserProfile
 };
 
 

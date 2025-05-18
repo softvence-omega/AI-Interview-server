@@ -63,7 +63,7 @@ const ProfileSchema = new Schema(
     name: { type: String, required: true },
     phone: { type: String, required: true },
     email: { type: String, required: true, unique: true },
-    img: { type: String },
+    img: { type: String, default: "https://res.cloudinary.com/dpgcpei5u/image/upload/v1747546759/interviewProfile_jvo9jl.jpg" },
 
     experienceLevel: { type: String, default: null },
     preferedInterviewFocus: { type: String, default: null },
