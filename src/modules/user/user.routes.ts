@@ -19,4 +19,12 @@ userRoutes.get("/getAlluser", auth([userRole.admin, userRole.user]), userControl
 userRoutes.delete("/deleteSingleUser", auth([userRole.admin]), userController.deleteSingleUser);
 
 
+// Update Profile Route (with image upload)
+userRoutes.patch(
+    '/updateProfile',
+    auth([userRole.admin, userRole.user]), // Only authenticated users can update their profile
+    upload.single('img'), // Handle single image upload
+    userController.updateUserProfile // Call the controller method
+  );
+
 export default userRoutes

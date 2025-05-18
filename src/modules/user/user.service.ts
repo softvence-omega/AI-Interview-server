@@ -4,6 +4,7 @@ import { ProfileModel, UserModel } from './user.model';
 import { uploadImgToCloudinary } from '../../util/uploadImgToCludinary';
 import authUtil from '../auth/auth.utill';
 import { userRole } from '../../constents';
+import path from 'path';
 
 const createUser = async (payload: Partial<TUser>, method?: string) => {
   // Validate password match
@@ -63,6 +64,16 @@ const createUser = async (payload: Partial<TUser>, method?: string) => {
       await user.save({ session });
     }
 
+    // // Inside your createUser function:
+    // const defaultImagePath = path.join(__dirname, '../../assets/interviewProfile.jpg'); // Use __dirname to get the absolute path
+
+
+    // // Upload default profile image to Cloudinary
+    // const defaultImageUpload = await uploadImgToCloudinary(
+    //   'default-profile-image', // You can customize this name as needed
+    //   defaultImagePath // Path to your default image (you can use a local or cloud URL)
+    // );
+
     // Create profile
     await ProfileModel.create(
       [
@@ -71,6 +82,7 @@ const createUser = async (payload: Partial<TUser>, method?: string) => {
           phone: userData.phone,
           email: userData.email!,
           user_id: user._id,
+          // img: defaultImageUpload.secure_url,
         },
       ],
       { session },
@@ -119,6 +131,46 @@ const getAllUsers = async () => {
   const result = await UserModel.find();
   return result;
 };
+
+
+
+// update profile with profile image
+const updateUserProfile = async (
+  user_id: Types.ObjectId, // MongoDB default _id is of type ObjectId
+  payload: Partial<TProfile>, 
+  imgFile?: Express.Multer.File // imgFile is optional now
+) => {
+  const updatedProfileData = { ...payload }; // Start with the existing payload
+
+  // If imgFile is provided, upload it to Cloudinary
+  if (imgFile) {
+    try {
+      const imageUploadResult = await uploadImgToCloudinary(
+        `profile-${user_id.toString()}`, // Custom name for the image
+        imgFile.path // Path to the uploaded image
+      );
+
+      // Add the image URL to the updated profile data
+      updatedProfileData.img = imageUploadResult.secure_url;
+    } catch (error: any) {
+      throw new Error('Error uploading image: ' + error.message);
+    }
+  }
+
+  // Now update the profile with the provided data (including the image if uploaded)
+  try {
+    const updatedProfile = await ProfileModel.findOneAndUpdate(
+      { user_id },
+      { $set: updatedProfileData },
+      { new: true } // Return the updated document
+    );
+
+    return updatedProfile;
+  } catch (error: any) {
+    throw new Error('Profile update failed: ' + error.message);
+  }
+};
+
 
 const updateProfileData = async (
   user_id: Types.ObjectId,
@@ -227,6 +279,7 @@ const userServices = {
   selfDistuct,
   uploadOrChangeImg,
   getProfile,
+  updateUserProfile
 };
 
 export default userServices;
