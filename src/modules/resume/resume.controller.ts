@@ -188,10 +188,6 @@ export const uploadResume = async (req: Request, res: Response): Promise<void> =
 
     // Check if resume exists
     const existingResume = await Resume.findOne({ user_id });
-    if (!existingResume) {
-      res.status(404).json({ error: "Resume not found for this user" });
-      return;
-    }
 
     // Case 1: Resume file uploaded (AI data extraction)
     if (resumeFile) {
@@ -209,12 +205,18 @@ export const uploadResume = async (req: Request, res: Response): Promise<void> =
 
       const aiData = response.data;
 
-      // Update existing resume
-      const updatedResume = await Resume.findOneAndUpdate(
-        { user_id },
-        { $set: { ...aiData, user_id } },
-        { new: true }
-      );
+      let updatedResume;
+      if (existingResume) {
+        // Update existing resume
+        updatedResume = await Resume.findOneAndUpdate(
+          { user_id },
+          { $set: { ...aiData, user_id } },
+          { new: true }
+        );
+      } else {
+        // Create new resume
+        updatedResume = await Resume.create({ ...aiData, user_id });
+      }
 
       // Clean up resume file
       await fs.promises.unlink(resumeFile.path).catch((err) => {
@@ -225,10 +227,10 @@ export const uploadResume = async (req: Request, res: Response): Promise<void> =
       await ProfileModel.findOneAndUpdate(
         { user_id },
         { isResumeUploaded: true, resume_id: updatedResume!._id },
-        { new: true }
+        { new: true, upsert: true } // Create profile if it doesn't exist
       );
 
-      res.status(200).json({ message: "Resume updated successfully", data: updatedResume });
+      res.status(200).json({ message: "Resume uploaded successfully", data: updatedResume });
       return;
     }
 
@@ -251,32 +253,50 @@ export const uploadResume = async (req: Request, res: Response): Promise<void> =
           certificateFile.path
         );
         certificateFileUrl = certificateUpload.secure_url;
+
+        // Clean up certificate file
+        await fs.promises.unlink(certificateFile.path).catch((err) => {
+          console.error(`Error deleting certificate file: ${err.message}`);
+        });
       }
 
-      // Prepare update data
-      const updateData: any = { $set: { ...manualData, user_id } };
+      let updatedResume;
+      if (existingResume) {
+        // Prepare update data
+        const updateData: any = { $set: { ...manualData, user_id } };
 
-      // Replace certifications array
-      if (certificateFileUrl) {
-        updateData.$set.certifications = [
-          { certificateName: req.body.certificateName || "Certificate", certificateFile: certificateFileUrl }
-        ];
-      } else if (manualData.certifications) {
-        updateData.$set.certifications = manualData.certifications;
+        // Replace certifications array
+        if (certificateFileUrl) {
+          updateData.$set.certifications = [
+            { certificateName: req.body.certificateName || "Certificate", certificateFile: certificateFileUrl }
+          ];
+        } else if (manualData.certifications) {
+          updateData.$set.certifications = manualData.certifications;
+        }
+
+        // Update existing resume
+        updatedResume = await Resume.findOneAndUpdate(
+          { user_id },
+          updateData,
+          { new: true }
+        );
+      } else {
+        // Create new resume with manual data
+        const resumeData = {
+          ...manualData,
+          user_id,
+          certifications: certificateFileUrl
+            ? [{ certificateName: req.body.certificateName || "Certificate", certificateFile: certificateFileUrl }]
+            : manualData.certifications || [],
+        };
+        updatedResume = await Resume.create(resumeData);
       }
-
-      // Update existing resume
-      const updatedResume = await Resume.findOneAndUpdate(
-        { user_id },
-        updateData,
-        { new: true }
-      );
 
       // Update user profile
       await ProfileModel.findOneAndUpdate(
         { user_id },
         { isResumeUploaded: true, resume_id: updatedResume!._id },
-        { new: true }
+        { new: true, upsert: true } // Create profile if it doesn't exist
       );
 
       res.status(200).json({ message: "Resume updated manually", data: updatedResume });
