@@ -3,6 +3,10 @@ import { TAssessmentPayload } from './video.interface';
 import { AssessmentModel } from './video.model';
 import processForSummary from './video.utill';
 
+const annalysisVideoForFrontendWeb = async(file:any, data:any)=>{
+  console.log(file, data)
+}
+
 const submitVideoAnalysisAndAummary = async (payLoad: TAssessmentPayload) => {
   const {
     question_id,
@@ -116,7 +120,7 @@ const submitVideoAnalysisAndAummary = async (payLoad: TAssessmentPayload) => {
 };
 
 const vidoAnalysisServices = {
-  submitVideoAnalysisAndAummary,
+  submitVideoAnalysisAndAummary,annalysisVideoForFrontendWeb
 };
 
 export default vidoAnalysisServices;
