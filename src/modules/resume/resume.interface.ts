@@ -35,6 +35,8 @@ export interface Resume {
     experience?: {
       jobTitle?: string;
       company?: string;
+      city?: string;
+      country?: string;
       duration?: string;
       responsibilities?: string[];
       skills?: string;
