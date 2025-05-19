@@ -48,7 +48,7 @@
     "@types/cookie-parser": "^1.4.8",
     "@types/cors": "^2.8.17",
     "@types/date-fns": "^2.5.3",
-    "@types/express": "^5.0.0",
+    "@types/express": "^5.0.2",
     "@types/form-data": "^2.2.1",
     "@types/jsonwebtoken": "^9.0.7",
     "@types/kill-port": "^2.0.3",
