@@ -11,6 +11,7 @@ import planRoutes from '../modules/plan/plan.route';
 import paymentRoutes from '../modules/payment/payment.route';
 import notificationRouter from '../modules/notifications/notifiacations.routes';
 import PaymentRoutes from '../modules/payment/stripe/stripe.route';
+import stripeRoutes from '../modules/payment/stripe/stripe.route';
 
 const Routes = express.Router();
 // Array of module routes
@@ -49,7 +50,7 @@ const moduleRouts = [
   },
   {
     path: '/payment',
-    router: PaymentRoutes,
+    router: stripeRoutes,
   },
   {
     path: '/notifications',

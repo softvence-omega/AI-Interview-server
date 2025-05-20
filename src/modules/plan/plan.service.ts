@@ -28,4 +28,5 @@ const PlanService = {
   updatePlan,
   deletePlan,
 };
+
 export default PlanService;

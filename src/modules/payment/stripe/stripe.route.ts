@@ -1,16 +1,29 @@
 import express from 'express';
 import { Router } from 'express';
-import { PaymentController } from './stripe.controller';
+import StripeController from './stripe.controller';
+import auth from '../../../middlewares/auth';
+import { userRole } from '../../../constents';
 
-const PaymentRoutes = Router();
+const router = Router();
 
-// Route to create a payment intent
-PaymentRoutes.post('/payment-intent', PaymentController.createPaymentIntent);
+router.post(
+  '/create-checkout-session',
+  auth([userRole.admin, userRole.user]),
+  StripeController.createCheckoutSession
+);
 
-// Route to create a checkout session
-PaymentRoutes.post('/checkout-session', PaymentController.createCheckoutSession);
+router.post(
+  '/webhook',
+  // Raw middleware required for signature verification
+  // Ensure this is ONLY used here, not globally
+  express.raw({ type: 'application/json' }),
+  StripeController.handleWebhook
+);
 
-// Webhook route to handle events from Stripe
-PaymentRoutes.post('/webhook', express.raw({ type: 'application/json' }), PaymentController.handleWebhook);
+router.post(
+    '/save-payment',
+    StripeController.savePaymentManually
+  );
+  
 
-export default PaymentRoutes;
+export default router;

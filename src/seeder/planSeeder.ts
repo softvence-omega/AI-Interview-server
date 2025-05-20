@@ -3,14 +3,51 @@ import { PlanModel } from '../modules/plan/plan.model';
 const planSeeder = async () => {
   const plans = [
     {
-      name: 'Premium',
-      priceMonthly: 19.99,
-      features: '10 Mock Interviews, Unlimited Jobs Tracking, Access to AI Feedback 10 Interview, Personalized Feedback, Generate Custom Mock Interview, Progress Tracking, Recommendation for Improvement',
+      name: "Free Plan",
+      description:
+        "Track and prepare your job search using our free version. It's always free, no credit card needed.",
+      priceMonthly: 0,
+      priceLabel: "/monthly",
+      priceId: "", // Optional for free
+      features: [
+        "1 Free Mock Interview",
+        "Track up to 10 Jobs per month",
+        "Personalized Feedback",
+        "Access to AI Feedback 1 Interview",
+        "Progress Tracking",
+        "Recommendation for Improvement",
+      ],
     },
     {
-      name: 'Pay-Per',
+      name: "Premium Plan",
+      description:
+        "Get full access to Inprep.ai App and web version. Track and prepare for any job using the AI by your side.",
+      priceMonthly: 19.99,
+      priceLabel: "/monthly",
+      priceId: "price_1RQh51AeQO2CXKLXBTbmxa3M",
+      features: [
+        "10 Mock Interviews",
+        "Unlimited Jobs Tracking",
+        "Personalized Feedback",
+        "Access to AI Feedback 10 Interview",
+        "Progress Tracking",
+        "Recommendation for Improvement",
+      ],
+    },
+    {
+      name: "Pay-Per-Interview",
+      description:
+        "Ran out of interview slots? No need to worry, buy interview when you need it.",
       priceMonthly: 4.99,
-      features: 'Single Job Tracking, Access to AI Feedback, Generate Custom Mock Interview, Personalized Feedback, Progress Tracking, Recommendation for Improvement',
+      priceLabel: "/Per Interview",
+      priceId: "price_1RQh5lAeQO2CXKLX0brJrWGJ",
+      features: [
+        "Unlimited Jobs Tracking",
+        "Personalized Feedback",
+        "Access to AI Feedback",
+        "Progress Tracking",
+        "Recommendation for Improvement",
+      ],
     },
   ];
 
@@ -25,9 +62,9 @@ const planSeeder = async () => {
         throw new Error(`Failed to create plan: ${plan.name}`);
       }
 
-      console.log(`Created plan: ${created.name}`);
+      console.log(`✅ Created plan: ${created.name}`);
     } else {
-      console.log(`Plan already exists: ${plan.name}`);
+      console.log(`⚠️ Plan already exists: ${plan.name}`);
     }
   }
 };
