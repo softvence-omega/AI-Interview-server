@@ -1,5 +1,8 @@
 export interface Plan {
   name: string;
+  description: string;
   priceMonthly: number;
-  features: string;
+  priceLabel: string;
+  priceId: string;
+  features: string[];
 }
