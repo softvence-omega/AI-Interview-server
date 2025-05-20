@@ -10,8 +10,8 @@ userRoutes.post("/createUser", userController.createUser);
 
 userRoutes.patch("/updateProfileData", auth([userRole.admin, userRole.user]), userController.updateProfileData);
 userRoutes.delete("/selfDistuct", auth([userRole.user]), userController.selfDistuct);
-userRoutes.post("/uploadOrChangeImg", auth([userRole.admin, userRole.user]), upload.single("files"),userController.uploadOrChangeImg);
 
+userRoutes.post("/uploadOrChangeImg", auth([userRole.admin, userRole.user]), upload.single("files"),userController.uploadOrChangeImg);
 userRoutes.get("/getProfile", auth([userRole.admin, userRole.user]), userController.getProfile);
 
 // admin routes

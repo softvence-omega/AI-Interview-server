@@ -244,73 +244,42 @@ const forgetPassword = async (email: string) => {
   }
 
   const tokenizeData = {
-    id: user._id,
+    email: email,
     role: user.role,
   };
 
   const resetToken = authUtill.createToken(
     tokenizeData,
     config.jwt_token_secret as string,
-    config.token_expairsIn as string,
+    config.OTP_TOKEN_DURATION as string,
   );
 
-  const resetLink = `${config.FrontEndHostedPort}?id=${user._id}&token=${resetToken}`;
+  const resetTokenSending = await reSend_OTP(resetToken);
 
-  const passwordResetHtml = `
-    <div>
-      <p>Dear User,</p>
-      <p>Click the button below to reset your password. This link expires in 10 minutes.</p> 
-      <p>
-          <a href="${resetLink}" target="_blank">
-              <button style="padding: 10px 15px; background-color: #007bff; color: white; border: none; border-radius: 4px;">
-                  Reset Password
-              </button>
-          </a>
-      </p>
-    </div>
-  `;
-
-  const emailResponse = await sendEmail(
-    user.email,
-    'Reset Your Password',
-    passwordResetHtml,
-  );
-
-  if (emailResponse.success) {
-    return {
-      success: true,
-      message: '✅ Check your email for the reset password link.',
-      emailSentTo: emailResponse.accepted,
-      resetLink,
-    };
-  } else {
-    return {
-      success: false,
-      message: '❌ Failed to send password reset email.',
-      error: emailResponse.error,
-    };
+  if (!resetTokenSending) {
+    throw Error('token sending failed');
   }
+
+  return {
+    message: 'an OTP sent to your email',
+  };
 };
 
-const resetPassword = async (
-  authorizationToken: string,
-  userId: string,
-  newPassword: string,
-) => {
+const resetPassword = async (token: string, newPassword: string) => {
   // Decode the token
   const decoded = jwt.verify(
-    authorizationToken,
+    token,
     config.jwt_token_secret as string,
   ) as JwtPayload;
 
-  if (!decoded || !decoded.id) {
+  if (!decoded || !decoded.email) {
     throw Error('Invalid or unauthorized token');
   }
 
-  const { id } = decoded;
-  if (id === userId) {
+  const { email } = decoded;
+
     // Find the user and include the password field
-    const findUser = await UserModel.findOne({ _id: id }).select('+password');
+    const findUser = await UserModel.findOne({ email: email }).select('+password');
 
     if (!findUser || !findUser.password) {
       throw Error('User not found or password missing');
@@ -324,7 +293,7 @@ const resetPassword = async (
 
     // Update the user's password and passwordChangeTime
     const updatePassword = await UserModel.findOneAndUpdate(
-      { _id: id },
+      { email: email },
       {
         password: newPasswordHash,
         passwordChangeTime: new Date(),
@@ -337,9 +306,7 @@ const resetPassword = async (
     }
 
     return { passwordChanged: true };
-  } else {
-    throw Error('Invalid User');
-  }
+
 };
 
 const collectProfileData = async (id: string) => {
@@ -347,7 +314,11 @@ const collectProfileData = async (id: string) => {
   return result;
 };
 
-const otpcrossCheck = async (token: string, OTP: string) => {
+const otpcrossCheck = async (
+  token: string,
+  OTP: string,
+  passwordChange?: boolean,
+) => {
   console.log('here i am ', token, OTP);
 
   if (!token || !OTP) {
@@ -385,8 +356,24 @@ const otpcrossCheck = async (token: string, OTP: string) => {
     { new: true },
   );
 
+  if (passwordChange) {
+    const updateUserFoePasswordReset = await UserModel.findOne(
+      { email: email },
+      {
+        allowPasswordChange: true,
+      },
+      {
+        new: true,
+      },
+    );
+
+    if (!updateUserFoePasswordReset) {
+      throw Error('cant update password now, something went wrong');
+    }
+  }
+
   return {
-    message: 'OTP verified successfully,allow to log in',
+    message: 'OTP verified successfully',
     user: updateUser,
   };
 };
@@ -430,9 +417,8 @@ const reSend_OTP = async (token: string) => {
     { new: true },
   );
 
-  if(!updateUser)
-  {
-    throw Error ("updating User failed after sending email")
+  if (!updateUser) {
+    throw Error('updating User failed after sending email');
   }
 
   return sendOTP.token;

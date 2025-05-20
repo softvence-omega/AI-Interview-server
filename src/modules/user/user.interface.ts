@@ -9,6 +9,7 @@ export type TUser={
     confirmPassword?:string
     aggriedToTerms:boolean,
     role:TUserRole,
+    allowPasswordChange:boolean
 
     sentOTP:string,
     OTPverified:boolean  
