@@ -7,6 +7,7 @@ import jwt, { JwtPayload } from 'jsonwebtoken';
 import { sendEmail } from '../../util/sendEmail';
 import userServices from '../user/user.service';
 import { Types } from 'mongoose';
+import { error } from 'console';
 
 const logIn = async (
   email: string,
@@ -262,51 +263,80 @@ const forgetPassword = async (email: string) => {
 
   return {
     message: 'an OTP sent to your email',
+    token:resetTokenSending
   };
 };
 
 const resetPassword = async (token: string, newPassword: string) => {
+  // Validate inputs
+  if (!token || !newPassword) {
+    throw Error('Token and new password are required');
+  }
+
+  // // Basic password strength validation (example: min 8 characters)
+  // if (newPassword.length < 8) {
+  //   throw Error('New password must be at least 8 characters long');
+  // }
+
+  // Validate config values
+  if (!config.jwt_token_secret || !config.bcrypt_salt) {
+    throw Error('Server configuration error: Missing JWT secret or bcrypt salt');
+  }
+
   // Decode the token
-  const decoded = jwt.verify(
-    token,
-    config.jwt_token_secret as string,
-  ) as JwtPayload;
+  let decoded;
+  try {
+    decoded = jwt.verify(
+      token,
+      config.jwt_token_secret as string,
+    ) as JwtPayload;
+  } catch (err) {
+    throw Error('Invalid or unauthorized token');
+  }
 
   if (!decoded || !decoded.email) {
     throw Error('Invalid or unauthorized token');
   }
 
   const { email } = decoded;
+  console.log("emailllllll", email);
 
-    // Find the user and include the password field
-    const findUser = await UserModel.findOne({ email: email }).select('+password');
+  // Find the user and include the password field
+  const findUser = await UserModel.findOne({ email: email }).select('+password allowPasswordChange');
 
-    if (!findUser || !findUser.password) {
-      throw Error('User not found or password missing');
-    }
+  if (!findUser) {
+    throw Error('User not found');
+  }
 
-    // Hash the new password
-    const newPasswordHash = await bcrypt.hash(
-      newPassword,
-      Number(config.bcrypt_salt),
-    );
+  if (!findUser.allowPasswordChange) {
+    throw Error('No request to change password from this user, cant change password ..!');
+  }
 
-    // Update the user's password and passwordChangeTime
-    const updatePassword = await UserModel.findOneAndUpdate(
-      { email: email },
-      {
-        password: newPasswordHash,
-        passwordChangeTime: new Date(),
-      },
-      { new: true },
-    );
+  // Hash the new password
+  const newPasswordHash = await bcrypt.hash(
+    newPassword,
+    Number(config.bcrypt_salt),
+  );
 
-    if (!updatePassword) {
-      throw Error('Error updating password');
-    }
+  // Update the user's password and passwordChangeTime
+  const updatePassword = await UserModel.findOneAndUpdate(
+    { email: email },
+    {
+      allowPasswordChange: false,
+      password: newPasswordHash,
+      passwordChangeTime: new Date(),
+    },
+    { new: true },
+  );
 
-    return { passwordChanged: true };
+  if (!updatePassword) {
+    throw Error('Error updating password');
+  }
 
+  return {
+    passwordChanged: true,
+    message: 'Password reset successfully',
+  };
 };
 
 const collectProfileData = async (id: string) => {
@@ -348,16 +378,10 @@ const otpcrossCheck = async (
     throw new Error('Invalid OTP');
   }
 
-  const updateUser = await UserModel.findOneAndUpdate(
-    { email: email },
-    {
-      OTPverified: true,
-    },
-    { new: true },
-  );
+  let updateUser
 
   if (passwordChange) {
-    const updateUserFoePasswordReset = await UserModel.findOne(
+    updateUser = await UserModel.findOneAndUpdate(
       { email: email },
       {
         allowPasswordChange: true,
@@ -367,9 +391,18 @@ const otpcrossCheck = async (
       },
     );
 
-    if (!updateUserFoePasswordReset) {
+    if (!updateUser) {
       throw Error('cant update password now, something went wrong');
     }
+  }
+  else{
+     updateUser = await UserModel.findOneAndUpdate(
+      { email: email },
+      {
+        OTPverified: true,
+      },
+      { new: true },
+    );
   }
 
   return {
@@ -377,6 +410,7 @@ const otpcrossCheck = async (
     user: updateUser,
   };
 };
+
 
 const send_OTP = async (user_id: Types.ObjectId) => {
   const findUser = await UserModel.findById(user_id);

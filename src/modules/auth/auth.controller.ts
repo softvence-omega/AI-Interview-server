@@ -89,6 +89,8 @@ const resetPassword = catchAsync(async (req, res) => {
   });
 });
 
+
+
 const collectProfileData = catchAsync(async (req, res) => {
   const user = req.user 
   const result = await authServices.collectProfileData(user.id);
@@ -99,19 +101,34 @@ const collectProfileData = catchAsync(async (req, res) => {
   });
 });
 
+
+
 const otpcrossCheck = catchAsync(async (req, res) => {
-  const token = req.body.token;
-  const recivedOTP = req.body.recivedOTP;
-  const passwordChange = req.body.passwordChange;
+  const { token, recivedOTP, passwordChange } = req.body;
 
-  console.log("yoo yooo", recivedOTP);
+  // Validate required inputs
+  if (!token || !recivedOTP) {
+    return res.status(400).json({
+      success: false,
+      message: 'Token and OTP are required',
+    });
+  }
 
-  // Pass passwordChange as true to otpcrossCheck if it exists and is true, otherwise undefined
+  // Call authServices.otpcrossCheck with passwordChange (true or undefined)
   const result = await authServices.otpcrossCheck(token, recivedOTP, passwordChange === true ? true : undefined);
 
+  // Validate result
+  if (!result || !result.user) {
+    return res.status(500).json({
+      success: false,
+      message: 'Failed to verify OTP or retrieve user data',
+    });
+  }
+
+  // Send success response
   res.status(200).json({
     success: true,
-    message: 'OTP verified successfully, allowed to log in',
+    message: passwordChange ? 'Now you can set a new password' : 'OTP verified successfully, allowed to log in',
     body: result.user,
   });
 });
