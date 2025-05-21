@@ -1,7 +1,9 @@
 import { Request, Response } from 'express';
 import { createStripeCheckoutSession, stripeInstance } from './stripe.service';
 import Stripe from 'stripe';
-import { Payment } from './stripe.model';
+import { IPayment, Payment } from './stripe.model';
+import { ProfileModel } from '../../user/user.model';
+import { PlanModel } from '../../plan/plan.model';
 
 /**
  * Utility to save payment data to DB (used by both webhook and manual).
@@ -17,23 +19,48 @@ const savePaymentToDB = async (sessionId: string): Promise<{ success: boolean; m
 
   // Fetch full session details from Stripe
   const session = await stripeInstance.checkout.sessions.retrieve(sessionId, {
-    expand: ['line_items'],
+    expand: ['line_items.data.price.product'],
   });
 
   const userId = session.metadata?.userId;
   const subscriptionId = session.subscription as string;
-  const planId = session.line_items?.data?.[0]?.price?.id || null;
+  const lineItem = session.line_items?.data?.[0];
+  const plan_Id = session.line_items?.data?.[0]?.price?.id || null;
+  const planName = (lineItem?.price?.product as any)?.name || 'unknown-plan';
 
   if (!userId) throw new Error('User ID missing from session metadata');
 
+  const localPlan = await PlanModel.findOne({ priceId: plan_Id})
+
+  if(!localPlan){
+    console.warn('No matching local plan');
+  }
+
   // Save payment in DB
-  await Payment.create({
+  const payment: IPayment = await Payment.create({
     userId,
     subscriptionId,
     sessionId,
-    planId,
+    planId: plan_Id,
     status: 'active',
   });
+
+
+  // update the user's profile
+  await ProfileModel.findOneAndUpdate(
+    { user_id: userId },
+    {
+      $push: {
+        paymentId: payment._id,
+        stripeSubscriptionId: subscriptionId,
+        ...(localPlan?._id ? { plan_id: localPlan._id } : {} ),
+      },
+      $set: {
+        currentPlan: planName,
+      },
+    },
+    { new : true }
+  );
 
   console.log('✅ Payment saved for user:', userId);
   return { success: true, message: 'Payment saved successfully' };
