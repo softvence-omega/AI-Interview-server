@@ -8,7 +8,8 @@ export const calculateDailyDetailedAverages = (): {
   weeklyAverages: Record<string, DailyAverage>;
   totalInterviews: number;
 } => {
-  const filePath = path.join(__dirname, '..', 'graph', 'graph.json');
+  // const filePath = path.join(__dirname, '..', 'graph', 'graph.json');
+  const filePath = path.join(__dirname, './graph.json');
   const rawData = fs.readFileSync(filePath, 'utf-8');
   const data: InterviewData[] = JSON.parse(rawData);
 

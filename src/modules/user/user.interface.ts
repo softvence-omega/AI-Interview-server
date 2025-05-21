@@ -1,6 +1,8 @@
 import { Types } from "mongoose"
 import { TUserRole } from "../../constents"
 
+type TInterviewsAvailable = number | 'unlimited';
+
 export type TUser={
     name:string,
     phone:string,
@@ -55,6 +57,7 @@ export type eachQuestionbankProgress = {
     appliedJobs: Types.ObjectId[];
     user_id: Types.ObjectId;
     currentPlan: string;
+    interviewsAvailable: TInterviewsAvailable;
     lastJobNotificationDate:Date | null,
     notificationList_id:Types.ObjectId,
     isDeleted?: boolean;

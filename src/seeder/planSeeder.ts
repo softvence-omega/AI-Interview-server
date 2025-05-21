@@ -64,7 +64,7 @@ const planSeeder = async () => {
 
       console.log(`✅ Created plan: ${created.name}`);
     } else {
-      console.log(`⚠️ Plan already exists: ${plan.name}`);
+      console.log(`✅ Plan already exists: ${plan.name}`);
     }
   }
 };

@@ -26,9 +26,9 @@ const adminSeeder = async () => {
       throw Error('admin could not be created');
     }
 
-    console.log("Create admin : ", createAdmin);
+    console.log("✅ Create admin : ", createAdmin);
   }else {
-    console.log(`Admin already exists: ${admin.name}`);
+    console.log(`✅ Admin already exists: ${admin.name}`);
   }
 };
 

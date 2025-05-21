@@ -86,10 +86,15 @@ const ProfileSchema = new Schema(
       ref: 'UserCollection',
     },
     currentPlan: { type: String, default: 'free' },
+    plan_id: [{
+      type: Schema.Types.ObjectId,
+      ref: 'Plan'
+    }],
 
-    interviewsAvailable: { type: Number, default: 1 }, // Tracks remaining interviews
-    stripeCustomerId: { type: String, default: null }, // Stripe customer ID
-    stripeSubscriptionId: { type: String, default: null }, // Stripe subscription ID for premium
+    interviewsAvailable: { type: Schema.Types.Mixed, default: 1 },
+    stripeCustomerId: { type: String, default: null },
+    stripeSubscriptionId: [{ type: String, default: null }],
+    paymentId: [{ type: Schema.Types.ObjectId, ref: 'Payment' }],
 
 
     lastJobNotificationDate: { type: Date, default: null },
