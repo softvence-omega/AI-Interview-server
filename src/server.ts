@@ -7,6 +7,7 @@ import config from "./config";
 import "./modules/job/job.cron";
 import planSeeder from "./seeder/planSeeder";
 import "./modules/notifications/notifications.utill"
+import skillsSeeder from "./seeder/skillsSeeder";
 
 let server: Server;
 
@@ -16,6 +17,7 @@ async function main() {
     await mongoose.connect(config.mongoose_uri);
     await adminSeeder();
     await planSeeder();
+    await skillsSeeder();
     server = app.listen(config.port, () => {
       console.log(`AI Mock Interview server app listening on port ${config.port}`);
     });

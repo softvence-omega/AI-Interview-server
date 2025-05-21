@@ -90,7 +90,7 @@ const ProfileSchema = new Schema(
       ref: 'Plan'
     }],
 
-    interviewsAvailable: { type: Number, default: 1 },
+    interviewsAvailable: { type: Schema.Types.Mixed, default: 1 },
     stripeCustomerId: { type: String, default: null },
     stripeSubscriptionId: [{ type: String, default: null }],
     paymentId: [{ type: Schema.Types.ObjectId, ref: 'Payment' }],
