@@ -239,6 +239,11 @@ const deleteSingleUser = async (user_id: Types.ObjectId) => {
     return {
       success: true,
       message: 'User and associated profile deleted successfully',
+      data: {
+        userId: user_id,
+        updatedUser,
+        updatedProfile,
+      },
     };
   } catch (error:any) {
     // Abort the transaction on error
