@@ -17,7 +17,7 @@ async function main() {
     await mongoose.connect(config.mongoose_uri);
     await adminSeeder();
     await planSeeder();
-    await skillsSeeder();
+    // await skillsSeeder();
     server = app.listen(config.port, () => {
       console.log(`AI Mock Interview server app listening on port ${config.port}`);
     });
