@@ -204,26 +204,52 @@ const updateProfileData = async (
 const deleteSingleUser = async (user_id: Types.ObjectId) => {
   const session: ClientSession = await mongoose.startSession();
   session.startTransaction();
+
   try {
-    await UserModel.findOneAndUpdate(
+    // Validate user_id
+    if (!Types.ObjectId.isValid(user_id)) {
+      throw new Error('Invalid user ID provided');
+    }
+
+    // Update the UserModel
+    const updatedUser = await UserModel.findOneAndUpdate(
       { _id: user_id },
       { isDeleted: true, email: null },
-      { session },
-    );
-    await ProfileModel.findOneAndUpdate(
-      { user_id },
-      { isDeleted: true, email: null },
-      { session },
+      { new: true, session } // Return the updated document
     );
 
+    if (!updatedUser) {
+      throw new Error('User not found');
+    }
+
+    // Update the ProfileModel
+    const updatedProfile = await ProfileModel.findOneAndUpdate(
+      { user_id },
+      { isDeleted: true, email: null },
+      { new: true, session } // Return the updated document
+    );
+
+    if (!updatedProfile) {
+      throw new Error('Profile not found for the user');
+    }
+
+    // Commit the transaction
     await session.commitTransaction();
-    session.endSession();
-  } catch (error) {
+
+    return {
+      success: true,
+      message: 'User and associated profile deleted successfully',
+    };
+  } catch (error:any) {
+    // Abort the transaction on error
     await session.abortTransaction();
+    throw new Error(`Failed to delete user: ${error.message}`);
+  } finally {
+    // Always end the session
     session.endSession();
-    throw error;
   }
-};
+}
+
 
 const selfDistuct = async (user_id: Types.ObjectId) => {
   const result = deleteSingleUser(user_id);

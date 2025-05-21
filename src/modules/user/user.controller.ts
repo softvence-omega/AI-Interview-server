@@ -86,7 +86,9 @@ const selfDistuct = catchAsync(async (req, res) => {
   if (!userIdConverted){
     throw new Error("user id conversion failed")
   }
+
   const result = await userServices.selfDistuct(userIdConverted)
+  
   golbalRespnseHandler(res, {
     statusCode: 200,
     success: true,
