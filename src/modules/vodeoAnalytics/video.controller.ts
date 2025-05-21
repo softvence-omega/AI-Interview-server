@@ -1,4 +1,6 @@
+import { Types } from "mongoose";
 import catchAsync from "../../util/catchAsync";
+import idConverter from "../../util/idConvirter";
 import vidoAnalysisServices from "./video.service";
 
 const submitVideoAnalysisAndAummary = catchAsync(async(req,res)=>{
@@ -13,7 +15,27 @@ res.status(200).json({
 })
 })
 
+const getSummary = catchAsync(async(req,res)=>{
+    const user_id = req.user.id
+    const questionBank_id = req.query.questionBank_id as string
+    const convitedQuestionbank_id= idConverter(questionBank_id)
+    const convirtedUserId = idConverter(user_id)
+
+
+    if(!convirtedUserId){
+        throw Error("id convirsation failed to get sumary")   
+    }
+
+    const result = await vidoAnalysisServices.getSummary( convirtedUserId as Types.ObjectId ,convitedQuestionbank_id as Types.ObjectId )
+
+res.status(200).json({
+    success: true,
+    message: "Summary for this Interview",
+    data: result
+})
+})
+
 const videoAnalysisController = {
-    submitVideoAnalysisAndAummary
+    submitVideoAnalysisAndAummary,getSummary
 }
 export default videoAnalysisController

@@ -1,11 +1,10 @@
+import { Types } from 'mongoose';
 import progressUtill from '../../util/setAndUpdateprogress';
 import { TAssessmentPayload } from './video.interface';
 import { AssessmentModel } from './video.model';
 import processForSummary from './video.utill';
 
-const annalysisVideoForFrontendWeb = async(file:any, data:any)=>{
-  console.log(file, data)
-}
+
 
 const submitVideoAnalysisAndAummary = async (payLoad: TAssessmentPayload) => {
   const {
@@ -98,6 +97,8 @@ const submitVideoAnalysisAndAummary = async (payLoad: TAssessmentPayload) => {
       questionBank_id,
       user_id,
     );
+
+
     const storeSummary = await AssessmentModel.create({
       
         "user_id": user_id,
@@ -119,8 +120,14 @@ const submitVideoAnalysisAndAummary = async (payLoad: TAssessmentPayload) => {
   return storeAssessment;
 };
 
+
+const getSummary= async(user_id:Types.ObjectId, questionBank_id:Types.ObjectId)=>{
+const result = await AssessmentModel.findOne({user_id:user_id, questionBank_id:questionBank_id, isSummary:true})
+return result
+}
+
 const vidoAnalysisServices = {
-  submitVideoAnalysisAndAummary,annalysisVideoForFrontendWeb
+  submitVideoAnalysisAndAummary,getSummary
 };
 
 export default vidoAnalysisServices;

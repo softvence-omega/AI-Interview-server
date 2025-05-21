@@ -6,7 +6,7 @@ import { userRole } from "../../constents";
 const videoRoutes = express.Router()
 
 videoRoutes.post("/submit_Video_Analysis_and_Summary",auth([userRole.admin, userRole.user]), videoAnalysisController.submitVideoAnalysisAndAummary )
-// videoRoutes.post("/submit_Summary_Video_Analysis",auth([userRole.admin, userRole.user]), videoAnalysisController.submit_Summary_Video_Analysis )
+videoRoutes.get("/getSummary",auth([userRole.admin, userRole.user]), videoAnalysisController.getSummary)
 
 
 export default videoRoutes;
