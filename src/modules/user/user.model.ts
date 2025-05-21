@@ -8,7 +8,7 @@ const UserSchema = new Schema<TUser>(
   {
     name: { type: String, required: false, default: 'user' },
     phone: { type: String, required: true, unique: false },
-    email: { type: String, required: true, unique: false },
+    email: { type: String, required: false, unique: false },
     password: { type: String, required: false },
     confirmPassword: { type: String, required: false },
     role: { type: String, enum: ['admin', 'user'], default: userRole.user },
@@ -63,7 +63,7 @@ const ProfileSchema = new Schema(
   {
     name: { type: String, required: true },
     phone: { type: String, required: true },
-    email: { type: String, required: true, unique: true },
+    email: { type: String, required: false, unique: false },
     img: { type: String, default: "https://res.cloudinary.com/dpgcpei5u/image/upload/v1747546759/interviewProfile_jvo9jl.jpg" },
 
     experienceLevel: { type: String, default: null },
