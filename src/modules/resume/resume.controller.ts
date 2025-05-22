@@ -223,6 +223,10 @@ export const uploadResume = async (req: Request, res: Response): Promise<void> =
         console.error(`Error deleting resume file: ${err.message}`);
       });
 
+      const convertedUserId = idConverter(user_id);
+
+      await genarateAboutMeService(convertedUserId as Types.ObjectId);
+
       // Update user profile
       await ProfileModel.findOneAndUpdate(
         { user_id },
@@ -389,6 +393,8 @@ export const deleteResume = async (
 };
 
 export const genarateAboutMe =catchAsync(async(req, res)=>{
+
+  console.log("Calllleeeddddd")
 const user_id = req.user.id as string
 const convirtedUserId= idConverter(user_id)
 const result =  genarateAboutMeService(convirtedUserId as Types.ObjectId)

@@ -5,11 +5,11 @@ import auth from "../../middlewares/auth";
 import { userRole } from "../../constents";
 import { uploadPdf } from "../../util/uploadImgToCludinary";
 
-const router = express.Router();
+const resumeRoutes = express.Router();
 
 const upload = multer({ dest: "uploads/" });
 
-router.post("/upload-resume", 
+resumeRoutes.post("/upload-resume", 
     auth([userRole.admin, userRole.user]), 
     // upload.single("file"), 
     uploadPdf.fields([
@@ -18,17 +18,17 @@ router.post("/upload-resume",
       ]),
     uploadResume);
 
-router.get("/my-resume", auth([userRole.admin, userRole.user]), getResumesByUser);
+resumeRoutes.get("/my-resume", auth([userRole.admin, userRole.user]), getResumesByUser);
 
 // Update resume by ID
-router.put("/update-resume/:id", updateResume);
+resumeRoutes.put("/update-resume/:id", updateResume);
 
 // Delete resume by ID
-router.delete("/delete-resume/:id", deleteResume);
+resumeRoutes.delete("/delete-resume/:id", deleteResume);
 
-router.post("/genarateAboutMe", auth([userRole.admin, userRole.user]), genarateAboutMe )
+resumeRoutes.post("/genarateAboutMe", auth([userRole.admin, userRole.user]), genarateAboutMe )
 
-export default router;
+export default resumeRoutes;
 
 
 

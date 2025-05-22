@@ -31,7 +31,7 @@ export async function extractResume(file: Express.Multer.File): Promise<any> {
 
 export const genarateAboutMeService = async (userId: Types.ObjectId) => {
   try {
-    const resume = await Resume.findOne({ user_id:userId });
+    const resume = await Resume.findOne({ user_id: userId });
 
     if (!resume) {
       console.warn("No resume found for user:", userId.toString());
@@ -49,7 +49,7 @@ export const genarateAboutMeService = async (userId: Types.ObjectId) => {
           headers: {
             "Content-Type": "application/json",
           },
-          timeout: 10000, // 10s timeout
+          // timeout: 10000, // 10s timeout
         }
       );
     } catch (apiError: any) {
@@ -66,7 +66,7 @@ export const genarateAboutMeService = async (userId: Types.ObjectId) => {
 
     const aboutMeText = response?.data;
 
-    if (!aboutMeText || typeof aboutMeText !== "string") {
+    if (!aboutMeText?.about_me || typeof aboutMeText.about_me !== "string") {
       console.warn("Invalid response format from AI API:", response?.data);
       return null;
     }
@@ -76,7 +76,7 @@ export const genarateAboutMeService = async (userId: Types.ObjectId) => {
       {
         $set: {
           isAboutMeGenerated: true,
-          generatedAboutMe: aboutMeText,
+          generatedAboutMe: aboutMeText.about_me,
         },
       }
     );
