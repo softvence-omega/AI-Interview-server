@@ -240,6 +240,9 @@ const genarateQuestionSet_ByAi = async (
       question_bank_id: questionBank_id,
     });
 
+
+    // console.log("does it exist ..........................",existing)
+
     // Step 2: Get question bank
     const findQuestionBank = await QuestionBankModel.findOne({
       _id: questionBank_id,
@@ -262,13 +265,13 @@ const genarateQuestionSet_ByAi = async (
           p.interviewId.toString() === findQuestionBank.interview_id.toString(),
       );
 
-      console.log("progress entry*****", progressEntry);
+      // console.log("progress entry*****", progressEntry);
 
       const qbProgress = progressEntry?.questionBank_AndProgressTrack.find(
         (qb) => qb.questionBaank_id.toString() === questionBank_id.toString(),
       );
 
-      console.log("qb progress****", qbProgress);
+      // console.log("qb progress****", qbProgress);
 
       const lastAnswered = qbProgress?.lastQuestionAnswered_id;
 
@@ -287,23 +290,29 @@ const genarateQuestionSet_ByAi = async (
       console.log("find question List &&&&&", findQuestionList);
 
       // ✅ Safely determine the index
-      let index = 0;
+      let index = -1; // Default to -1 for no progress
       if (lastAnswered) {
         const foundIndex = findQuestionList.question_Set.findIndex(
           (q: any) =>
             q._id &&
             q._id.toString() === lastAnswered.toString()
         );
-        index = foundIndex !== -1 ? foundIndex : 0;
+        index = foundIndex; // Use foundIndex directly, including -1 if not found
       }
 
-      console.log("question index found:", index);
+      console.log("question index found:=>=>=>=>", index);
 
       // Get remaining questions
-      const remainingQuestions =
-        index === 0
-          ? findQuestionList.question_Set
-          : findQuestionList.question_Set.slice(index + 1);
+      let remainingQuestions:any = [];
+      if (findQuestionList.question_Set && Array.isArray(findQuestionList.question_Set)) {
+        if (index >= 0) {
+          // Valid question answered: exclude up to and including it
+          remainingQuestions = findQuestionList.question_Set.slice(index + 1);
+        } else {
+          // No progress (index = -1): return full question set
+          remainingQuestions = findQuestionList.question_Set;
+        }
+      }
 
       console.log("remaining questions", remainingQuestions);
 
