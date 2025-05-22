@@ -17,10 +17,12 @@ const processForSummary = async (
       .filter(item => item && item.assessment)
       .map(item => item.assessment);
 
-    console.log('All related assessments:', assessmentsOnly);
+    // console.log('All related assessments:', assessmentsOnly);
+
+
     const stringifyArrary = JSON.stringify(assessmentsOnly)
 
-    console.log(stringifyArrary)
+    // console.log(stringifyArrary)
 
     const url = `https://freepik.softvenceomega.com/in-prep/api/v1/overall_generator/overall-generator`;
 
@@ -39,7 +41,7 @@ const processForSummary = async (
     }
 
     const data = await response.json();
-    console.log('AI API response: over all', data);
+    console.log('AI API response: over all ***********=========>>>>>>>>>>>>', data);
 
     // You can return or process `data` as needed
     return data;

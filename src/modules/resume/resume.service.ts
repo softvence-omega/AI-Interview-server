@@ -31,7 +31,7 @@ export async function extractResume(file: Express.Multer.File): Promise<any> {
 
 export const genarateAboutMeService = async (userId: Types.ObjectId) => {
   try {
-    const resume = await Resume.findOne({ userId });
+    const resume = await Resume.findOne({ user_id:userId });
 
     if (!resume) {
       console.warn("No resume found for user:", userId.toString());

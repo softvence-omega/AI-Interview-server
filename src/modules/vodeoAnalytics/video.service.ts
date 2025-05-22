@@ -92,6 +92,7 @@ const submitVideoAnalysisAndAummary = async (payLoad: TAssessmentPayload) => {
 
   
   if (islast) {
+
     const genarateSummary = await processForSummary(
       interview_id,
       questionBank_id,
@@ -99,16 +100,30 @@ const submitVideoAnalysisAndAummary = async (payLoad: TAssessmentPayload) => {
     );
 
 
-    const storeSummary = await AssessmentModel.create({
-      
-        "user_id": user_id,
-        "interview_id": interview_id,
-        "questionBank_id": questionBank_id,
-        "isSummary": true,
-        "islast": true,
-        "assessment":genarateSummary
+    const saveAbleObject = {
+      "user_id": user_id,
+      "interview_id": interview_id,
+      "questionBank_id": questionBank_id,
+      "isSummary": true,
+      "islast": true,
+      "assessment":genarateSummary
+    }
     
-    });
+
+    console.log("blooooooooobbbbbbbbbbb=======>>>>>>>>>",saveAbleObject)
+
+    // const storeSummary = await AssessmentModel.create({
+      
+    //     "user_id": user_id,
+    //     "interview_id": interview_id,
+    //     "questionBank_id": questionBank_id,
+    //     "isSummary": true,
+    //     "islast": true,
+    //     "assessment":genarateSummary
+    
+    // });
+
+    
   }
 
   await progressUtill.updateProgress(user_id, questionBank_id, false);
