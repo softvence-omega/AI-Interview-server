@@ -20,13 +20,13 @@ const submitVideoAnalysisAndAummary = async (payLoad: TAssessmentPayload) => {
 
   // Validate top-level fields
   if (!question_id && !isSummary)
-    throw new Error('question_id is required as it is not summary');
+    throw new Error('question_id is required as its not summary');
   if (!interview_id) throw new Error('interview_id is required');
   if (!questionBank_id) throw new Error('questionBank_id is required');
   if (!user_id) throw new Error('user_id is required');
   if (islast === undefined || islast === null)
     throw new Error('islast is required');
-  if (!video_url) throw new Error('video_url is required');
+  if (!video_url && !isSummary) throw new Error('video_url is required');
 
   // Validate assessment object
   if (!assessment) throw new Error('assessment is required');
@@ -72,36 +72,43 @@ const submitVideoAnalysisAndAummary = async (payLoad: TAssessmentPayload) => {
 
   if (!assessment.what_can_i_do_better)
     throw new Error('assessment.what_can_i_do_better is required');
-
-  // Type guard for what_can_i_do_better
-  if (
-    typeof assessment.what_can_i_do_better !== 'string' &&
-    !assessment.what_can_i_do_better.overall_feedback
-  ) {
+  if (!assessment.what_can_i_do_better.overall_feedback)
     throw new Error(
       'assessment.what_can_i_do_better.overall_feedback is required',
     );
-  }
 
   // Create the assessment document
   const storeAssessment = await AssessmentModel.create(payLoad);
 
   if (!isSummary) {
     await progressUtill.UpdateProgressOfSingleQuestionBank(
-      interview_id!,
-      questionBank_id!,
-      user_id!,
+      interview_id,
+      questionBank_id,
+      user_id,
       islast,
-      question_id || null,
+      question_id,
     );
   }
 
   if (islast) {
-    const genarateSummary = await processForSummary(
-      interview_id!,
-      questionBank_id!,
-      user_id!,
+    const generateSummary = await processForSummary(
+      interview_id,
+      questionBank_id,
+      user_id,
     );
+
+    // Transform generateSummary assessment to camelCase for schema compatibility
+    const transformedSummaryAssessment = {
+      Articulation: generateSummary.articulation || { feedback: '', score: 0 },
+      Behavioural_Cue: generateSummary.behavioural_cue || { feedback: '', score: 0 },
+      Problem_Solving: generateSummary.problem_solving || { feedback: '', score: 0 },
+      Inprep_Score: generateSummary.inprep_score
+        ? { total_score: generateSummary.inprep_score }
+        : { total_score: 0 },
+      what_can_i_do_better: generateSummary.what_can_i_do_better || { overall_feedback: '' },
+      Content_Score: generateSummary.Content_Score || 0,
+      overall_score: generateSummary.overall_score,
+    };
 
     const saveAbleObject = {
       user_id,
@@ -109,30 +116,22 @@ const submitVideoAnalysisAndAummary = async (payLoad: TAssessmentPayload) => {
       questionBank_id,
       isSummary: true,
       islast: true,
-      assessment: genarateSummary,
+      assessment: transformedSummaryAssessment,
     };
 
-    console.log('Summary Object =>', saveAbleObject);
+    console.log('Transformed saveAbleObject:', saveAbleObject);
+
+    const storeSummary = await AssessmentModel.create(saveAbleObject);
   }
 
-  await progressUtill.updateProgress(user_id!, questionBank_id!, false);
+  await progressUtill.updateProgress(user_id, questionBank_id, false);
   await progressUtill.updateInterviewIfAllTheQuestionBankCompleted(
-    user_id!,
-    interview_id!,
+    user_id,
+    interview_id,
   );
 
   return storeAssessment;
 };
-
-
-
-
-
-
-
-
-
-
 
 
 const getSummary= async(user_id:Types.ObjectId, questionBank_id:Types.ObjectId)=>{
