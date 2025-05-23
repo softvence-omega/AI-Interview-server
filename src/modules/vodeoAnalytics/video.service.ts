@@ -20,7 +20,7 @@ const submitVideoAnalysisAndAummary = async (payLoad: TAssessmentPayload) => {
 
   // Validate top-level fields
   if (!question_id && !isSummary)
-    throw new Error('question_id is required as its not summary');
+    throw new Error('question_id is required as it is not summary');
   if (!interview_id) throw new Error('interview_id is required');
   if (!questionBank_id) throw new Error('questionBank_id is required');
   if (!user_id) throw new Error('user_id is required');
@@ -72,68 +72,67 @@ const submitVideoAnalysisAndAummary = async (payLoad: TAssessmentPayload) => {
 
   if (!assessment.what_can_i_do_better)
     throw new Error('assessment.what_can_i_do_better is required');
-  if (!assessment.what_can_i_do_better.overall_feedback)
+
+  // Type guard for what_can_i_do_better
+  if (
+    typeof assessment.what_can_i_do_better !== 'string' &&
+    !assessment.what_can_i_do_better.overall_feedback
+  ) {
     throw new Error(
       'assessment.what_can_i_do_better.overall_feedback is required',
     );
+  }
 
   // Create the assessment document
   const storeAssessment = await AssessmentModel.create(payLoad);
 
   if (!isSummary) {
     await progressUtill.UpdateProgressOfSingleQuestionBank(
-      interview_id,
-      questionBank_id,
-      user_id,
+      interview_id!,
+      questionBank_id!,
+      user_id!,
       islast,
-      question_id,
+      question_id || null,
     );
   }
 
-  
   if (islast) {
-
     const genarateSummary = await processForSummary(
-      interview_id,
-      questionBank_id,
-      user_id,
+      interview_id!,
+      questionBank_id!,
+      user_id!,
     );
-
 
     const saveAbleObject = {
-      "user_id": user_id,
-      "interview_id": interview_id,
-      "questionBank_id": questionBank_id,
-      "isSummary": true,
-      "islast": true,
-      "assessment":genarateSummary
-    }
-    
+      user_id,
+      interview_id,
+      questionBank_id,
+      isSummary: true,
+      islast: true,
+      assessment: genarateSummary,
+    };
 
-    console.log("blooooooooobbbbbbbbbbb=======>>>>>>>>>",saveAbleObject)
-
-    // const storeSummary = await AssessmentModel.create({
-      
-    //     "user_id": user_id,
-    //     "interview_id": interview_id,
-    //     "questionBank_id": questionBank_id,
-    //     "isSummary": true,
-    //     "islast": true,
-    //     "assessment":genarateSummary
-    
-    // });
-
-    
+    console.log('Summary Object =>', saveAbleObject);
   }
 
-  await progressUtill.updateProgress(user_id, questionBank_id, false);
+  await progressUtill.updateProgress(user_id!, questionBank_id!, false);
   await progressUtill.updateInterviewIfAllTheQuestionBankCompleted(
-    user_id,
-    interview_id,
+    user_id!,
+    interview_id!,
   );
 
   return storeAssessment;
 };
+
+
+
+
+
+
+
+
+
+
 
 
 const getSummary= async(user_id:Types.ObjectId, questionBank_id:Types.ObjectId)=>{

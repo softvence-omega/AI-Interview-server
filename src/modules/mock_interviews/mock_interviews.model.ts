@@ -50,6 +50,7 @@ const QuestionBankSchema = new Schema<TQuestion_Bank>({
     ref: 'MockInterview',
     required: true,
   },
+  img: { type: String, required: true, default:null },
   questionBank_name: { type: String, required: true },
   duration: { type: Number, required: true },
   difficulty_level: { type: String, required: true },

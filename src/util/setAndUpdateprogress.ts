@@ -144,12 +144,16 @@ const updateInterviewIfAllTheQuestionBankCompleted = async (
     return allCompleted;
   };
 
+
+
+
+
 const UpdateProgressOfSingleQuestionBank = async (
     interviewId: Types.ObjectId,
     questionBankId: Types.ObjectId,
     user_id: Types.ObjectId,
     islast: boolean,
-    questionId: Types.ObjectId,
+    questionId: Types.ObjectId | null,
   ) => {
     const findProfileWithInterviewId = await ProfileModel.findOne({
       user_id: user_id,

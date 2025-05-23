@@ -12,10 +12,22 @@ import mockInterviewUtill from './mock_interview.utill';
 import { AssessmentModel } from '../vodeoAnalytics/video.model';
 import progressUtill from '../../util/setAndUpdateprogress';
 import { ProfileModel } from '../user/user.model';
+import { uploadImgToCloudinary } from '../../util/uploadImgToCludinary';
 
 // ---------------- MOCK INTERVIEW ----------------
-const create_mock_interview = async (data: any) => {
-  const result = await MockInterviewModel.create(data);
+const create_mock_interview = async (file:any, data: any) => {
+
+  if(!file)
+  {
+    throw Error ("img file is required yoooooooo")
+  }
+    const uploadImg = await uploadImgToCloudinary(file.name,file.path);
+    console.log(uploadImg)
+
+
+const updateData = {...data, img:uploadImg.secure_url}
+
+  const result = await MockInterviewModel.create(updateData);
   return result;
 };
 
@@ -121,9 +133,19 @@ const get_mock_interview = async (
 
 // ---------------- QUESTION BANK ----------------
 
-const create_question_bank = async (payload: Partial<TQuestion_Bank>) => {
+const create_question_bank = async (file:any, payload: Partial<TQuestion_Bank>) => {
+
+  if(!file)
+    {
+      throw Error ("img file is required yoooooooo")
+    }
+      const uploadImg = await uploadImgToCloudinary(file.name,file.path);
+      console.log(uploadImg)
+  
+  
+  const updateData = {...payload, img:uploadImg.secure_url}
   // Step 1: Create the Question Bank
-  const createdQuestionBank = await QuestionBankModel.create(payload);
+  const createdQuestionBank = await QuestionBankModel.create(updateData);
 
   // Step 2: Add the Question Bank ID to its corresponding Mock Interview
   if (payload.interview_id) {
