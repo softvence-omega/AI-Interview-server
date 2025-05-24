@@ -2,6 +2,7 @@ import { Request, Response } from 'express';
 import fs from 'fs';
 import FormData from 'form-data';
 import axios from 'axios';
+import { isEqual } from 'lodash';
 import { Resume } from './resume.model';
 import { ProfileModel } from '../user/user.model';
 import catchAsync from '../../util/catchAsync';
@@ -225,6 +226,8 @@ export const uploadResume = async (req: Request, res: Response): Promise<void> =
 
       const convertedUserId = idConverter(user_id);
 
+      console.log("converted user id:::", convertedUserId)
+
       await genarateAboutMeService(convertedUserId as Types.ObjectId);
 
       // Update user profile
@@ -234,7 +237,19 @@ export const uploadResume = async (req: Request, res: Response): Promise<void> =
         { new: true, upsert: true } // Create profile if it doesn't exist
       );
 
-      res.status(200).json({ message: "Resume uploaded successfully", data: updatedResume });
+      console.log("User id :::",user_id);
+
+      // Fetch updated profile for response
+      const generateAboutMeData = await ProfileModel.findOne({ user_id });
+
+      console.log("About me ::: ",generateAboutMeData);
+
+      res.status(200).json({ message: "Resume uploaded successfully", data: updatedResume, profile: generateAboutMeData
+        ? {
+            isAboutMeGenerated: generateAboutMeData.isAboutMeGenerated,
+            generatedAboutMe: generateAboutMeData.generatedAboutMe,
+          }
+        : null, });
       return;
     }
 
@@ -348,38 +363,120 @@ export const getResumesByUser = async (
   }
 };
 
+// export const updateResume = async (
+//   req: Request,
+//   res: Response,
+// ): Promise<void> => {
+//   try {
+//     const { id } = req.params;
+//     const updateData = req.body;
+
+//     const updatedResume = await Resume.findByIdAndUpdate(id, updateData, {
+//       new: true,
+//       runValidators: true,
+//     });
+
+//     if (!updatedResume) {
+//       res.status(404).json({ error: 'Resume not found' });
+//       return;
+//     }
+
+//     res.status(200).json({ message: 'Resume updated', data: updatedResume });
+//   } catch (error: any) {
+//     res.status(500).json({ error: error.message });
+//   }
+// };
+
 export const updateResume = async (
   req: Request,
   res: Response,
 ): Promise<void> => {
   try {
-    const { id } = req.params;
+    const userId = req.user?.id as string;
     const updateData = req.body;
 
-    const updatedResume = await Resume.findByIdAndUpdate(id, updateData, {
+    const currentResume = await Resume.findOne({ user_id: userId });
+    if (!currentResume) {
+      res.status(404).json({ error: 'Resume not found' });
+      return;
+    }
+
+    const currentEducation: any[] = currentResume.education || [];
+    const updatedEducation: any[] = updateData.education || [];
+
+    let educationChanged = false;
+
+    if (currentEducation.length !== updatedEducation.length) {
+      educationChanged = true;
+    } else {
+      for (let i = 0; i < currentEducation.length; i++) {
+        const current = currentEducation[i];
+        const updated = updatedEducation[i];
+
+        if (
+          current.institution !== updated.institution ||
+          current.degree !== updated.degree ||
+          current.majorField !== updated.majorField ||
+          current.startDate !== updated.startDate ||
+          current.completionDate !== updated.completionDate
+        ) {
+          educationChanged = true;
+          break;
+        }
+      }
+    }
+
+    // ✅ Use resume ID here
+    const updatedResume = await Resume.findByIdAndUpdate(currentResume._id, updateData, {
       new: true,
       runValidators: true,
     });
 
     if (!updatedResume) {
-      res.status(404).json({ error: 'Resume not found' });
+      res.status(404).json({ error: 'Resume not found after update' });
       return;
     }
 
-    res.status(200).json({ message: 'Resume updated', data: updatedResume });
+    const userIdConverted = idConverter(userId)
+
+    // Regenerate About Me if education changed
+    if (educationChanged) {
+      await genarateAboutMeService(userIdConverted as Types.ObjectId);
+    }
+
+    // Fetch profile (always)
+    const userProfile = await ProfileModel.findOne({ user_id: userId });
+
+    const aboutMeData = userProfile
+      ? {
+          isAboutMeGenerated: userProfile.isAboutMeGenerated,
+          generatedAboutMe: userProfile.generatedAboutMe,
+        }
+      : null;
+
+    res.status(200).json({
+      message: 'Resume updated',
+      data: updatedResume,
+      aboutMe: aboutMeData,
+    });
   } catch (error: any) {
     res.status(500).json({ error: error.message });
   }
 };
+
+
+
+
 
 export const deleteResume = async (
   req: Request,
   res: Response,
 ): Promise<void> => {
   try {
-    const { id } = req.params;
+    // const { id } = req.params;
+    const user_id = req.user?.id as string;
 
-    const deletedResume = await Resume.findByIdAndDelete(id);
+    const deletedResume = await Resume.findByIdAndDelete(user_id);
 
     if (!deletedResume) {
       res.status(404).json({ error: 'Resume not found' });

@@ -1,127 +1,90 @@
-import path from 'path';
-import fs from 'fs';
-import { DailyAverage, GroupData, InterviewData } from './graph.interface';
+import { AssessmentModel } from '../vodeoAnalytics/video.model';
+import { Types } from 'mongoose';
 
-export const calculateDailyDetailedAverages = (): {
-  dailyAverages: Record<string, DailyAverage>;
-  totalAverage: DailyAverage;
-  weeklyAverages: Record<string, DailyAverage>;
-  totalInterviews: number;
-} => {
-  // const filePath = path.join(__dirname, '..', 'graph', 'graph.json');
-  const filePath = path.join(__dirname, '../graph/graph.json');
-  const rawData = fs.readFileSync(filePath, 'utf-8');
-  const data: InterviewData[] = JSON.parse(rawData);
+type Scores = {
+  Articulation: number;
+  Behavioural_Cue: number;
+  Problem_Solving: number;
+  Inprep_Score: number;
+  count: number;
+};
 
-  const dailyGrouped: Record<string, GroupData> = {};
-  const weeklyGrouped: Record<string, GroupData> = {};
+const initScores = (): Scores => ({
+  Articulation: 0,
+  Behavioural_Cue: 0,
+  Problem_Solving: 0,
+  Inprep_Score: 0,
+  count: 0,
+});
 
-  let totalArticulation = 0;
-  let totalBehaviouralCue = 0;
-  let totalProblemSolving = 0;
-  let totalInprepScore = 0;
-  let totalCount = 0;
+export const calculateDailyDetailedAveragesFromDB = async (userId: string) => {
+  const assessments = await AssessmentModel.find({ user_id: new Types.ObjectId(userId), isSummary: true });
 
-  // Sort data by date descending for consistent weekly grouping
-  data.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
+  if (!assessments.length) return { dailyAverages: {}, weeklyAverages: {}, totalAverage: {}, totalInterviews: 0 };
 
-  // Create week groupings
-  let currentWeekStart = new Date(data[0].createdAt);
-  currentWeekStart.setUTCHours(0, 0, 0, 0);
+  const dailyMap = new Map<string, Scores>();
+  const weeklyMap = new Map<string, Scores>();
+  const total = initScores();
 
-  const weekBuckets: { [weekLabel: string]: InterviewData[] } = {};
-  let weekNumber = 1;
+  const sorted = assessments.sort((a, b) => +new Date(a.createdAt) - +new Date(b.createdAt));
+  let weekStart = new Date(sorted[0].createdAt);
+  weekStart.setUTCHours(0, 0, 0, 0);
+  let week = 1;
 
-  for (let i = 0; i < data.length; i++) {
-    const entryDate = new Date(data[i].createdAt);
-    entryDate.setUTCHours(0, 0, 0, 0);
+  for (const entry of sorted) {
+    const a = entry.assessment;
+    if (!a || typeof a !== 'object') continue;
 
-    const daysDiff = Math.floor((currentWeekStart.getTime() - entryDate.getTime()) / (1000 * 60 * 60 * 24));
+    const articulation = a.Articulation?.score ?? null;
+    const behavioral = a.Behavioural_Cue?.score ?? null;
+    const problem = a.Problem_Solving?.score ?? null;
+    const inprep = a.Inprep_Score?.total_score ?? null;
 
-    if (daysDiff >= 7) {
-      weekNumber++;
-      currentWeekStart = new Date(entryDate);
+    if ([articulation, behavioral, problem, inprep].some(score => typeof score !== 'number')) continue;
+
+    const date = new Date(entry.createdAt);
+    date.setUTCHours(0, 0, 0, 0);
+    const dateKey = date.toISOString().split('T')[0];
+
+    if ((date.getTime() - weekStart.getTime()) / (1000 * 60 * 60 * 24) >= 7) {
+      week++;
+      weekStart = new Date(date);
     }
 
-    const weekLabel = `Week ${weekNumber}`;
-    if (!weekBuckets[weekLabel]) weekBuckets[weekLabel] = [];
-    weekBuckets[weekLabel].push(data[i]);
+    const weekKey = `Week ${week}`;
 
-    // Daily grouping
-    const dateKey = entryDate.toISOString().split('T')[0];
-
-    if (!dailyGrouped[dateKey]) {
-      dailyGrouped[dateKey] = {
-        Articulation: 0,
-        Behavioural_Cue: 0,
-        Problem_Solving: 0,
-        Inprep_Score: 0,
-        count: 0,
-      };
-    }
-
-    dailyGrouped[dateKey].Articulation += data[i].Articulation.score;
-    dailyGrouped[dateKey].Behavioural_Cue += data[i].Behavioural_Cue.score;
-    dailyGrouped[dateKey].Problem_Solving += data[i].Problem_Solving.score;
-    dailyGrouped[dateKey].Inprep_Score += data[i].Inprep_Score.total_score;
-    dailyGrouped[dateKey].count += 1;
-
-    // Total aggregation
-    totalArticulation += data[i].Articulation.score;
-    totalBehaviouralCue += data[i].Behavioural_Cue.score;
-    totalProblemSolving += data[i].Problem_Solving.score;
-    totalInprepScore += data[i].Inprep_Score.total_score;
-    totalCount += 1;
-  }
-
-  const dailyAverages: Record<string, DailyAverage> = {};
-  for (const date in dailyGrouped) {
-    const group = dailyGrouped[date];
-    dailyAverages[date] = {
-      Articulation: parseFloat((group.Articulation / group.count).toFixed(2)),
-      Behavioural_Cue: parseFloat((group.Behavioural_Cue / group.count).toFixed(2)),
-      Problem_Solving: parseFloat((group.Problem_Solving / group.count).toFixed(2)),
-      Inprep_Score: parseFloat((group.Inprep_Score / group.count).toFixed(2)),
-    };
-  }
-
-  const weeklyAverages: Record<string, DailyAverage> = {};
-  for (const week in weekBuckets) {
-    const group = {
-      Articulation: 0,
-      Behavioural_Cue: 0,
-      Problem_Solving: 0,
-      Inprep_Score: 0,
-      count: 0,
+    const update = (map: Map<string, Scores>, key: string) => {
+      const s = map.get(key) || initScores();
+      s.Articulation += articulation!;
+      s.Behavioural_Cue += behavioral!;
+      s.Problem_Solving += problem!;
+      s.Inprep_Score += inprep!;
+      s.count++;
+      map.set(key, s);
     };
 
-    weekBuckets[week].forEach((entry) => {
-      group.Articulation += entry.Articulation.score;
-      group.Behavioural_Cue += entry.Behavioural_Cue.score;
-      group.Problem_Solving += entry.Problem_Solving.score;
-      group.Inprep_Score += entry.Inprep_Score.total_score;
-      group.count += 1;
-    });
-
-    weeklyAverages[week] = {
-      Articulation: parseFloat((group.Articulation / group.count).toFixed(2)),
-      Behavioural_Cue: parseFloat((group.Behavioural_Cue / group.count).toFixed(2)),
-      Problem_Solving: parseFloat((group.Problem_Solving / group.count).toFixed(2)),
-      Inprep_Score: parseFloat((group.Inprep_Score / group.count).toFixed(2)),
-    };
+    update(dailyMap, dateKey);
+    update(weeklyMap, weekKey);
+    update(new Map([['total', total]]), 'total');
   }
 
-  const totalAverage: DailyAverage = {
-    Articulation: parseFloat((totalArticulation / totalCount).toFixed(2)),
-    Behavioural_Cue: parseFloat((totalBehaviouralCue / totalCount).toFixed(2)),
-    Problem_Solving: parseFloat((totalProblemSolving / totalCount).toFixed(2)),
-    Inprep_Score: parseFloat((totalInprepScore / totalCount).toFixed(2)),
-  };
+  const toAvg = (map: Map<string, Scores>) =>
+    Object.fromEntries(
+      [...map.entries()].map(([k, v]) => [
+        k,
+        {
+          Articulation: +(v.Articulation / v.count).toFixed(2),
+          Behavioural_Cue: +(v.Behavioural_Cue / v.count).toFixed(2),
+          Problem_Solving: +(v.Problem_Solving / v.count).toFixed(2),
+          Inprep_Score: +(v.Inprep_Score / v.count).toFixed(2),
+        },
+      ])
+    );
 
   return {
-    totalInterviews: totalCount,
-    dailyAverages,
-    weeklyAverages,
-    totalAverage
+    dailyAverages: toAvg(dailyMap),
+    weeklyAverages: toAvg(weeklyMap),
+    totalAverage: toAvg(new Map([['total', total]])).total,
+    totalInterviews: total.count,
   };
 };
