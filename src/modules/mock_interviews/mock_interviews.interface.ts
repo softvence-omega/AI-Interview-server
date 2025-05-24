@@ -19,6 +19,7 @@ export type TQuestionList = {
 
 export type TQuestion_Bank = {
   interview_id: Types.ObjectId;
+  img:string;
   questionBank_name: string;
   duration: number;
   difficulty_level: string;

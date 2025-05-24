@@ -6,7 +6,7 @@ export type TAssessmentPayload = {
   questionBank_id: Types.ObjectId;
   user_id: Types.ObjectId;
   islast: boolean;
-  isSummary:boolean;
+  isSummary?:boolean;
   video_url?: string;
 
   assessment: {

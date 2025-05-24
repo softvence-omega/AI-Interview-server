@@ -7,7 +7,7 @@ const AssessmentSchema = new Schema({
     user_id: { type: Schema.Types.ObjectId, required: true, ref: 'User' },
     islast: { type: Boolean, required: false, default:false},
     isSummary:{ type: Boolean, required: false, default:false},
-    video_url: { type: String, required: true },
+    video_url: { type: String, required:false , default:null },
   
     assessment: {
       Articulation: {
