@@ -21,10 +21,10 @@ resumeRoutes.post("/upload-resume",
 resumeRoutes.get("/my-resume", auth([userRole.admin, userRole.user]), getResumesByUser);
 
 // Update resume by ID
-resumeRoutes.put("/update-resume/:id", updateResume);
+resumeRoutes.put("/update-resume", auth([userRole.admin, userRole.user]), updateResume);
 
 // Delete resume by ID
-resumeRoutes.delete("/delete-resume/:id", deleteResume);
+resumeRoutes.delete("/delete-resume", auth([userRole.admin, userRole.user]), deleteResume);
 
 resumeRoutes.post("/genarateAboutMe", auth([userRole.admin, userRole.user]), genarateAboutMe )
 

@@ -39,7 +39,7 @@ export interface Resume {
       country?: string;
       duration?: string;
       responsibilities?: string[];
-      skills?: string;
+      skills?: string[];
       startDate?: string;
       endDate?: string | null;
     }[];
