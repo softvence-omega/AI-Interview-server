@@ -3,6 +3,81 @@ import { Job } from './job.model';
 import { ProfileModel } from '../user/user.model';
 import mongoose from 'mongoose';
 
+
+// Create or update job (if already exists by unique link)
+const saveJob = async (req: Request, res: Response) => {
+  try {
+    const { link } = req.body;
+
+    const existingJob = await Job.findOne({ link });
+    if (existingJob) {
+      res.status(200).json({ message: 'Job already exists', job: existingJob });
+      return;
+    }
+
+    const newJob = new Job(req.body);
+    await newJob.save();
+
+    res.status(201).json({ message: 'Job saved successfully', job: newJob });
+  } catch (error) {
+    console.error('Error saving job:', error);
+    res.status(500).json({ message: 'Internal server error' });
+  }
+};
+
+// Get all jobs
+const getAllJobs = async (_req: Request, res: Response) => {
+  try {
+    const jobs = await Job.find().sort({ createdAt: -1 });
+    res.status(200).json(jobs);
+  } catch (error) {
+    res.status(500).json({ message: 'Internal server error' });
+  }
+};
+
+const getSingleJob = async (req: Request, res: Response) => {
+  try {
+    const job = await Job.findById(req.params.id);
+    if (!job) {
+      res.status(404).json({ message: 'Job not found' });
+      return;
+    }
+    res.json(job);
+  } catch (error) {
+    res.status(500).json({ message: 'Server error', error });
+  }
+};
+
+const updateJob = async (req: Request, res: Response) => {
+  try {
+    const job = await Job.findByIdAndUpdate(req.params.id, req.body, { new: true });
+    if (!job) {
+      res.status(404).json({ message: 'Job not found' });
+      return;
+    }
+    res.json(job);
+  } catch (error) {
+    res.status(500).json({ message: 'Server error', error });
+  }
+};
+
+const deleteJob = async (req: Request, res: Response) => {
+  try {
+    const job = await Job.findByIdAndDelete(req.params.id);
+    if (!job) {
+      res.status(404).json({ message: 'Job not found' });
+      return;
+    }
+    res.json({ message: 'Job deleted successfully' });
+  } catch (error) {
+    res.status(500).json({ message: 'Server error', error });
+  }
+};
+
+
+
+
+
 const getJobs = async (req: Request, res: Response) => {
     try {
       const { title, company, location, year, status } = req.query;
@@ -96,5 +171,10 @@ const markJobAsApplied = async (req: Request, res: Response): Promise<void> => {
 const jobController = {
   getJobs,
   markJobAsApplied,
+  saveJob,
+  getAllJobs,
+  getSingleJob,
+  updateJob,
+  deleteJob
 };
 export default jobController;
