@@ -156,7 +156,7 @@ const getSingleJob = async (req: Request, res: Response) => {
 
     // If the job hasn't been seen before, update seenJobs and decrement jobsAvailable
     if (!hasSeen) {
-      if (profile.jobsAvailable <= 0) {
+      if (profile.jobsAvailable !== 'unlimited' && profile.jobsAvailable <= 0) {
         res.status(403).json({
           message: 'You have reached your job view limit. Please purchase a plan.',
         });
@@ -164,7 +164,11 @@ const getSingleJob = async (req: Request, res: Response) => {
       }
 
       profile.seenJobs.push(job._id);
-      profile.jobsAvailable = profile.jobsAvailable - 1;
+
+      if(profile.jobsAvailable !== 'unlimited'){
+        profile.jobsAvailable = profile.jobsAvailable - 1;
+      }
+      
       await profile.save();
     }
 

@@ -3,5 +3,5 @@ export interface FilterParams {
   location?: string;
   position?: string;
   year?: string;
-  isApplied?: string; // "true" or "false"
+  isApplied?: string;
 }

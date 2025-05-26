@@ -14,10 +14,10 @@ jobRoutes.post('/apply/:jobId', auth([userRole.admin, userRole.user]), jobContro
 jobRoutes.get('/applied-job', auth([userRole.admin, userRole.user]), jobController.getAllJobsWithAppliedStatus );
 
 jobRoutes.get('/single-job/:id', auth([userRole.admin, userRole.user]), jobController.getSingleJob);
-jobRoutes.put('/update-job/:id', jobController.updateJob);
-jobRoutes.delete('/delete-job/:id', jobController.deleteJob);
+jobRoutes.put('/update-job/:id', auth([userRole.admin, userRole.user]), jobController.updateJob);
+jobRoutes.delete('/delete-job/:id', auth([userRole.admin, userRole.user]), jobController.deleteJob);
 
-jobRoutes.get('/', jobController.getJobs);
+jobRoutes.get('/', auth([userRole.admin, userRole.user]), jobController.getJobs);
 
 jobRoutes.patch(
   '/:id/apply',
