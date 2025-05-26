@@ -109,13 +109,16 @@ const savePaymentToDB = async (sessionId: string): Promise<{ success: boolean; m
   };
 
   if (planName.toLowerCase().includes('premium')) {
-    updateFields.interviewsAvailable = 'unlimited';
+    const profile = await ProfileModel.findOne({ user_id: userId });
+    const currentAvailable = profile?.interviewsAvailable ?? 0;
+
+    updateFields.interviewsAvailable = currentAvailable + 10;
   } else if (planName.toLowerCase().includes('pay-per')) {
     const profile = await ProfileModel.findOne({ user_id: userId });
     const currentAvailable = profile?.interviewsAvailable ?? 0;
 
-    updateFields.interviewsAvailable =
-      currentAvailable === 'unlimited' ? 1 : currentAvailable + 1;
+    updateFields.interviewsAvailable = currentAvailable + 1;
+      // currentAvailable === 'unlimited' ? 1 : 
   }
 
   await ProfileModel.findOneAndUpdate({ user_id: userId }, updateFields, { new: true });

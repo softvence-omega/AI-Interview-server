@@ -80,6 +80,7 @@ const ProfileSchema = new Schema(
 
     progress: { type: [InterviewProgressSchema], default: [] },
     appliedJobs: [{ type: Schema.Types.ObjectId, ref: 'Job' }],
+    seenJobs: [{ type: Schema.Types.ObjectId, ref: 'Job' }],
     user_id: {
       type: Schema.Types.ObjectId,
       required: true,
@@ -92,6 +93,7 @@ const ProfileSchema = new Schema(
     }],
 
     interviewsAvailable: { type: Schema.Types.Mixed, default: 1 },
+    jobsAvailable: { type: Schema.Types.Mixed, default: 10 },
     stripeCustomerId: { type: String, default: null },
     stripeSubscriptionId: [{ type: String, default: null }],
     paymentId: [{ type: Schema.Types.ObjectId, ref: 'Payment' }],
