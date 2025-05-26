@@ -31,6 +31,10 @@ const purchasePlanGuard = () => {
       if (!findProfileOfUser) {
         throw new Error('No profile found'); // Stops execution, no next()
       }
+
+      console.log("i am being called")
+
+      console.log(findProfileOfUser)
   
       // Check if user has a Premium plan with interviews available
       if (findProfileOfUser.currentPlan === 'Premium' && findProfileOfUser.interviewsAvailable > 0) {
