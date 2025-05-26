@@ -113,12 +113,14 @@ const savePaymentToDB = async (sessionId: string): Promise<{ success: boolean; m
     const currentAvailable = profile?.interviewsAvailable ?? 0;
 
     updateFields.interviewsAvailable = currentAvailable + 10;
+    updateFields.jobsAvailable = 'unlimited';
   } else if (planName.toLowerCase().includes('pay-per')) {
     const profile = await ProfileModel.findOne({ user_id: userId });
     const currentAvailable = profile?.interviewsAvailable ?? 0;
 
     updateFields.interviewsAvailable = currentAvailable + 1;
       // currentAvailable === 'unlimited' ? 1 : 
+    updateFields.jobsAvailable = 'unlimited';
   }
 
   await ProfileModel.findOneAndUpdate({ user_id: userId }, updateFields, { new: true });

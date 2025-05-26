@@ -442,6 +442,20 @@ export const updateResume = async (
     // Regenerate About Me if education changed
     if (educationChanged) {
       await genarateAboutMeService(userIdConverted as Types.ObjectId);
+
+      // Update profile if either education change
+      if(educationChanged){
+        await ProfileModel.findByIdAndUpdate(
+          { user_id : userId },
+          { isResumeUploaded: true }
+        );
+      }
+
+      // Set isAboutMeGenerated = true in profile
+      await ProfileModel.findByIdAndUpdate(
+        { user_id: userId },
+        { isAboutMeGenerated: true }
+      );
     }
 
     // Fetch profile (always)
