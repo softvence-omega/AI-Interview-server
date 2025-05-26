@@ -265,16 +265,19 @@ const genarateQuestionSet_ByAi = async (
     //check if interview was finished or not
     const lookForSummary = await AssessmentModel.findOne({
       user_id: user_id,
-      question_bank_id: questionBank_id,
+      questionBank_id: questionBank_id,
       isSummary: true,
     });
+
+
+    console.log("looking for summary   =============>", lookForSummary)
 
     //now return the history as summary is found
 
     if (existing && lookForSummary) {
       const returnHistory = await AssessmentModel.find({
         user_id: user_id,
-        question_bank_id: questionBank_id,
+        questionBank_id: questionBank_id,
       });
       return {
         message: 'History found',
