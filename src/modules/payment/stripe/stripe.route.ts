@@ -3,12 +3,13 @@ import { Router } from 'express';
 import StripeController from './stripe.controller';
 import auth from '../../../middlewares/auth';
 import { userRole } from '../../../constents';
+import purchasePlanGuard from '../../../middlewares/pearchacePlanGuard';
 
 const router = Router();
 
 router.post(
   '/create-checkout-session',
-  auth([userRole.admin, userRole.user]),
+  auth([userRole.admin, userRole.user]),purchasePlanGuard(),
   StripeController.createCheckoutSession
 );
 
