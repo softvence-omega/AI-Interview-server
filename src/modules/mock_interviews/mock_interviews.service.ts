@@ -9,23 +9,20 @@ import {
 import { TMock_Interviews, TQuestion_Bank } from './mock_interviews.interface';
 import idConverter from '../../util/idConvirter';
 import mockInterviewUtill from './mock_interview.utill';
-import { AssessmentModel } from '../vodeoAnalytics/video.model';
 import progressUtill from '../../util/setAndUpdateprogress';
 import { ProfileModel } from '../user/user.model';
 import { uploadImgToCloudinary } from '../../util/uploadImgToCludinary';
+import { AssessmentModel } from '../vodeoAnalytics/video.model';
 
 // ---------------- MOCK INTERVIEW ----------------
-const create_mock_interview = async (file:any, data: any) => {
-
-  if(!file)
-  {
-    throw Error ("img file is required yoooooooo")
+const create_mock_interview = async (file: any, data: any) => {
+  if (!file) {
+    throw Error('img file is required yoooooooo');
   }
-    const uploadImg = await uploadImgToCloudinary(file.name,file.path);
-    console.log(uploadImg)
+  const uploadImg = await uploadImgToCloudinary(file.name, file.path);
+  console.log(uploadImg);
 
-
-const updateData = {...data, img:uploadImg.secure_url}
+  const updateData = { ...data, img: uploadImg.secure_url };
 
   const result = await MockInterviewModel.create(updateData);
   return result;
@@ -85,7 +82,7 @@ const get_mock_interview = async (
   query?: {
     _id?: string;
     interview_name?: string;
-  }
+  },
 ) => {
   const filter: any = { isDeleted: false };
 
@@ -98,13 +95,17 @@ const get_mock_interview = async (
     if (query?.interview_name) {
       filter.interview_name = { $regex: query.interview_name, $options: 'i' };
     }
-    const interviews = await MockInterviewModel.find(filter).populate('question_bank_ids');
+    const interviews =
+      await MockInterviewModel.find(filter).populate('question_bank_ids');
     return interviews;
   } else {
-    const userProfile = await ProfileModel.findOne({ user_id }).select('experienceLevel');
+    const userProfile = await ProfileModel.findOne({ user_id }).select(
+      'experienceLevel',
+    );
 
     if (!userProfile || !userProfile.experienceLevel) {
-      const allInterviews = await MockInterviewModel.find(filter).populate('question_bank_ids');
+      const allInterviews =
+        await MockInterviewModel.find(filter).populate('question_bank_ids');
       return {
         suggested: [],
         all_InterView: allInterviews,
@@ -130,20 +131,19 @@ const get_mock_interview = async (
   }
 };
 
-
 // ---------------- QUESTION BANK ----------------
 
-const create_question_bank = async (file:any, payload: Partial<TQuestion_Bank>) => {
+const create_question_bank = async (
+  file: any,
+  payload: Partial<TQuestion_Bank>,
+) => {
+  if (!file) {
+    throw Error('img file is required yoooooooo');
+  }
+  const uploadImg = await uploadImgToCloudinary(file.name, file.path);
+  console.log(uploadImg);
 
-  if(!file)
-    {
-      throw Error ("img file is required yoooooooo")
-    }
-      const uploadImg = await uploadImgToCloudinary(file.name,file.path);
-      console.log(uploadImg)
-  
-  
-  const updateData = {...payload, img:uploadImg.secure_url}
+  const updateData = { ...payload, img: uploadImg.secure_url };
   // Step 1: Create the Question Bank
   const createdQuestionBank = await QuestionBankModel.create(updateData);
 
@@ -159,7 +159,7 @@ const create_question_bank = async (file:any, payload: Partial<TQuestion_Bank>) 
           total_Positions: 1, // Increment by 1
         },
       },
-      { new: true }
+      { new: true },
     );
   }
 
@@ -201,7 +201,7 @@ const delete_question_bank = async (id: string) => {
   // Step 1: Find the question bank to get its interview_id
   const questionBank = await QuestionBankModel.findById(id);
   if (!questionBank) {
-    throw new Error("Question bank not found");
+    throw new Error('Question bank not found');
   }
 
   // Step 2: Remove the question bank ID from the MockInterviewModel and decrement total_Positions
@@ -216,7 +216,7 @@ const delete_question_bank = async (id: string) => {
           total_Positions: -1, // Decrement by 1
         },
       },
-      { new: true }
+      { new: true },
     );
   }
 
@@ -262,6 +262,28 @@ const genarateQuestionSet_ByAi = async (
       question_bank_id: questionBank_id,
     });
 
+    //check if interview was finished or not
+    const lookForSummary = await AssessmentModel.findOne({
+      user_id: user_id,
+      questionBank_id: questionBank_id,
+      isSummary: true,
+    });
+
+
+    console.log("looking for summary   =============>", lookForSummary)
+
+    //now return the history as summary is found
+
+    if (existing && lookForSummary) {
+      const returnHistory = await AssessmentModel.find({
+        user_id: user_id,
+        questionBank_id: questionBank_id,
+      });
+      return {
+        message: 'History found',
+        history: returnHistory,
+      };
+    }
 
     // console.log("does it exist ..........................",existing)
 
@@ -297,7 +319,7 @@ const genarateQuestionSet_ByAi = async (
 
       const lastAnswered = qbProgress?.lastQuestionAnswered_id;
 
-      console.log("last question answered***", lastAnswered);
+      console.log('last question answered***', lastAnswered);
 
       const findQuestionList = await QuestionListModel.findOne({
         user_id: user_id,
@@ -309,24 +331,25 @@ const genarateQuestionSet_ByAi = async (
         throw new Error('Question list not found');
       }
 
-      console.log("find question List &&&&&", findQuestionList);
+      console.log('find question List &&&&&', findQuestionList);
 
       // ✅ Safely determine the index
       let index = -1; // Default to -1 for no progress
       if (lastAnswered) {
         const foundIndex = findQuestionList.question_Set.findIndex(
-          (q: any) =>
-            q._id &&
-            q._id.toString() === lastAnswered.toString()
+          (q: any) => q._id && q._id.toString() === lastAnswered.toString(),
         );
         index = foundIndex; // Use foundIndex directly, including -1 if not found
       }
 
-      console.log("question index found:=>=>=>=>", index);
+      console.log('question index found:=>=>=>=>', index);
 
       // Get remaining questions
-      let remainingQuestions:any = [];
-      if (findQuestionList.question_Set && Array.isArray(findQuestionList.question_Set)) {
+      let remainingQuestions: any = [];
+      if (
+        findQuestionList.question_Set &&
+        Array.isArray(findQuestionList.question_Set)
+      ) {
         if (index >= 0) {
           // Valid question answered: exclude up to and including it
           remainingQuestions = findQuestionList.question_Set.slice(index + 1);
@@ -336,7 +359,7 @@ const genarateQuestionSet_ByAi = async (
         }
       }
 
-      console.log("remaining questions", remainingQuestions);
+      console.log('remaining questions', remainingQuestions);
 
       return {
         message: 'remaining questions',
@@ -346,6 +369,18 @@ const genarateQuestionSet_ByAi = async (
 
     // Step 3: If retake, delete previous assessment
     if (isRetake) {
+      const findIfthereIsCredit = await ProfileModel.findOne({
+        user_id: user_id,
+      }).select('interviewsAvailable');
+      if (
+        !findIfthereIsCredit ||
+        findIfthereIsCredit.interviewsAvailable <= 0
+      ) {
+        throw new Error(
+          "You don't have enough credits to retake this question bank. consider purchasing a plan",
+        );
+      }
+
       await AssessmentModel.deleteMany({
         questionBank_id: questionBank_id,
         user_id: user_id,
@@ -353,8 +388,22 @@ const genarateQuestionSet_ByAi = async (
     }
 
     // Step 4: Prepare prompt and generate new questions
-    const prompt = `${findQuestionBank.questionBank_name} ${findQuestionBank.what_to_expect.join(' ')}`;
+    // const prompt = `${findQuestionBank.questionBank_name} ${findQuestionBank.what_to_expect.join(' ')}`;
+
+    const prompt = `${findQuestionBank?.questionBank_name || ''} ${findQuestionBank?.what_to_expect?.join(' ') || ''} minimum 5 questions with time limit`;
     const data = await mockInterviewUtill.generateQuestions(prompt);
+
+    if (data.questions.length >= 0) {
+      const updateAvailableInterviewsCount =
+        await ProfileModel.findOneAndUpdate(
+          { user_id: user_id },
+          { $inc: { interviewsAvailable: -1 } },
+          { new: true },
+        );
+      if (!updateAvailableInterviewsCount) {
+        throw new Error('failed to update available interviews count');
+      }
+    }
 
     const modifyQuestionList = data.questions.map((item: any) => ({
       interview_id: findQuestionBank.interview_id,
@@ -403,8 +452,6 @@ const genarateQuestionSet_ByAi = async (
     throw error;
   }
 };
-
-
 
 const genarateSingleQuestion_ByAi_for_Retake = async (
   questionBank_id: Types.ObjectId,
