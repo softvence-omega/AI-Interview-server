@@ -7,7 +7,13 @@ const jobRoutes = Router();
 
 jobRoutes.post('/addjob', jobController.saveJob);
 jobRoutes.get('/all-jobs', jobController.getAllJobs);
-jobRoutes.get('/single-job/:id', jobController.getSingleJob);
+
+// New route to apply to a job
+jobRoutes.post('/apply/:jobId', auth([userRole.admin, userRole.user]), jobController.applyToJobController);
+// get applied job by user
+jobRoutes.get('/applied-job', auth([userRole.admin, userRole.user]), jobController.getAllJobsWithAppliedStatus );
+
+jobRoutes.get('/single-job/:id', auth([userRole.admin, userRole.user]), jobController.getSingleJob);
 jobRoutes.put('/update-job/:id', jobController.updateJob);
 jobRoutes.delete('/delete-job/:id', jobController.deleteJob);
 
