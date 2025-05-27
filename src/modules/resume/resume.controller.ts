@@ -427,7 +427,7 @@ export const updateResume = async (
     }
 
     // ✅ Use resume ID here
-    const updatedResume = await Resume.findByIdAndUpdate(currentResume._id, updateData, {
+    const updatedResume = await Resume.findByIdAndUpdate(currentResume.id, updateData, {
       new: true,
       runValidators: true,
     });
