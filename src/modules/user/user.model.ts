@@ -125,4 +125,4 @@ UserSchema.pre('save', async function (next) {
 });
 
 export const UserModel = mongoose.model('UserCollection', UserSchema);
-export const ProfileModel = model('Profile', ProfileSchema);
+export const ProfileModel =  mongoose.model('Profile', ProfileSchema);
