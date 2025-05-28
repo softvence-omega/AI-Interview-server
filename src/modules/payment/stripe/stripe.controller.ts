@@ -208,6 +208,37 @@ const savePaymentManually = async (req: Request, res: Response): Promise<void> =
   }
 };
 
+
+// get all payment
+const getAllPayments = async (req: Request, res: Response) => {
+  try {
+    const payments = await Payment.find().sort({ createdAt: -1 });
+
+    let totalRevenue = 0;
+
+    payments.forEach((payment) => {
+      if (payment.planId === "price_1RQh51AeQO2CXKLXBTbmxa3M") {
+        totalRevenue += 19.99;
+      } else if (payment.planId === "price_1RQh5lAeQO2CXKLX0brJrWGJ") {
+        totalRevenue += 4.99;
+      }
+    });
+
+    res.status(200).json({
+      success: true,
+      data: payments,
+      totalRevenue: totalRevenue.toFixed(2), // format to 2 decimal places
+      totalPayments: payments.length,
+    });
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      message: "Failed to fetch payments",
+      error,
+    });
+  }
+};
+
 /**
  * Exported controller object
  */
@@ -215,6 +246,7 @@ const StripeController = {
   createCheckoutSession,
   handleWebhook,
   savePaymentManually,
+  getAllPayments
 };
 
 export default StripeController;

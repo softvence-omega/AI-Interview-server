@@ -4,8 +4,6 @@ import { TAssessmentPayload } from './video.interface';
 import { AssessmentModel } from './video.model';
 import processForSummary from './video.utill';
 
-
-
 const submitVideoAnalysisAndAummary = async (payLoad: TAssessmentPayload) => {
   const {
     question_id,
@@ -100,12 +98,20 @@ const submitVideoAnalysisAndAummary = async (payLoad: TAssessmentPayload) => {
     // Transform generateSummary assessment to camelCase for schema compatibility
     const transformedSummaryAssessment = {
       Articulation: generateSummary.articulation || { feedback: '', score: 0 },
-      Behavioural_Cue: generateSummary.behavioural_cue || { feedback: '', score: 0 },
-      Problem_Solving: generateSummary.problem_solving || { feedback: '', score: 0 },
+      Behavioural_Cue: generateSummary.behavioural_cue || {
+        feedback: '',
+        score: 0,
+      },
+      Problem_Solving: generateSummary.problem_solving || {
+        feedback: '',
+        score: 0,
+      },
       Inprep_Score: generateSummary.inprep_score
         ? { total_score: generateSummary.inprep_score }
         : { total_score: 0 },
-      what_can_i_do_better: generateSummary.what_can_i_do_better || { overall_feedback: '' },
+      what_can_i_do_better: generateSummary.what_can_i_do_better || {
+        overall_feedback: '',
+      },
       Content_Score: generateSummary.Content_Score || 0,
       overall_score: generateSummary.overall_score,
     };
@@ -133,14 +139,26 @@ const submitVideoAnalysisAndAummary = async (payLoad: TAssessmentPayload) => {
   return storeAssessment;
 };
 
+const getSummary = async (
+  user_id: Types.ObjectId,
+  questionBank_id: Types.ObjectId,
+) => {
+  const result = await AssessmentModel.findOne({
+    user_id: user_id,
+    questionBank_id: questionBank_id,
+    isSummary: true,
+  });
+  return result;
+};
 
-const getSummary= async(user_id:Types.ObjectId, questionBank_id:Types.ObjectId)=>{
-const result = await AssessmentModel.findOne({user_id:user_id, questionBank_id:questionBank_id, isSummary:true})
-return result
-}
+const getSummaryAssessments = async () => {
+  return await AssessmentModel.find({ isSummary: true });
+};
 
 const vidoAnalysisServices = {
-  submitVideoAnalysisAndAummary,getSummary
+  submitVideoAnalysisAndAummary,
+  getSummary,
+  getSummaryAssessments
 };
 
 export default vidoAnalysisServices;
