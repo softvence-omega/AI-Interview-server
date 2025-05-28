@@ -274,7 +274,7 @@ const genarateQuestionSet_ByAi = async (
 
     //now return the history as summary is found
 
-    if (existing && lookForSummary) {
+    if (existing && lookForSummary && !isRetake) {
       const returnHistory = await AssessmentModel.find({
         user_id: user_id,
         questionBank_id: questionBank_id,
