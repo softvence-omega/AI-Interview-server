@@ -67,7 +67,7 @@ import { uploadPdfToCloudinary } from '../../util/uploadImgToCludinary';
 //   }
 // };
 
-console.log("Check Check")
+console.log('Check Check');
 
 // export const uploadResume = async (
 //   req: Request,
@@ -175,7 +175,10 @@ interface MulterFiles {
   [fieldname: string]: Express.Multer.File[];
 }
 
-export const uploadResume = async (req: Request, res: Response): Promise<void> => {
+export const uploadResume = async (
+  req: Request,
+  res: Response,
+): Promise<void> => {
   try {
     const files = req.files as MulterFiles;
     const resumeFile = files?.resumeFile?.[0]; // Resume file
@@ -183,7 +186,7 @@ export const uploadResume = async (req: Request, res: Response): Promise<void> =
     const user_id = req.user?.id as string;
 
     if (!user_id) {
-      res.status(400).json({ error: "User ID is required" });
+      res.status(400).json({ error: 'User ID is required' });
       return;
     }
 
@@ -193,15 +196,19 @@ export const uploadResume = async (req: Request, res: Response): Promise<void> =
     // Case 1: Resume file uploaded (AI data extraction)
     if (resumeFile) {
       const formData = new FormData();
-      formData.append("file", fs.createReadStream(resumeFile.path), resumeFile.originalname);
+      formData.append(
+        'file',
+        fs.createReadStream(resumeFile.path),
+        resumeFile.originalname,
+      );
 
       const response = await axios.post(
-        "https://freepik.softvenceomega.com/in-prep/api/v1/extract-resume/extract-resume",
+        'https://freepik.softvenceomega.com/in-prep/api/v1/extract-resume/extract-resume',
         formData,
         {
           headers: formData.getHeaders(),
           maxBodyLength: Infinity,
-        }
+        },
       );
 
       const aiData = response.data;
@@ -212,7 +219,7 @@ export const uploadResume = async (req: Request, res: Response): Promise<void> =
         updatedResume = await Resume.findOneAndUpdate(
           { user_id },
           { $set: { ...aiData, user_id } },
-          { new: true }
+          { new: true },
         );
       } else {
         // Create new resume
@@ -226,7 +233,7 @@ export const uploadResume = async (req: Request, res: Response): Promise<void> =
 
       const convertedUserId = idConverter(user_id);
 
-      console.log("converted user id:::", convertedUserId)
+      console.log('converted user id:::', convertedUserId);
 
       await genarateAboutMeService(convertedUserId as Types.ObjectId);
 
@@ -234,22 +241,26 @@ export const uploadResume = async (req: Request, res: Response): Promise<void> =
       await ProfileModel.findOneAndUpdate(
         { user_id },
         { isResumeUploaded: true, resume_id: updatedResume!._id },
-        { new: true, upsert: true } // Create profile if it doesn't exist
+        { new: true, upsert: true }, // Create profile if it doesn't exist
       );
 
-      console.log("User id :::",user_id);
+      console.log('User id :::', user_id);
 
       // Fetch updated profile for response
       const generateAboutMeData = await ProfileModel.findOne({ user_id });
 
-      console.log("About me ::: ",generateAboutMeData);
+      console.log('About me ::: ', generateAboutMeData);
 
-      res.status(200).json({ message: "Resume uploaded successfully", data: updatedResume, profile: generateAboutMeData
-        ? {
-            isAboutMeGenerated: generateAboutMeData.isAboutMeGenerated,
-            generatedAboutMe: generateAboutMeData.generatedAboutMe,
-          }
-        : null, });
+      res.status(200).json({
+        message: 'Resume uploaded successfully',
+        data: updatedResume,
+        profile: generateAboutMeData
+          ? {
+              isAboutMeGenerated: generateAboutMeData.isAboutMeGenerated,
+              generatedAboutMe: generateAboutMeData.generatedAboutMe,
+            }
+          : null,
+      });
       return;
     }
 
@@ -260,7 +271,7 @@ export const uploadResume = async (req: Request, res: Response): Promise<void> =
         try {
           manualData = JSON.parse(req.body.manualData);
         } catch (error) {
-          res.status(400).json({ error: "Invalid manual data format" });
+          res.status(400).json({ error: 'Invalid manual data format' });
           return;
         }
       }
@@ -269,7 +280,7 @@ export const uploadResume = async (req: Request, res: Response): Promise<void> =
       if (certificateFile) {
         const certificateUpload = await uploadPdfToCloudinary(
           certificateFile.originalname,
-          certificateFile.path
+          certificateFile.path,
         );
         certificateFileUrl = certificateUpload.secure_url;
 
@@ -287,25 +298,31 @@ export const uploadResume = async (req: Request, res: Response): Promise<void> =
         // Replace certifications array
         if (certificateFileUrl) {
           updateData.$set.certifications = [
-            { certificateName: req.body.certificateName || "Certificate", certificateFile: certificateFileUrl }
+            {
+              certificateName: req.body.certificateName || 'Certificate',
+              certificateFile: certificateFileUrl,
+            },
           ];
         } else if (manualData.certifications) {
           updateData.$set.certifications = manualData.certifications;
         }
 
         // Update existing resume
-        updatedResume = await Resume.findOneAndUpdate(
-          { user_id },
-          updateData,
-          { new: true }
-        );
+        updatedResume = await Resume.findOneAndUpdate({ user_id }, updateData, {
+          new: true,
+        });
       } else {
         // Create new resume with manual data
         const resumeData = {
           ...manualData,
           user_id,
           certifications: certificateFileUrl
-            ? [{ certificateName: req.body.certificateName || "Certificate", certificateFile: certificateFileUrl }]
+            ? [
+                {
+                  certificateName: req.body.certificateName || 'Certificate',
+                  certificateFile: certificateFileUrl,
+                },
+              ]
             : manualData.certifications || [],
         };
         updatedResume = await Resume.create(resumeData);
@@ -315,16 +332,20 @@ export const uploadResume = async (req: Request, res: Response): Promise<void> =
       await ProfileModel.findOneAndUpdate(
         { user_id },
         { isResumeUploaded: true, resume_id: updatedResume!._id },
-        { new: true, upsert: true } // Create profile if it doesn't exist
+        { new: true, upsert: true }, // Create profile if it doesn't exist
       );
 
-      res.status(200).json({ message: "Resume updated manually", data: updatedResume });
+      res
+        .status(200)
+        .json({ message: 'Resume updated manually', data: updatedResume });
       return;
     }
 
-    res.status(400).json({ error: "No resume file, certificate, or manual data provided" });
+    res
+      .status(400)
+      .json({ error: 'No resume file, certificate, or manual data provided' });
   } catch (error: any) {
-    console.error("Upload Error:", error.message);
+    console.error('Upload Error:', error.message);
     // Clean up files only if they exist
     const files = req.files as MulterFiles;
     if (files?.resumeFile?.[0]) {
@@ -337,11 +358,9 @@ export const uploadResume = async (req: Request, res: Response): Promise<void> =
         console.error(`Error deleting certificate file: ${err.message}`);
       });
     }
-    res.status(500).json({ error: error.message || "Internal server error" });
+    res.status(500).json({ error: error.message || 'Internal server error' });
   }
 };
-
-
 
 export const getResumesByUser = async (
   req: Request,
@@ -401,65 +420,100 @@ export const updateResume = async (
       return;
     }
 
-    const currentEducation: any[] = currentResume.education || [];
-    const updatedEducation: any[] = updateData.education || [];
+    // const currentEducation: any[] = currentResume.education || [];
+    // const updatedEducation: any[] = updateData.education || [];
+
+    // let educationChanged = false;
+
+    // if (currentEducation.length !== updatedEducation.length) {
+    //   educationChanged = true;
+    // } else {
+    //   for (let i = 0; i < currentEducation.length; i++) {
+    //     const current = currentEducation[i];
+    //     const updated = updatedEducation[i];
+
+    //     if (
+    //       current.institution !== updated.institution ||
+    //       current.degree !== updated.degree ||
+    //       current.majorField !== updated.majorField ||
+    //       current.startDate !== updated.startDate ||
+    //       current.completionDate !== updated.completionDate
+    //     ) {
+    //       educationChanged = true;
+    //       break;
+    //     }
+    //   }
+    // }
 
     let educationChanged = false;
 
-    if (currentEducation.length !== updatedEducation.length) {
-      educationChanged = true;
-    } else {
-      for (let i = 0; i < currentEducation.length; i++) {
-        const current = currentEducation[i];
-        const updated = updatedEducation[i];
+    if ('education' in updateData) {
+      const currentEducation: any[] = currentResume.education || [];
+      const updatedEducation: any[] = updateData.education || [];
 
-        if (
-          current.institution !== updated.institution ||
-          current.degree !== updated.degree ||
-          current.majorField !== updated.majorField ||
-          current.startDate !== updated.startDate ||
-          current.completionDate !== updated.completionDate
-        ) {
-          educationChanged = true;
-          break;
+      if (currentEducation.length !== updatedEducation.length) {
+        educationChanged = true;
+      } else {
+        for (let i = 0; i < currentEducation.length; i++) {
+          const current = currentEducation[i];
+          const updated = updatedEducation[i];
+
+          if (
+            current.institution !== updated.institution ||
+            current.degree !== updated.degree ||
+            current.majorField !== updated.majorField ||
+            current.startDate !== updated.startDate ||
+            current.completionDate !== updated.completionDate
+          ) {
+            educationChanged = true;
+            break;
+          }
         }
       }
     }
 
     // ✅ Use resume ID here
-    const updatedResume = await Resume.findByIdAndUpdate(currentResume.id, updateData, {
-      new: true,
-      runValidators: true,
-    });
+    const updatedResume = await Resume.findByIdAndUpdate(
+      currentResume.id,
+      updateData,
+      {
+        new: true,
+        runValidators: true,
+      },
+    );
 
     if (!updatedResume) {
       res.status(404).json({ error: 'Resume not found after update' });
       return;
     }
 
-    const userIdConverted = idConverter(userId)
+    const userIdConverted = idConverter(userId);
 
     // Regenerate About Me if education changed
     if (educationChanged) {
       await genarateAboutMeService(userIdConverted as Types.ObjectId);
 
       // Update profile if either education change
-      if(educationChanged){
-        await ProfileModel.findByIdAndUpdate(
-          { user_id : userId },
-          { isResumeUploaded: true }
+      if (educationChanged) {
+        await ProfileModel.findOneAndUpdate(
+          { user_id: userIdConverted },
+          { isResumeUploaded: true },
+          { new: true },
         );
       }
 
       // Set isAboutMeGenerated = true in profile
-      await ProfileModel.findByIdAndUpdate(
-        { user_id: userId },
-        { isAboutMeGenerated: true }
+      await ProfileModel.findOneAndUpdate(
+        { user_id: userIdConverted },
+        { isAboutMeGenerated: true },
+        { new: true },
       );
     }
 
     // Fetch profile (always)
-    const userProfile = await ProfileModel.findOne({ user_id: userId });
+    const userProfile = await ProfileModel.findOne({
+      user_id: userIdConverted,
+    });
 
     const aboutMeData = userProfile
       ? {
@@ -477,10 +531,6 @@ export const updateResume = async (
     res.status(500).json({ error: error.message });
   }
 };
-
-
-
-
 
 export const deleteResume = async (
   req: Request,
@@ -503,13 +553,11 @@ export const deleteResume = async (
   }
 };
 
-export const genarateAboutMe =catchAsync(async(req, res)=>{
+export const genarateAboutMe = catchAsync(async (req, res) => {
+  console.log('Calllleeeddddd');
+  const user_id = req.user.id as string;
+  const convirtedUserId = idConverter(user_id);
+  const result = genarateAboutMeService(convirtedUserId as Types.ObjectId);
 
-  console.log("Calllleeeddddd")
-const user_id = req.user.id as string
-const convirtedUserId= idConverter(user_id)
-const result =  genarateAboutMeService(convirtedUserId as Types.ObjectId)
-
-res.status(200).json({ message: 'About me genartated',data:result });
-
-})
+  res.status(200).json({ message: 'About me genartated', data: result });
+});
