@@ -25,6 +25,7 @@ router.post(
     '/save-payment',
     StripeController.savePaymentManually
   );
-  
+
+  router.get("/getAllPayments", StripeController.getAllPayments);
 
 export default router;
