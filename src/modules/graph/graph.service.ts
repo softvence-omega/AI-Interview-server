@@ -164,7 +164,7 @@ export const calculateDailyDetailedAveragesFromDB = async (userId: string) => {
   const weeklyOverallAverages = [...weeklyMap.entries()].map(([weekLabel, scores]) => ({
     date: weekLabel,
     average: calculateOverallAverage(scores),
-  }));
+  })).slice(-4);
 
   const totalAverageValue = calculateOverallAverage(total);
   const withoutLastAverageValue = calculateOverallAverage(totalExcludingLast);
