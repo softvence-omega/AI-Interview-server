@@ -38,8 +38,21 @@ const calculatePercentageChange = (
   return result;
 };
 
+const calculateOverallAverage = (scores: Scores): number => {
+  const total =
+    scores.Articulation +
+    scores.Behavioural_Cue +
+    scores.Problem_Solving +
+    scores.Inprep_Score +
+    scores.Content_Score;
+  return +(total / (5 * scores.count)).toFixed(2);
+};
+
 export const calculateDailyDetailedAveragesFromDB = async (userId: string) => {
-  const assessments = await AssessmentModel.find({ user_id: new Types.ObjectId(userId), isSummary: true });
+  const assessments = await AssessmentModel.find({
+    user_id: new Types.ObjectId(userId),
+    isSummary: true,
+  });
 
   if (!assessments.length) {
     return {
@@ -48,20 +61,26 @@ export const calculateDailyDetailedAveragesFromDB = async (userId: string) => {
       weeklyAverages: {},
       weeklyPercentageChanges: {},
       totalAverage: {},
+      withoutLastAverage: {},
+      lastInterviewChangePercent: 0,
       totalInterviews: 0,
+      dailyOverallAverages: [],
+      weeklyOverallAverages: [],
     };
   }
 
   const dailyMap = new Map<string, Scores>();
   const weeklyMap = new Map<string, Scores>();
   const total = initScores();
+  const totalExcludingLast = initScores();
 
   const sorted = assessments.sort((a, b) => +new Date(a.createdAt) - +new Date(b.createdAt));
   let weekStart = new Date(sorted[0].createdAt);
   weekStart.setUTCHours(0, 0, 0, 0);
   let week = 1;
 
-  for (const entry of sorted) {
+  for (let i = 0; i < sorted.length; i++) {
+    const entry = sorted[i];
     const a = entry.assessment;
     if (!a || typeof a !== 'object') continue;
 
@@ -97,7 +116,24 @@ export const calculateDailyDetailedAveragesFromDB = async (userId: string) => {
 
     update(dailyMap, dateKey);
     update(weeklyMap, weekKey);
-    update(new Map([['total', total]]), 'total');
+
+    // Add to total
+    total.Articulation += articulation!;
+    total.Behavioural_Cue += behavioral!;
+    total.Problem_Solving += problem!;
+    total.Inprep_Score += inprep!;
+    total.Content_Score += content!;
+    total.count++;
+
+    // Add to "excluding last" only if not the last item
+    if (i !== sorted.length - 1) {
+      totalExcludingLast.Articulation += articulation!;
+      totalExcludingLast.Behavioural_Cue += behavioral!;
+      totalExcludingLast.Problem_Solving += problem!;
+      totalExcludingLast.Inprep_Score += inprep!;
+      totalExcludingLast.Content_Score += content!;
+      totalExcludingLast.count++;
+    }
   }
 
   const toAvg = (map: Map<string, Scores>) =>
@@ -120,12 +156,64 @@ export const calculateDailyDetailedAveragesFromDB = async (userId: string) => {
   const dailyPercentageChanges = calculatePercentageChange(Object.keys(dailyAvg).sort(), dailyAvg);
   const weeklyPercentageChanges = calculatePercentageChange(Object.keys(weeklyAvg).sort(), weeklyAvg);
 
+  const dailyOverallAverages = [...dailyMap.entries()].map(([date, scores]) => ({
+    date,
+    average: calculateOverallAverage(scores),
+  }));
+
+  const weeklyOverallAverages = [...weeklyMap.entries()].map(([weekLabel, scores]) => ({
+    date: weekLabel,
+    average: calculateOverallAverage(scores),
+  }));
+
+  const totalAverageValue = calculateOverallAverage(total);
+  const withoutLastAverageValue = calculateOverallAverage(totalExcludingLast);
+  const lastInterviewChangePercent = withoutLastAverageValue
+    ? +(((totalAverageValue - withoutLastAverageValue) / withoutLastAverageValue) * 100).toFixed(2)
+    : 0;
+
+
+    const differenceBetweenTotalAndWithoutLast = {
+      Articulation: totalExcludingLast.Articulation
+        ? +(((total.Articulation / total.count - totalExcludingLast.Articulation / totalExcludingLast.count) /
+            (totalExcludingLast.Articulation / totalExcludingLast.count)) * 100).toFixed(2)
+        : 0,
+      Behavioural_Cue: totalExcludingLast.Behavioural_Cue
+        ? +(((total.Behavioural_Cue / total.count - totalExcludingLast.Behavioural_Cue / totalExcludingLast.count) /
+            (totalExcludingLast.Behavioural_Cue / totalExcludingLast.count)) * 100).toFixed(2)
+        : 0,
+      Problem_Solving: totalExcludingLast.Problem_Solving
+        ? +(((total.Problem_Solving / total.count - totalExcludingLast.Problem_Solving / totalExcludingLast.count) /
+            (totalExcludingLast.Problem_Solving / totalExcludingLast.count)) * 100).toFixed(2)
+        : 0,
+      Inprep_Score: totalExcludingLast.Inprep_Score
+        ? +(((total.Inprep_Score / total.count - totalExcludingLast.Inprep_Score / totalExcludingLast.count) /
+            (totalExcludingLast.Inprep_Score / totalExcludingLast.count)) * 100).toFixed(2)
+        : 0,
+      Content_Score: totalExcludingLast.Content_Score
+        ? +(((total.Content_Score / total.count - totalExcludingLast.Content_Score / totalExcludingLast.count) /
+            (totalExcludingLast.Content_Score / totalExcludingLast.count)) * 100).toFixed(2)
+        : 0,
+    };
+  
+
   return {
     dailyAverages: dailyAvg,
     dailyPercentageChanges,
     weeklyAverages: weeklyAvg,
     weeklyPercentageChanges,
-    totalAverage: toAvg(new Map([['total', total]])).total,
+    totalAverage: {
+      ...toAvg(new Map([['total', total]])).total,
+      average: totalAverageValue,
+    },
+    withoutLastAverage: {
+      ...toAvg(new Map([['withoutLast', totalExcludingLast]])).withoutLast,
+      average: withoutLastAverageValue,
+    },
+    lastInterviewChangePercent,
     totalInterviews: total.count,
+    dailyOverallAverages,
+    weeklyOverallAverages,
+    differenceBetweenTotalAndWithoutLast,
   };
 };
