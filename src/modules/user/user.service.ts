@@ -145,6 +145,12 @@ const getAllUsers = async () => {
   return result;
 };
 
+const getAllProfiles = async () => {
+  // Assuming you have a Profile model, fetch all profiles
+  const profiles = await ProfileModel.find({}); 
+  return profiles;
+};
+
 
 
 // update profile with profile image
@@ -323,7 +329,8 @@ const userServices = {
   selfDistuct,
   uploadOrChangeImg,
   getProfile,
-  updateUserProfile
+  updateUserProfile,
+  getAllProfiles
 };
 
 export default userServices;

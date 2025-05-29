@@ -25,6 +25,18 @@ const getAllUsers = catchAsync(async (req, res) => {
   });
 });
 
+const getAllProfiles = catchAsync(async (req, res) => {
+  // Call the user service method to get all profiles
+  const result = await userServices.getAllProfiles();
+
+  golbalRespnseHandler(res, {
+    statusCode: 200,
+    success: true,
+    message: "All profiles retrieved successfully",
+    data: result,
+  });
+});
+
 
 // update profile controller
 const updateUserProfile = catchAsync(async (req, res) => {
@@ -150,7 +162,8 @@ const userController = {
   selfDistuct,
   uploadOrChangeImg,
   getProfile,
-  updateUserProfile
+  updateUserProfile,
+  getAllProfiles
 };
 
 
