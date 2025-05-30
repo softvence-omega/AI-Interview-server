@@ -14,10 +14,17 @@ userRoutes.delete("/selfDistuct", auth([userRole.user]), userController.selfDist
 userRoutes.post("/uploadOrChangeImg", auth([userRole.admin, userRole.user]), upload.single("files"),userController.uploadOrChangeImg);
 userRoutes.get("/getProfile", auth([userRole.admin, userRole.user]), userController.getProfile);
 
+userRoutes.get("/userDetails/:id", auth([userRole.admin]), userController.getUserFullDetails)
+
 // Route to get all profiles
 userRoutes.get(
   "/all-profiles",
   userController.getAllProfiles
+);
+userRoutes.put(
+  '/update-user/:id',
+  auth([userRole.admin, userRole.user]),
+  userController.updateUserByAdmin
 );
 // admin routes
 userRoutes.get("/getAlluser", auth([userRole.admin, userRole.user]), userController.getAllUsers);
