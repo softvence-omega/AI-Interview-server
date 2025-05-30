@@ -153,6 +153,44 @@ const getProfile= catchAsync(async(req,res)=>{
   });
 })
 
+const updateUserByAdmin = catchAsync(async (req, res) => {
+  const user_id = req.params.id;
+  const convertedUserId = idConverter(user_id);
+
+  if (!convertedUserId) {
+    throw new Error("User ID conversion failed");
+  }
+
+  const payload = req.body;
+
+  const result = await userServices.updateUserByAdmin(convertedUserId, payload);
+
+  golbalRespnseHandler(res, {
+    statusCode: 200,
+    success: true,
+    message: 'User updated successfully',
+    data: result,
+  });
+});
+
+const getUserFullDetails = catchAsync(async (req, res) => {
+  const userId = req.params.id;
+  const convertedUserId = idConverter(userId);
+
+  if (!convertedUserId) {
+    throw new Error('Invalid user ID.');
+  }
+
+  const result = await userServices.getUserFullDetails(convertedUserId);
+
+  golbalRespnseHandler(res, {
+    statusCode: 200,
+    success: true,
+    message: 'User full details retrieved successfully',
+    data: result,
+  });
+});
+
 
 const userController = {
   createUser,
@@ -163,7 +201,9 @@ const userController = {
   uploadOrChangeImg,
   getProfile,
   updateUserProfile,
-  getAllProfiles
+  getAllProfiles,
+  updateUserByAdmin,
+  getUserFullDetails
 };
 
 

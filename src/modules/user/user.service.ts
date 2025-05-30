@@ -6,6 +6,8 @@ import authUtil from '../auth/auth.utill';
 import { userRole } from '../../constents';
 import path from 'path';
 import { Resume } from '../resume/resume.model';
+import { Payment } from '../payment/payment.model';
+import { AssessmentModel } from '../vodeoAnalytics/video.model';
 
 const createUser = async (payload: Partial<TUser>, method?: string) => {
   // Validate password match
@@ -321,6 +323,46 @@ const getProfile = async (user_id: Types.ObjectId) => {
   return profile;
 };
 
+// In userServices.ts
+const updateUserByAdmin = async (userId: Types.ObjectId, payload: Partial<TUser>) => {
+  console.log("Received userId:", userId.toString());
+  console.log("Received payload:", payload);
+
+  if (payload.isBlocked === true) {
+    payload.isLoggedIn = false;
+  }
+
+  const updatedUser = await UserModel.findByIdAndUpdate(userId, payload, {
+    new: true,
+    runValidators: true,
+  });
+
+  if (!updatedUser) {
+    throw new Error("User not found or update failed");
+  }
+
+  console.log("Updated user:", updatedUser);
+  return updatedUser;
+};
+
+
+const getUserFullDetails = async (userId: Types.ObjectId) => {
+  const user = await UserModel.findById(userId).select('-password');
+  const profile = await ProfileModel.findOne({ user_id: userId });
+  const resume = await Resume.findOne({ user_id: userId });
+  const interviews = await AssessmentModel.findOne({ user_id : userId })
+
+  return {
+    user,
+    profile,
+    resume,
+    interviews,
+  };
+};
+
+
+
+
 const userServices = {
   createUser,
   getAllUsers,
@@ -330,7 +372,9 @@ const userServices = {
   uploadOrChangeImg,
   getProfile,
   updateUserProfile,
-  getAllProfiles
+  getAllProfiles,
+  updateUserByAdmin,
+  getUserFullDetails
 };
 
 export default userServices;
