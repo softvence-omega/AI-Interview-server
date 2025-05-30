@@ -13,6 +13,7 @@ import progressUtill from '../../util/setAndUpdateprogress';
 import { ProfileModel } from '../user/user.model';
 import { uploadImgToCloudinary } from '../../util/uploadImgToCludinary';
 import { AssessmentModel } from '../vodeoAnalytics/video.model';
+import { Resume } from '../resume/resume.model';
 
 // ---------------- MOCK INTERVIEW ----------------
 const create_mock_interview = async (file: any, data: any) => {
@@ -95,34 +96,41 @@ const get_mock_interview = async (
     if (query?.interview_name) {
       filter.interview_name = { $regex: query.interview_name, $options: 'i' };
     }
-    const interviews =
-      await MockInterviewModel.find(filter).populate('question_bank_ids');
+    const interviews = await MockInterviewModel.find(filter).populate('question_bank_ids');
     return interviews;
   } else {
-    const userProfile = await ProfileModel.findOne({ user_id }).select(
-      'experienceLevel',
-    );
+    const findSkills = await Resume.findOne({ user_id }).select('technicalSkills');
 
-    if (!userProfile || !userProfile.experienceLevel) {
-      const allInterviews =
-        await MockInterviewModel.find(filter).populate('question_bank_ids');
+    if (!findSkills || !findSkills.technicalSkills || findSkills.technicalSkills.length === 0) {
+      const allInterviews = await MockInterviewModel.find(filter).populate('question_bank_ids');
       return {
         suggested: [],
         all_InterView: allInterviews,
       };
     }
 
-    const experienceLevel = userProfile.experienceLevel;
+    const skills = findSkills.technicalSkills; // Array of skills, e.g., ["JavaScript", "Python"]
 
-    const matchingInterviews = await MockInterviewModel.find({
-      ...filter,
-      interview_name: { $regex: experienceLevel, $options: 'i' },
-    }).populate('question_bank_ids');
+    // Fetch all interviews with populated question_bank_ids
+    const allInterviews = await MockInterviewModel.find(filter).populate('question_bank_ids');
 
-    const nonMatchingInterviews = await MockInterviewModel.find({
-      ...filter,
-      interview_name: { $not: { $regex: experienceLevel, $options: 'i' } },
-    }).populate('question_bank_ids');
+    // Manually filter interviews based on skills matching what_to_expect
+    const matchingInterviews = allInterviews.filter((interview) => {
+      // Check if any question_bank_ids.what_to_expect contains any skill
+      return interview.question_bank_ids.some((questionBank: any) => {
+        if (!questionBank.what_to_expect || !Array.isArray(questionBank.what_to_expect)) {
+          return false;
+        }
+        return questionBank.what_to_expect.some((expect: string) =>
+          skills.some((skill) => new RegExp(skill, 'i').test(expect)),
+        );
+      });
+    });
+
+    // Non-matching interviews are those not in matchingInterviews
+    const nonMatchingInterviews = allInterviews.filter(
+      (interview) => !matchingInterviews.includes(interview),
+    );
 
     return {
       suggested: matchingInterviews,
