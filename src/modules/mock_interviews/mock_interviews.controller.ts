@@ -40,9 +40,27 @@ const update_mock_interview = catchAsync(
     const interview_id = req.query.interview_id as string;
     const converted_interview_id = idConverter(interview_id);
 
+    let file: Express.Multer.File | undefined;
+    let payload: any = {};
+
+    try {
+      // Parse data from formdata.data if present, otherwise use empty object
+      if (req.body.data) {
+        payload = JSON.parse(req.body.data);
+      }
+      file = req.file; // File from multer, if uploaded
+    } catch (error: any) {
+      return res.status(error instanceof SyntaxError ? 400 : 500).json({
+        success: false,
+        message: error instanceof SyntaxError ? 'Invalid JSON in data' : 'Server error',
+        error: error.message,
+      });
+    }
+
     const result = await MockInterviewsService.update_mock_interview(
       converted_interview_id as Types.ObjectId,
-      req.body,
+      file,
+      payload,
     );
 
     res.status(200).json({
@@ -120,9 +138,28 @@ const create_question_bank = catchAsync(async (req: Request, res: Response) => {
 const update_question_bank = catchAsync(async (req: Request, res: Response) => {
   const question_bank_id = req.query.question_bank_id as string;
   const converted_QB_id = idConverter(question_bank_id);
+
+  let file: Express.Multer.File | undefined;
+  let payload: any = {};
+
+  try {
+    // Parse data from formdata.data if present, otherwise use empty object
+    if (req.body.data) {
+      payload = JSON.parse(req.body.data);
+    }
+    file = req.file; // File from multer, if uploaded
+  } catch (error: any) {
+    return res.status(error instanceof SyntaxError ? 400 : 500).json({
+      success: false,
+      message: error instanceof SyntaxError ? 'Invalid JSON in data' : 'Server error',
+      error: error.message,
+    });
+  }
+
   const result = await MockInterviewsService.update_question_bank(
     converted_QB_id as Types.ObjectId,
-    req.body,
+    file,
+    payload,
   );
 
   res.status(200).json({
@@ -134,7 +171,7 @@ const update_question_bank = catchAsync(async (req: Request, res: Response) => {
 
 const delete_question_bank = catchAsync(async (req: Request, res: Response) => {
   const result = await MockInterviewsService.delete_question_bank(
-    req.params.id,
+    req.query.questionBank_id as string,
   );
   res.status(200).json({
     success: true,
