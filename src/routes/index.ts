@@ -13,6 +13,7 @@ import notificationRouter from '../modules/notifications/notifiacations.routes';
 import PaymentRoutes from '../modules/payment/stripe/stripe.route';
 import stripeRoutes from '../modules/payment/stripe/stripe.route';
 import SkillsRoutes from '../modules/skills/skill.route';
+import websiteRoutes from '../modules/websiteConfig/websiteconfig.route';
 
 const Routes = express.Router();
 // Array of module routes
@@ -60,6 +61,10 @@ const moduleRouts = [
   {
     path: '/skill',
     router: SkillsRoutes,
+  },
+  {
+    path: '/website',
+    router: websiteRoutes,
   }
 ];
 
