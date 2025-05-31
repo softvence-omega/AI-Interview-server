@@ -29,14 +29,41 @@ const create_mock_interview = async (file: any, data: any) => {
   return result;
 };
 
-const update_mock_interview = async (
-  id: Types.ObjectId,
-  data: Partial<TMock_Interviews>,
-) => {
-  console.log('update mock ', id, data);
-  const result = await MockInterviewModel.findByIdAndUpdate(id, data, {
-    new: true,
-  });
+const update_mock_interview = async (id: Types.ObjectId, file?: any, payload?: any) => {
+  const ALLOWED_FIELDS = [
+    'interview_name',
+    'description',
+  ];
+
+  // Filter the payload to keep only allowed fields
+  const filteredPayload: Partial<typeof payload> = {};
+  for (const key of ALLOWED_FIELDS) {
+    if (key in payload) {
+      filteredPayload[key] = payload[key];
+    }
+  }
+
+  // Handle image upload if file is provided
+  let updateData = { ...filteredPayload };
+  if (file) {
+    const uploadImg = await uploadImgToCloudinary(file.name, file.path);
+    console.log(uploadImg);
+    updateData = { ...updateData, img: uploadImg.secure_url };
+  }
+
+  // Update the document
+  const result = await MockInterviewModel.findByIdAndUpdate(
+    id,
+    updateData,
+    {
+      new: true,
+    },
+  );
+
+  if (!result) {
+    throw new Error('Mock interview not found or update failed');
+  }
+
   return result;
 };
 
@@ -175,7 +202,7 @@ const create_question_bank = async (
   return createdQuestionBank;
 };
 
-const update_question_bank = async (id: Types.ObjectId, payload: any) => {
+const update_question_bank = async (id: Types.ObjectId, file?: any, payload?: any) => {
   const ALLOWED_FIELDS = [
     'questionBank_name',
     'duration',
@@ -184,23 +211,35 @@ const update_question_bank = async (id: Types.ObjectId, payload: any) => {
     'description',
     'what_to_expect',
   ];
+  
   // Filter the payload to keep only allowed fields
   const filteredPayload: Partial<typeof payload> = {};
-
   for (const key of ALLOWED_FIELDS) {
     if (key in payload) {
       filteredPayload[key] = payload[key];
     }
   }
 
+  // Handle image upload if file is provided
+  let updateData = { ...filteredPayload };
+  if (file) {
+    const uploadImg = await uploadImgToCloudinary(file.name, file.path);
+    console.log(uploadImg);
+    updateData = { ...updateData, img: uploadImg.secure_url };
+  }
+
   // Update the document
   const result = await QuestionBankModel.findByIdAndUpdate(
     id,
-    filteredPayload,
+    updateData,
     {
       new: true,
     },
   );
+
+  if (!result) {
+    throw new Error('Question bank not found or update failed');
+  }
 
   return result;
 };
