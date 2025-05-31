@@ -9,7 +9,8 @@ const router = Router();
 
 router.post(
   '/create-checkout-session',
-  auth([userRole.admin, userRole.user]),purchasePlanGuard(),
+  auth([userRole.admin, userRole.user]),
+  // purchasePlanGuard(),
   StripeController.createCheckoutSession
 );
 
