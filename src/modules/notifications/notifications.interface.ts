@@ -3,7 +3,7 @@ import { Types } from "mongoose"
 export type TEachNotification={
     user_id:Types.ObjectId,
     Profile_id:Types.ObjectId,
-    notificationType:"interview_Progress"|"latest_job"|"upgrade_plan",
+    notificationType:"interview_Progress"|"latest_job"|"upgrade_plan"|"admin_notification",
     notificationDetail:string,
     isSeen:boolean
 

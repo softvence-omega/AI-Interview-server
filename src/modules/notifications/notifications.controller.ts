@@ -37,8 +37,32 @@ const viewSpecificNotification = catchAsync(async(req, res)=>{
 })
 
 
+const sendNotificationFromAdmin= catchAsync(async(req,res)=>{
+
+    const result = await notificationServices.sendNotificationFromAdmin(req.body)
+    golbalRespnseHandler(res, {
+        statusCode: 200,
+        success: true,
+        message: 'Notification sent successfully',
+        data: result,
+      });
+})
+
+
+const getAllNotificationForAdmin= catchAsync(async(req,res)=>{
+    const notificationType = req.query.notificationType as string
+    const result = await notificationServices.getAllNotificationForAdmin(notificationType)
+    golbalRespnseHandler(res, {
+        statusCode: 200,
+        success: true,
+        message: 'Notification fetched successfully for admin',
+        data: result,
+      });
+})
+
+
 const notificationController = {
-    getAllNotifications,viewSpecificNotification
+    getAllNotifications,viewSpecificNotification,sendNotificationFromAdmin,getAllNotificationForAdmin
 }
 
 

@@ -37,6 +37,8 @@ const cleanSubscriptions = async () => {
           },
         }
       );
+
+      // send email from here 
   
       console.log(
         `Updated ${updateResult.modifiedCount} user profiles from premium to free (exactly 30 days old).`
