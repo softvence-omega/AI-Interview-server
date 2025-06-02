@@ -67,6 +67,8 @@ export const unfinishedInterviewHandler = async () => {
           }
         );
 
+        //send email from here
+
         console.log(`🔔 Notification sent for "${interviewInfo.interview_name}" to user ${profile.user_id}`);
       }
     }
@@ -121,6 +123,9 @@ const jobNotificationHandler = async () => {
         { $set: { lastJobNotificationDate: today } }
       );
 
+
+      //send email from here
+
       console.log(`📨 Job notification sent to ${user.user_id}`);
     }
   }
@@ -158,6 +163,8 @@ const upgradePlanReminderHandler = async () => {
       },
       { upsert: true }
     );
+
+    //send email from here
 
     console.log(`⚠️ Upgrade reminder sent to ${user.user_id}`);
   }

@@ -3,11 +3,11 @@ import { TEachNotification, TNotificationList } from "./notifications.interface"
 
 const notificationSchema = new Schema<TEachNotification>(
     {
-      user_id: { type: Schema.Types.ObjectId, required: true, ref: 'User' },
-      Profile_id: { type: Schema.Types.ObjectId, required: true, ref: 'Profile' },
+      user_id: { type: Schema.Types.ObjectId, required: false, ref: 'User' },
+      Profile_id: { type: Schema.Types.ObjectId, required: false, ref: 'Profile' },
       notificationType: {
         type: String,
-        enum: ['interview_Progress', 'latest_job', 'upgrade_plan'],
+        enum: ['interview_Progress', 'latest_job', 'upgrade_plan',"admin_notification"],
         required: true,
       },
       notificationDetail: { type: String, required: true },
