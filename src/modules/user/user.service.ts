@@ -8,6 +8,7 @@ import path from 'path';
 import { Resume } from '../resume/resume.model';
 import { Payment } from '../payment/payment.model';
 import { AssessmentModel } from '../vodeoAnalytics/video.model';
+import { NotificationListModel } from '../notifications/notifications.model';
 
 const createUser = async (payload: Partial<TUser>, method?: string) => {
   // Validate password match
@@ -67,18 +68,9 @@ const createUser = async (payload: Partial<TUser>, method?: string) => {
       await user.save({ session });
     }
 
-    // // Inside your createUser function:
-    // const defaultImagePath = path.join(__dirname, '../../assets/interviewProfile.jpg'); // Use __dirname to get the absolute path
-
-
-    // // Upload default profile image to Cloudinary
-    // const defaultImageUpload = await uploadImgToCloudinary(
-    //   'default-profile-image', // You can customize this name as needed
-    //   defaultImagePath // Path to your default image (you can use a local or cloud URL)
-    // );
 
     // Create profile
-    await ProfileModel.create(
+    const profileCration = await ProfileModel.create(
       [
         {
           name: userData.name ?? 'user',
@@ -102,6 +94,16 @@ const createUser = async (payload: Partial<TUser>, method?: string) => {
       ],
       { session },
     );
+
+    await NotificationListModel.create([{
+
+      user_id: user._id, // This will be updated later
+      Profile_id:profileCration[0]._id,
+      oldNotificationCount: 0,
+      seenNotificationCount: 0,
+      newNotification: 0,
+      notificationList: [],
+    }], { session });
 
     // Commit the transaction
     await session.commitTransaction();
