@@ -444,7 +444,9 @@ const genarateQuestionSet_ByAi = async (
       const updateAvailableInterviewsCount =
         await ProfileModel.findOneAndUpdate(
           { user_id: user_id },
-          { $inc: { interviewsAvailable: -1 } },
+          { 
+            $inc: { interviewsAvailable: -1 , interviewTaken:1}//interview taken updated here
+          },
           { new: true },
         );
       if (!updateAvailableInterviewsCount) {
