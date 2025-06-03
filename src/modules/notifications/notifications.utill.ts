@@ -3,6 +3,8 @@ import cron from 'node-cron';
 import { ProfileModel } from '../user/user.model';
 import { MockInterviewModel } from '../mock_interviews/mock_interviews.model';
 import { NotificationListModel, NotificationModel } from './notifications.model';
+import { sendEmail } from '../../util/sendEmail';
+import { profile } from 'console';
 
 
 
@@ -24,7 +26,7 @@ export const unfinishedInterviewHandler = async () => {
       for (const interview of incompleteInterviews) {
         const interviewInfo = await MockInterviewModel.findById(interview.interviewId).select('interview_name');
 
-        if (!interviewInfo) continue;
+        if (!interviewInfo || !profile.email) continue;
 
         const notificationMessage = `Reminder: You have not completed the "${interviewInfo.interview_name}" mock interview. Continue your preparation today!`;
 
@@ -68,6 +70,15 @@ export const unfinishedInterviewHandler = async () => {
         );
 
         //send email from here
+        await sendEmail(
+          profile.email,
+          'Reminder Notification',
+          `
+          <h2>This notification is from AI Interview</h2>
+          <p>${notificationMessage}</p>
+          <p>Thank you for being a part of our community</p>
+          `
+        );
 
         console.log(`🔔 Notification sent for "${interviewInfo.interview_name}" to user ${profile.user_id}`);
       }
@@ -84,11 +95,13 @@ const jobNotificationHandler = async () => {
   const users = await ProfileModel.find({});
 
   for (const user of users) {
-    const { currentPlan, lastJobNotificationDate } = user;
+    const { currentPlan, lastJobNotificationDate,email } = user;
+    if (!currentPlan) continue; // Skip users without a plan or email
     let intervalDays = 0;
 
     if (currentPlan === 'free') intervalDays = 30;
-    else if (currentPlan === 'premium') intervalDays = 7;
+    else if (currentPlan === 'Premium') intervalDays = 7;
+    else if (currentPlan === 'Pay-Per') intervalDays = 15;
     else continue; // Skip users with unknown or invalid plans
 
     const lastNotified = new Date(lastJobNotificationDate || 0);
@@ -125,6 +138,19 @@ const jobNotificationHandler = async () => {
 
 
       //send email from here
+    if(!email)
+    {
+      continue
+    }
+        await sendEmail(
+          email,
+          'Reminder Notification',
+          `
+          <h2>This notification is from AI Interview</h2>
+          <p>${message}</p>
+          <p>Thank you for being a part of our community</p>
+          `
+        );
 
       console.log(`📨 Job notification sent to ${user.user_id}`);
     }
@@ -165,6 +191,20 @@ const upgradePlanReminderHandler = async () => {
     );
 
     //send email from here
+     //send email from here
+     if(!user.email)
+      {
+        continue
+      }
+          await sendEmail(
+            user.email,
+            'Upgrade plan Notification',
+            `
+            <h2>This notification is from AI Interview</h2>
+            <p>${message}</p>
+            <p>Thank you for being a part of our community</p>
+            `
+          );
 
     console.log(`⚠️ Upgrade reminder sent to ${user.user_id}`);
   }
