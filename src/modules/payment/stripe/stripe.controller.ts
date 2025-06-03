@@ -66,20 +66,28 @@ import { PlanModel } from '../../plan/plan.model';
 //   return { success: true, message: 'Payment saved successfully' };
 // };
 
+
 const savePaymentToDB = async (sessionId: string): Promise<{ success: boolean; message: string }> => {
   const existing = await Payment.findOne({ sessionId });
-
   if (existing) {
-    console.log('ℹ️ Payment already exists for session:', sessionId);
     return { success: false, message: 'Payment already exists' };
   }
 
   const session = await stripeInstance.checkout.sessions.retrieve(sessionId, {
-    expand: ['line_items.data.price.product'],
+    expand: ['line_items.data.price.product', 'subscription'],
   });
 
   const userId = session.metadata?.userId;
-  const subscriptionId = session.subscription as string;
+  const subscription = session.subscription as Stripe.Subscription;
+  const subscriptionStatus = subscription?.status;
+
+  const isSessionPaid =
+    session.payment_status === 'paid' || subscriptionStatus === 'active';
+
+  if (!isSessionPaid) {
+    throw new Error('Payment not completed. Cannot save.');
+  }
+
   const lineItem = session.line_items?.data?.[0];
   const planStripePriceId = lineItem?.price?.id || null;
   const planName = (lineItem?.price?.product as any)?.name || 'unknown-plan';
@@ -87,47 +95,103 @@ const savePaymentToDB = async (sessionId: string): Promise<{ success: boolean; m
   if (!userId) throw new Error('User ID missing from session metadata');
 
   const localPlan = await PlanModel.findOne({ priceId: planStripePriceId });
-  if (!localPlan) console.warn('⚠️ No matching local plan found for priceId:', planStripePriceId);
 
-  // Save payment in DB
   const payment: IPayment = await Payment.create({
     userId,
-    subscriptionId,
+    subscriptionId: subscription.id,
     sessionId,
     planId: planStripePriceId,
     status: 'active',
   });
 
-  // Determine new interviewsAvailable
   const updateFields: any = {
     currentPlan: planName,
     $push: {
       paymentId: payment._id,
-      stripeSubscriptionId: subscriptionId,
+      stripeSubscriptionId: subscription.id,
       ...(localPlan?._id ? { plan_id: localPlan._id } : {}),
     },
   };
 
-  if (planName.toLowerCase().includes('premium')) {
-    const profile = await ProfileModel.findOne({ user_id: userId });
-    const currentAvailable = profile?.interviewsAvailable ?? 0;
+  const profile = await ProfileModel.findOne({ user_id: userId });
+  const currentAvailable = profile?.interviewsAvailable ?? 0;
 
+  if (planName.toLowerCase().includes('premium')) {
     updateFields.interviewsAvailable = currentAvailable + 10;
     updateFields.jobsAvailable = 'unlimited';
   } else if (planName.toLowerCase().includes('pay-per')) {
-    const profile = await ProfileModel.findOne({ user_id: userId });
-    const currentAvailable = profile?.interviewsAvailable ?? 0;
-
     updateFields.interviewsAvailable = currentAvailable + 1;
-      // currentAvailable === 'unlimited' ? 1 : 
     updateFields.jobsAvailable = 'unlimited';
   }
 
   await ProfileModel.findOneAndUpdate({ user_id: userId }, updateFields, { new: true });
 
-  console.log('✅ Payment saved and profile updated for user:', userId);
   return { success: true, message: 'Payment saved successfully' };
 };
+
+
+// const savePaymentToDB = async (sessionId: string): Promise<{ success: boolean; message: string }> => {
+//   const existing = await Payment.findOne({ sessionId });
+
+//   if (existing) {
+//     console.log('ℹ️ Payment already exists for session:', sessionId);
+//     return { success: false, message: 'Payment already exists' };
+//   }
+
+//   const session = await stripeInstance.checkout.sessions.retrieve(sessionId, {
+//     expand: ['line_items.data.price.product'],
+//   });
+
+//   const userId = session.metadata?.userId;
+//   const subscriptionId = session.subscription as string;
+//   const lineItem = session.line_items?.data?.[0];
+//   const planStripePriceId = lineItem?.price?.id || null;
+//   const planName = (lineItem?.price?.product as any)?.name || 'unknown-plan';
+
+//   if (!userId) throw new Error('User ID missing from session metadata');
+
+//   const localPlan = await PlanModel.findOne({ priceId: planStripePriceId });
+//   if (!localPlan) console.warn('⚠️ No matching local plan found for priceId:', planStripePriceId);
+
+//   // Save payment in DB
+//   const payment: IPayment = await Payment.create({
+//     userId,
+//     subscriptionId,
+//     sessionId,
+//     planId: planStripePriceId,
+//     status: 'active',
+//   });
+
+//   // Determine new interviewsAvailable
+//   const updateFields: any = {
+//     currentPlan: planName,
+//     $push: {
+//       paymentId: payment._id,
+//       stripeSubscriptionId: subscriptionId,
+//       ...(localPlan?._id ? { plan_id: localPlan._id } : {}),
+//     },
+//   };
+
+//   if (planName.toLowerCase().includes('premium')) {
+//     const profile = await ProfileModel.findOne({ user_id: userId });
+//     const currentAvailable = profile?.interviewsAvailable ?? 0;
+
+//     updateFields.interviewsAvailable = currentAvailable + 10;
+//     updateFields.jobsAvailable = 'unlimited';
+//   } else if (planName.toLowerCase().includes('pay-per')) {
+//     const profile = await ProfileModel.findOne({ user_id: userId });
+//     const currentAvailable = profile?.interviewsAvailable ?? 0;
+
+//     updateFields.interviewsAvailable = currentAvailable + 1;
+//       // currentAvailable === 'unlimited' ? 1 : 
+//     updateFields.jobsAvailable = 'unlimited';
+//   }
+
+//   await ProfileModel.findOneAndUpdate({ user_id: userId }, updateFields, { new: true });
+
+//   console.log('✅ Payment saved and profile updated for user:', userId);
+//   return { success: true, message: 'Payment saved successfully' };
+// };
 
 
 
