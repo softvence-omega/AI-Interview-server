@@ -1,3 +1,4 @@
+import config from "../../config";
 import idConverter from "../../util/idConvirter";
 import { ProfileModel } from "../user/user.model";
 import { QuestionBankModel } from "./mock_interviews.model";
@@ -8,7 +9,7 @@ const generateQuestions = async (prompt: string) => {
     }
   
     const encodedPrompt = encodeURIComponent(prompt);
-    const url = `https://freepik.softvenceomega.com/in-prep/api/v1/q_generator/generate-questions?topic=${encodedPrompt}`;
+    const url = `${config.AI_BASE_URL}/q_generator/generate-questions?topic=${encodedPrompt}`;
   
     try {
       const response = await fetch(url, {
@@ -36,8 +37,10 @@ const generateQuestions = async (prompt: string) => {
       console.error('Error generating questions:', { prompt, error: error.message });
       throw new Error(`Failed to generate questions: ${error.message || 'Unknown error'}`);
     }
-  };
-  
+};
+
+
+
 const questionGenerationCreditReducer = async (userId: string, questionBank_id: string): Promise<boolean> => {
     // Validate user ID
     if (!userId) {
@@ -108,9 +111,9 @@ const questionGenerationCreditReducer = async (userId: string, questionBank_id: 
     console.log(isValid); // Print true if found, false if not
   
     return isValid;
-  };
+};
 
-  
+
 
   
   const mockInterviewUtill={

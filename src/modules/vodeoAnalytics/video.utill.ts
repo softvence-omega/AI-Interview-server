@@ -1,5 +1,6 @@
 import { Types } from 'mongoose';
 import { AssessmentModel } from './video.model';
+import config from '../../config';
 
 const processForSummary = async (
   interview_id: Types.ObjectId,
@@ -24,7 +25,7 @@ const processForSummary = async (
 
     // console.log(stringifyArrary)
 
-    const url = `https://freepik.softvenceomega.com/in-prep/api/v1/overall_generator/overall-generator`;
+    const url = `${config.AI_BASE_URL}/overall_generator/overall-generator`;
 
     const response = await fetch(url, {
       method: 'POST',

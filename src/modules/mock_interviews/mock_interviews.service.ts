@@ -14,6 +14,7 @@ import { ProfileModel } from '../user/user.model';
 import { uploadImgToCloudinary } from '../../util/uploadImgToCludinary';
 import { AssessmentModel } from '../vodeoAnalytics/video.model';
 import { Resume } from '../resume/resume.model';
+import config from '../../config';
 
 // ---------------- MOCK INTERVIEW ----------------
 const create_mock_interview = async (file: any, data: any) => {
@@ -521,7 +522,7 @@ const genarateSingleQuestion_ByAi_for_Retake = async (
     const prompt = `${findQuestionBank.questionBank_name} ${findQuestionBank.what_to_expect.join(' ')} based on those give me a single question with time limit.`;
     const encodedPrompt = encodeURIComponent(prompt);
 
-    const url = `https://freepik.softvenceomega.com/in-prep/api/v1/q_generator/generate-questions?topic=${encodedPrompt}`;
+    const url = `${config.AI_BASE_URL}/q_generator/generate-questions?topic=${encodedPrompt}`;
 
     // Call AI API to generate a single question
     const response = await fetch(url, {

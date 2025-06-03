@@ -1,6 +1,6 @@
 import axios from 'axios';
 import FormData from 'form-data';
-import { config2 } from '../../config';
+import config, { config2 } from '../../config';
 import { Types } from 'mongoose';
 import { Resume } from './resume.model';
 import { ProfileModel } from '../user/user.model';
@@ -43,7 +43,7 @@ export const genarateAboutMeService = async (userId: Types.ObjectId) => {
     let response;
     try {
       response = await axios.post(
-        "https://freepik.softvenceomega.com/in-prep/api/v1/about_me/about-me",
+          `${config.AI_BASE_URL}/about_me/about-me`,
         resume,
         {
           headers: {

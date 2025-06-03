@@ -6,6 +6,13 @@ import {
 import { sendEmail } from '../../util/sendEmail';
 import { ProfileModel } from '../user/user.model';
 
+const getNotificationForNotificationBell = async(user_id: Types.ObjectId)=>{
+  const result = await NotificationListModel.findOne(
+    { user_id: user_id },
+  ).select('newNotification seenNotificationCount oldNotificationCount');
+  return result;
+}
+
 const getAllNotifications = async (user_id: Types.ObjectId) => {
   // Atomically update the notification counts and retrieve the updated document
   const updatedNotificationList = await NotificationListModel.findOneAndUpdate(
@@ -55,7 +62,10 @@ const viewSpecificNotification = async (
   }
 };
 
-const sendNotificationFromAdmin = async (payload: { receiverList: string | string[], notificationMessage: string }) => {
+const sendNotificationFromAdmin = async (payload: {
+  receiverList: string | string[];
+  notificationMessage: string;
+}) => {
   try {
     const { receiverList, notificationMessage } = payload;
 
@@ -66,8 +76,12 @@ const sendNotificationFromAdmin = async (payload: { receiverList: string | strin
       profiles = await ProfileModel.find({}).select('_id user_id email');
     } else {
       // Convert string IDs to ObjectIds and fetch matching profiles
-      const userIds = (Array.isArray(receiverList) ? receiverList : [receiverList]).map(id => new Types.ObjectId(id));
-      profiles = await ProfileModel.find({ user_id: { $in: userIds } }).select('_id user_id email');
+      const userIds = (
+        Array.isArray(receiverList) ? receiverList : [receiverList]
+      ).map((id) => new Types.ObjectId(id));
+      profiles = await ProfileModel.find({ user_id: { $in: userIds } }).select(
+        '_id user_id email',
+      );
     }
 
     if (!profiles || profiles.length === 0) {
@@ -77,7 +91,7 @@ const sendNotificationFromAdmin = async (payload: { receiverList: string | strin
     // Process notifications and send emails for each profile
     for (const profile of profiles) {
       if (!profile.user_id || !profile.email) {
-        continue
+        continue;
       }
 
       // 1. Upsert NotificationList
@@ -93,7 +107,7 @@ const sendNotificationFromAdmin = async (payload: { receiverList: string | strin
             notificationList: [],
           },
         },
-        { new: true, upsert: true }
+        { new: true, upsert: true },
       );
 
       // 2. Create individual notification
@@ -116,7 +130,7 @@ const sendNotificationFromAdmin = async (payload: { receiverList: string | strin
           $push: {
             notificationList: eachNotification._id,
           },
-        }
+        },
       );
 
       // Send email using the provided sendEmail function
@@ -127,17 +141,19 @@ const sendNotificationFromAdmin = async (payload: { receiverList: string | strin
         <h2>This notification is from AI Interview Admin</h2>
         <p>${notificationMessage}</p>
         <p>Thank you for being a part of our community</p>
-        `
+        `,
       );
     }
 
-    return { success: true, message: 'Notifications saved and emails sent successfully' };
+    return {
+      success: true,
+      message: 'Notifications saved and emails sent successfully',
+    };
   } catch (error) {
     console.error('Error in sendNotificationFromAdmin:', error);
     throw error;
   }
 };
-
 
 const getAllNotificationForAdmin = async (notificationType?: string) => {
   try {
@@ -150,27 +166,29 @@ const getAllNotificationForAdmin = async (notificationType?: string) => {
     }
 
     const allNotifications = await NotificationModel.find(query)
-    .lean()
-    .sort({ createdAt: -1 })
-    .populate({
-      path: 'Profile_id',
-      select: 'img -_id name', // Select only the img field from ProfileModel
-    })
-    .select('-__v');
+      .lean()
+      .sort({ createdAt: -1 })
+      .populate({
+        path: 'Profile_id',
+        select: 'img -_id name', // Select only the img field from ProfileModel
+      })
+      .select('-__v');
 
     return allNotifications;
   } catch (error) {
     console.error('Error in getAllNotificationForAdmin:', error);
-    throw new Error(`Failed to fetch notifications${notificationType ? ` for type: ${notificationType}` : ''}`);
+    throw new Error(
+      `Failed to fetch notifications${notificationType ? ` for type: ${notificationType}` : ''}`,
+    );
   }
 };
-
 
 const notificationServices = {
   getAllNotifications,
   viewSpecificNotification,
   sendNotificationFromAdmin,
-  getAllNotificationForAdmin
+  getAllNotificationForAdmin,
+  getNotificationForNotificationBell
 };
 
 export default notificationServices;

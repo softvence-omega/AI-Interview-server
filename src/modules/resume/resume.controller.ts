@@ -10,6 +10,7 @@ import idConverter from '../../util/idConvirter';
 import { genarateAboutMeService } from './resume.service';
 import { Types } from 'mongoose';
 import { uploadPdfToCloudinary } from '../../util/uploadImgToCludinary';
+import config from '../../config';
 
 // export const uploadResume = async (
 //   req: Request,
@@ -203,7 +204,7 @@ export const uploadResume = async (
       );
 
       const response = await axios.post(
-        'https://freepik.softvenceomega.com/in-prep/api/v1/extract-resume/extract-resume',
+        `${config.AI_BASE_URL}/extract-resume/extract-resume`,
         formData,
         {
           headers: formData.getHeaders(),

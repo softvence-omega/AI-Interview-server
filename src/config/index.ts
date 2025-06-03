@@ -32,10 +32,12 @@ const config = {
   cloudinary_api_secret: process.env.APISECRET,
 
   OTP_TOKEN_DURATION: process.env.OTP_TOKEN_DURATION as string,
+
+  AI_BASE_URL:process.env.AI_BASE_URL as string
 };
 export default config;
 
 export const config2 = {
   aiApiUrl:
-    'https://freepik.softvenceomega.com/in-prep/api/v1/extract-resume/extract-resume',
+    `https://freepik.softvenceomega.com/in-prep/api/v1/extract-resume/extract-resume`,
 };

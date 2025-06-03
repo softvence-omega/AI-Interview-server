@@ -4,6 +4,20 @@ import golbalRespnseHandler from "../../util/globalResponseHandeler";
 import idConverter from "../../util/idConvirter";
 import notificationServices from "./notifications.service";
 
+const getNotificationForNotificationBell= catchAsync(async(req,res)=>{
+    const user_id = req.user.id
+    const converted_user_id= idConverter(user_id)
+
+    const result = await notificationServices.getNotificationForNotificationBell(converted_user_id as Types.ObjectId)
+    golbalRespnseHandler(res, {
+        statusCode: 200,
+        success: true,
+        message: 'Notification for bell',
+        data: result,
+      });
+})
+
+
 const getAllNotifications = catchAsync(async(req, res)=>{
 
     const user_id = req.user.id
@@ -62,7 +76,7 @@ const getAllNotificationForAdmin= catchAsync(async(req,res)=>{
 
 
 const notificationController = {
-    getAllNotifications,viewSpecificNotification,sendNotificationFromAdmin,getAllNotificationForAdmin
+    getAllNotifications,viewSpecificNotification,sendNotificationFromAdmin,getAllNotificationForAdmin,getNotificationForNotificationBell
 }
 
 
