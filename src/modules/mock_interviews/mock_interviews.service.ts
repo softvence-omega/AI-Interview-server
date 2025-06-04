@@ -519,7 +519,7 @@ const genarateSingleQuestion_ByAi_for_Retake = async (
     }
 
     // Generate prompt for AI API
-    const prompt = `${findQuestionBank.questionBank_name} ${findQuestionBank.what_to_expect.join(' ')} based on those give me a single question with time limit.`;
+    const prompt = `${findQuestionBank.questionBank_name} ${findQuestionBank.what_to_expect.join(' ')} based on those give me a single question with time limit and question type will be ${findQuestionBank.question_Type}. and question difficulty will be ${findQuestionBank.difficulty_level}`;
     const encodedPrompt = encodeURIComponent(prompt);
 
     const url = `${config.AI_BASE_URL}/q_generator/generate-questions?topic=${encodedPrompt}`;
