@@ -5,6 +5,7 @@ import {
 } from './notifications.model';
 import { sendEmail } from '../../util/sendEmail';
 import { ProfileModel } from '../user/user.model';
+import { sendSingleNotification } from '../firebaseSetup/sendPushNotification';
 
 const getNotificationForNotificationBell = async(user_id: Types.ObjectId)=>{
   const result = await NotificationListModel.findOne(
@@ -143,6 +144,8 @@ const sendNotificationFromAdmin = async (payload: {
         <p>Thank you for being a part of our community</p>
         `,
       );
+
+      await sendSingleNotification(profile.user_id, 'Admin Notification',notificationMessage)
     }
 
     return {

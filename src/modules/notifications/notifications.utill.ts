@@ -5,6 +5,7 @@ import { MockInterviewModel } from '../mock_interviews/mock_interviews.model';
 import { NotificationListModel, NotificationModel } from './notifications.model';
 import { sendEmail } from '../../util/sendEmail';
 import { profile } from 'console';
+import { sendSingleNotification } from '../firebaseSetup/sendPushNotification';
 
 
 
@@ -80,6 +81,8 @@ export const unfinishedInterviewHandler = async () => {
           `
         );
 
+        await sendSingleNotification(profile.user_id,"Interview Progress Reminder", notificationMessage)
+
         console.log(`🔔 Notification sent for "${interviewInfo.interview_name}" to user ${profile.user_id}`);
       }
     }
@@ -95,7 +98,7 @@ const jobNotificationHandler = async () => {
   const users = await ProfileModel.find({});
 
   for (const user of users) {
-    const { currentPlan, lastJobNotificationDate,email } = user;
+    const { currentPlan, lastJobNotificationDate,email,user_id } = user;
     if (!currentPlan) continue; // Skip users without a plan or email
     let intervalDays = 0;
 
@@ -144,13 +147,15 @@ const jobNotificationHandler = async () => {
     }
         await sendEmail(
           email,
-          'Reminder Notification',
+          'Job Reminder Notification',
           `
           <h2>This notification is from AI Interview</h2>
           <p>${message}</p>
           <p>Thank you for being a part of our community</p>
           `
         );
+
+        await sendSingleNotification(user_id,"Job Reminder Notification", message)
 
       console.log(`📨 Job notification sent to ${user.user_id}`);
     }
@@ -205,6 +210,9 @@ const upgradePlanReminderHandler = async () => {
             <p>Thank you for being a part of our community</p>
             `
           );
+
+
+          await sendSingleNotification(user.user_id,"Upgrade plan Notification", message)
 
     console.log(`⚠️ Upgrade reminder sent to ${user.user_id}`);
   }

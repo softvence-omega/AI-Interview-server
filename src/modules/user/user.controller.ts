@@ -15,6 +15,25 @@ const createUser = catchAsync(async (req, res) => {
   });
 });
 
+const setFCMToken = catchAsync(async(req,res)=>{
+  const user_id = req.user.id; // Assuming req.user.id is already an ObjectId from your auth middleware
+  const fcmToken = req.body.fcmToken;
+
+  if (!fcmToken) {
+throw new Error("fcm token is requered")
+  }
+
+  const result = await userServices.setFCMToken(user_id, fcmToken);
+
+  golbalRespnseHandler(res, {
+    statusCode: 200,
+    success: true,
+    message: 'FCM token set successfully',
+    data: result,
+  });
+}
+);
+
 const getAllUsers = catchAsync(async (req, res) => {
   const result = await userServices.getAllUsers();
   golbalRespnseHandler(res, {
@@ -203,7 +222,8 @@ const userController = {
   updateUserProfile,
   getAllProfiles,
   updateUserByAdmin,
-  getUserFullDetails
+  getUserFullDetails,
+  setFCMToken
 };
 
 

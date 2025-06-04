@@ -21,6 +21,7 @@ const UserSchema = new Schema<TUser>(
     isLoggedIn: { type: Boolean, default: false },
     loggedOutTime: { type: Date },
     passwordChangeTime: { type: Date },
+    fcmToken:{type:String,required:false, default:null}
   },
   { timestamps: true },
 );
