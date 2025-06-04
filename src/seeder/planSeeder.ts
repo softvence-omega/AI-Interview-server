@@ -25,6 +25,7 @@ const planSeeder = async () => {
       priceMonthly: 19.99,
       priceLabel: "/monthly",
       priceId: "price_1RQh51AeQO2CXKLXBTbmxa3M",
+      // priceId: "price_1RW9q0EY6Wsqp4kbAOMOpB5U",
       features: [
         "10 Mock Interviews",
         "Unlimited Jobs Tracking",
@@ -41,6 +42,7 @@ const planSeeder = async () => {
       priceMonthly: 4.99,
       priceLabel: "/Per Interview",
       priceId: "price_1RQh5lAeQO2CXKLX0brJrWGJ",
+      // priceId: "price_1RW9qlEY6Wsqp4kbjynhIyR9",
       features: [
         "Unlimited Jobs Tracking",
         "Personalized Feedback",
