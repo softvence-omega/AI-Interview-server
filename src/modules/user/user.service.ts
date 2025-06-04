@@ -166,7 +166,7 @@ const setFCMToken = async (user_id: Types.ObjectId, fcmToken: string) => {
 };
 
 const getAllUsers = async () => {
-  const result = await UserModel.find();
+  const result = await UserModel.find({isBlocked:false,isDeleted:false});
   return result;
 };
 
