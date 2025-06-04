@@ -21,6 +21,7 @@ export type TUser={
     isLoggedIn?:boolean,
     loggedOutTime?:Date
     passwordChangeTime?:Date
+    fcmToken?:string
 }
 
 

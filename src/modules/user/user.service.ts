@@ -68,7 +68,6 @@ const createUser = async (payload: Partial<TUser>, method?: string) => {
       await user.save({ session });
     }
 
-
     // Create profile
     const profileCration = await ProfileModel.create(
       [
@@ -95,15 +94,19 @@ const createUser = async (payload: Partial<TUser>, method?: string) => {
       { session },
     );
 
-    await NotificationListModel.create([{
-
-      user_id: user._id, // This will be updated later
-      Profile_id:profileCration[0]._id,
-      oldNotificationCount: 0,
-      seenNotificationCount: 0,
-      newNotification: 0,
-      notificationList: [],
-    }], { session });
+    await NotificationListModel.create(
+      [
+        {
+          user_id: user._id, // This will be updated later
+          Profile_id: profileCration[0]._id,
+          oldNotificationCount: 0,
+          seenNotificationCount: 0,
+          newNotification: 0,
+          notificationList: [],
+        },
+      ],
+      { session },
+    );
 
     // Commit the transaction
     await session.commitTransaction();
@@ -144,6 +147,24 @@ const createUser = async (payload: Partial<TUser>, method?: string) => {
   }
 };
 
+const setFCMToken = async (user_id: Types.ObjectId, fcmToken: string) => {
+  if (!fcmToken) {
+    throw new Error('fcm token is required');
+  }
+
+  const result = await UserModel.findOneAndUpdate(
+    {
+      _id: user_id,
+    },
+    {
+      fcmToken: fcmToken,
+    },
+    { new: true },
+  );
+
+  return result;
+};
+
 const getAllUsers = async () => {
   const result = await UserModel.find();
   return result;
@@ -151,17 +172,15 @@ const getAllUsers = async () => {
 
 const getAllProfiles = async () => {
   // Assuming you have a Profile model, fetch all profiles
-  const profiles = await ProfileModel.find({}); 
+  const profiles = await ProfileModel.find({});
   return profiles;
 };
-
-
 
 // update profile with profile image
 const updateUserProfile = async (
   user_id: Types.ObjectId, // MongoDB default _id is of type ObjectId
-  payload: Partial<TProfile>, 
-  imgFile?: Express.Multer.File // imgFile is optional now
+  payload: Partial<TProfile>,
+  imgFile?: Express.Multer.File, // imgFile is optional now
 ) => {
   const updatedProfileData = { ...payload }; // Start with the existing payload
 
@@ -170,7 +189,7 @@ const updateUserProfile = async (
     try {
       const imageUploadResult = await uploadImgToCloudinary(
         `profile-${user_id.toString()}`, // Custom name for the image
-        imgFile.path // Path to the uploaded image
+        imgFile.path, // Path to the uploaded image
       );
 
       // Add the image URL to the updated profile data
@@ -185,7 +204,7 @@ const updateUserProfile = async (
     const updatedProfile = await ProfileModel.findOneAndUpdate(
       { user_id },
       { $set: updatedProfileData },
-      { new: true } // Return the updated document
+      { new: true }, // Return the updated document
     );
 
     return updatedProfile;
@@ -193,7 +212,6 @@ const updateUserProfile = async (
     throw new Error('Profile update failed: ' + error.message);
   }
 };
-
 
 const updateProfileData = async (
   user_id: Types.ObjectId,
@@ -225,7 +243,7 @@ const deleteSingleUser = async (user_id: Types.ObjectId) => {
     const updatedUser = await UserModel.findOneAndUpdate(
       { _id: user_id },
       { isDeleted: true, email: null },
-      { new: true, session } // Return the updated document
+      { new: true, session }, // Return the updated document
     );
 
     if (!updatedUser) {
@@ -236,7 +254,7 @@ const deleteSingleUser = async (user_id: Types.ObjectId) => {
     const updatedProfile = await ProfileModel.findOneAndUpdate(
       { user_id },
       { isDeleted: true, email: null },
-      { new: true, session } // Return the updated document
+      { new: true, session }, // Return the updated document
     );
 
     if (!updatedProfile) {
@@ -255,7 +273,7 @@ const deleteSingleUser = async (user_id: Types.ObjectId) => {
         updatedProfile,
       },
     };
-  } catch (error:any) {
+  } catch (error: any) {
     // Abort the transaction on error
     await session.abortTransaction();
     throw new Error(`Failed to delete user: ${error.message}`);
@@ -263,8 +281,7 @@ const deleteSingleUser = async (user_id: Types.ObjectId) => {
     // Always end the session
     session.endSession();
   }
-}
-
+};
 
 const selfDistuct = async (user_id: Types.ObjectId) => {
   const result = deleteSingleUser(user_id);
@@ -326,9 +343,12 @@ const getProfile = async (user_id: Types.ObjectId) => {
 };
 
 // In userServices.ts
-const updateUserByAdmin = async (userId: Types.ObjectId, payload: Partial<TUser>) => {
-  console.log("Received userId:", userId.toString());
-  console.log("Received payload:", payload);
+const updateUserByAdmin = async (
+  userId: Types.ObjectId,
+  payload: Partial<TUser>,
+) => {
+  console.log('Received userId:', userId.toString());
+  console.log('Received payload:', payload);
 
   if (payload.isBlocked === true) {
     payload.isLoggedIn = false;
@@ -340,19 +360,18 @@ const updateUserByAdmin = async (userId: Types.ObjectId, payload: Partial<TUser>
   });
 
   if (!updatedUser) {
-    throw new Error("User not found or update failed");
+    throw new Error('User not found or update failed');
   }
 
-  console.log("Updated user:", updatedUser);
+  console.log('Updated user:', updatedUser);
   return updatedUser;
 };
-
 
 const getUserFullDetails = async (userId: Types.ObjectId) => {
   const user = await UserModel.findById(userId).select('-password');
   const profile = await ProfileModel.findOne({ user_id: userId });
   const resume = await Resume.findOne({ user_id: userId });
-  const interviews = await AssessmentModel.findOne({ user_id : userId })
+  const interviews = await AssessmentModel.findOne({ user_id: userId });
 
   return {
     user,
@@ -361,9 +380,6 @@ const getUserFullDetails = async (userId: Types.ObjectId) => {
     interviews,
   };
 };
-
-
-
 
 const userServices = {
   createUser,
@@ -376,7 +392,8 @@ const userServices = {
   updateUserProfile,
   getAllProfiles,
   updateUserByAdmin,
-  getUserFullDetails
+  getUserFullDetails,
+  setFCMToken,
 };
 
 export default userServices;
