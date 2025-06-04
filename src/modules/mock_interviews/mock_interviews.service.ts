@@ -416,19 +416,21 @@ const genarateQuestionSet_ByAi = async (
     }
 
     // Step 3: If retake, delete previous assessment
-    if (isRetake) {
-      const findIfthereIsCredit = await ProfileModel.findOne({
-        user_id: user_id,
-      }).select('interviewsAvailable');
-      if (
-        !findIfthereIsCredit ||
-        findIfthereIsCredit.interviewsAvailable <= 0
-      ) {
-        throw new Error(
-          "You don't have enough credits to retake this question bank. consider purchasing a plan",
-        );
-      }
+    const findIfthereIsCredit = await ProfileModel.findOne({
+      user_id: user_id,
+    }).select('interviewsAvailable');
 
+    if (
+      !findIfthereIsCredit ||
+      findIfthereIsCredit.interviewsAvailable <= 0
+    ) {
+      throw new Error(
+        "You don't have enough credits to retake this question bank. consider purchasing a plan",
+      );
+    }
+
+    
+    if (isRetake) {
       await AssessmentModel.deleteMany({
         questionBank_id: questionBank_id,
         user_id: user_id,
