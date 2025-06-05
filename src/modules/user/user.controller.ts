@@ -44,6 +44,16 @@ const getAllUsers = catchAsync(async (req, res) => {
   });
 });
 
+const getAllAvailableUsers = catchAsync(async (req, res) => {
+  const result = await userServices.getAllAvailableUsers();
+  sendResponse(res, {
+    statusCode: 200,
+    success: true,
+    message: "Fetched all users successfully (without deleted)",
+    data: result,
+  })
+})
+
 const getAllProfiles = catchAsync(async (req, res) => {
   // Call the user service method to get all profiles
   const result = await userServices.getAllProfiles();
@@ -61,9 +71,18 @@ const getAllProfiles = catchAsync(async (req, res) => {
 const updateUserProfile = catchAsync(async (req, res) => {
   const user_id = req.user.id; // Assuming req.user.id is already an ObjectId from your auth middleware
 
-  // No need to convert to ObjectId since it's already an ObjectId
-  // Parse JSON data from 'data' field in form-data
-  const profileData = JSON.parse(req.body.data);
+  // Initialize profileData as an empty object
+  let profileData = {};
+  
+  // Check if req.body.data exists and is a valid string before parsing
+  if (req.body.data) {
+    try {
+      profileData = JSON.parse(req.body.data);
+    } catch (error : any) {
+      throw new Error('Invalid JSON in "data" field: ' + error.message);
+    }
+  }
+
   const imgFile = req.file; // Image file (if uploaded)
 
   // Call the service to update the profile, passing the imgFile (optional)
@@ -223,7 +242,8 @@ const userController = {
   getAllProfiles,
   updateUserByAdmin,
   getUserFullDetails,
-  setFCMToken
+  setFCMToken,
+  getAllAvailableUsers
 };
 
 
