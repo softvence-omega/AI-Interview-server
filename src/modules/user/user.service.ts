@@ -166,14 +166,14 @@ const setFCMToken = async (user_id: Types.ObjectId, fcmToken: string) => {
 };
 
 const getAllUsers = async () => {
-  const result = await UserModel.find({isBlocked:false,isDeleted:false});
+  const result = await UserModel.find({ isBlocked: false, isDeleted: false });
   return result;
 };
 
 const getAllAvailableUsers = async () => {
-  const result = await UserModel.find({ isDeleted: false});
+  const result = await UserModel.find({ isDeleted: false });
   return result;
-}
+};
 
 const getAllProfiles = async () => {
   // Assuming you have a Profile model, fetch all profiles
@@ -183,13 +183,13 @@ const getAllProfiles = async () => {
 
 // update profile with profile image
 const updateUserProfile = async (
-  user_id: Types.ObjectId, // MongoDB default _id is of type ObjectId
-  payload: Partial<TProfile> = {}, // Default to empty object if no payload
-  imgFile?: Express.Multer.File, // imgFile is optional
+  user_id: Types.ObjectId,
+  payload: Partial<TProfile> = {},
+  imgFile?: Express.Multer.File,
 ) => {
-  const updatedProfileData = { ...payload }; // Start with the existing payload
+  const updatedProfileData = { ...payload }; 
 
-  console.log("Image file received:", imgFile); // Debug log
+  console.log('Image file received:', imgFile); // Debug log
 
   // If imgFile is provided, upload it to Cloudinary
   if (imgFile) {
@@ -220,7 +220,7 @@ const updateUserProfile = async (
     const updatedProfile = await ProfileModel.findOneAndUpdate(
       { user_id },
       { $set: updatedProfileData },
-      { new: true, runValidators: true, session } // Return updated doc, run validators, use session
+      { new: true, runValidators: true, session }, // Return updated doc, run validators, use session
     );
 
     if (!updatedProfile) {
@@ -240,7 +240,7 @@ const updateUserProfile = async (
       const updatedUser = await UserModel.findByIdAndUpdate(
         user_id,
         { $set: userUpdateData },
-        { new: true, runValidators: true, session } // Return updated doc, run validators, use session
+        { new: true, runValidators: true, session }, // Return updated doc, run validators, use session
       );
 
       if (!updatedUser) {
@@ -442,7 +442,7 @@ const userServices = {
   updateUserByAdmin,
   getUserFullDetails,
   setFCMToken,
-  getAllAvailableUsers
+  getAllAvailableUsers,
 };
 
 export default userServices;
