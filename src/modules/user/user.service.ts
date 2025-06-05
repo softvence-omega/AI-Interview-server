@@ -166,7 +166,12 @@ const setFCMToken = async (user_id: Types.ObjectId, fcmToken: string) => {
 };
 
 const getAllUsers = async () => {
-  const result = await UserModel.find({isBlocked:false,isDeleted:false});
+  const result = await UserModel.find({ isBlocked: false, isDeleted: false });
+  return result;
+};
+
+const getAllAvailableUsers = async () => {
+  const result = await UserModel.find({ isDeleted: false });
   return result;
 };
 
@@ -178,11 +183,13 @@ const getAllProfiles = async () => {
 
 // update profile with profile image
 const updateUserProfile = async (
-  user_id: Types.ObjectId, // MongoDB default _id is of type ObjectId
-  payload: Partial<TProfile>,
-  imgFile?: Express.Multer.File, // imgFile is optional now
+  user_id: Types.ObjectId,
+  payload: Partial<TProfile> = {},
+  imgFile?: Express.Multer.File,
 ) => {
-  const updatedProfileData = { ...payload }; // Start with the existing payload
+  const updatedProfileData = { ...payload }; 
+
+  console.log('Image file received:', imgFile); // Debug log
 
   // If imgFile is provided, upload it to Cloudinary
   if (imgFile) {
@@ -199,16 +206,57 @@ const updateUserProfile = async (
     }
   }
 
-  // Now update the profile with the provided data (including the image if uploaded)
+  // Check if there’s anything to update
+  if (Object.keys(updatedProfileData).length === 0) {
+    throw new Error('No data or image provided to update profile');
+  }
+
+  // Start a transaction to ensure atomic updates
+  const session = await ProfileModel.startSession();
+  session.startTransaction();
+
   try {
+    // Update the Profile collection
     const updatedProfile = await ProfileModel.findOneAndUpdate(
       { user_id },
       { $set: updatedProfileData },
-      { new: true }, // Return the updated document
+      { new: true, runValidators: true, session }, // Return updated doc, run validators, use session
     );
+
+    if (!updatedProfile) {
+      throw new Error('Profile not found for this user');
+    }
+
+    // If name or phone is provided in payload, update the User collection
+    const userUpdateData: Partial<TUser> = {};
+    if (updatedProfileData.name) {
+      userUpdateData.name = updatedProfileData.name;
+    }
+    if (updatedProfileData.phone) {
+      userUpdateData.phone = updatedProfileData.phone;
+    }
+
+    if (Object.keys(userUpdateData).length > 0) {
+      const updatedUser = await UserModel.findByIdAndUpdate(
+        user_id,
+        { $set: userUpdateData },
+        { new: true, runValidators: true, session }, // Return updated doc, run validators, use session
+      );
+
+      if (!updatedUser) {
+        throw new Error('User not found');
+      }
+    }
+
+    // Commit the transaction
+    await session.commitTransaction();
+    session.endSession();
 
     return updatedProfile;
   } catch (error: any) {
+    // Abort the transaction on error
+    await session.abortTransaction();
+    session.endSession();
     throw new Error('Profile update failed: ' + error.message);
   }
 };
@@ -394,6 +442,7 @@ const userServices = {
   updateUserByAdmin,
   getUserFullDetails,
   setFCMToken,
+  getAllAvailableUsers,
 };
 
 export default userServices;
