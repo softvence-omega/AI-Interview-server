@@ -34,7 +34,6 @@ const create_mock_interview = catchAsync(async (req: Request, res: Response) => 
 });
 
 
-
 const update_mock_interview = catchAsync(
   async (req: Request, res: Response) => {
     const interview_id = req.query.interview_id as string;
@@ -237,6 +236,21 @@ const genarateSingleQuestion_ByAi_for_Retake = catchAsync(async (req, res) => {
   });
 });
 
+
+const getIncompleteInterviews = catchAsync(async(req,res)=>{
+ const user_id = req.user.id
+ const convirtedUser_id = idConverter(user_id)
+
+const result = await MockInterviewsService.getIncompleteInterviews(convirtedUser_id as Types.ObjectId)
+
+res.status(200).json({
+  success: true,
+    message: 'incomplete interviews found',
+    body: result,
+})
+
+})
+
 const Mock_interviewsController = {
   get_mock_interview,
   create_mock_interview,
@@ -250,6 +264,8 @@ const Mock_interviewsController = {
 
   genarateQuestionSet_ByAi,
   genarateSingleQuestion_ByAi_for_Retake,
+
+  getIncompleteInterviews
 };
 
 export default Mock_interviewsController;

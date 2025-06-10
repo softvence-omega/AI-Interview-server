@@ -23,4 +23,7 @@ MockInterviewRoutes.get("/genarateQuestionSet_ByAi",auth([userRole.admin, userRo
 MockInterviewRoutes.post("/genarateSingleQuestion_ByAi_for_Retake",auth([userRole.admin, userRole.user]), Mock_interviewsController.genarateSingleQuestion_ByAi_for_Retake)
 
 
+MockInterviewRoutes.get("/getIncompleteInterviews", auth([userRole.admin, userRole.user]),Mock_interviewsController.getIncompleteInterviews)
+
+
 export default MockInterviewRoutes;
