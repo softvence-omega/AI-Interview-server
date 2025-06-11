@@ -601,6 +601,33 @@ const genarateSingleQuestion_ByAi_for_Retake = async (
   }
 };
 
+
+const getIncompleteInterviews = async (user_id: Types.ObjectId) => {
+  // Find profile by user_id
+  const findProfile = await ProfileModel.findOne({ user_id: user_id }).lean();
+
+  if (!findProfile) {
+    throw new Error('Profile not found');
+  }
+
+  // Filter incomplete interviews from progress array
+  const incompleteInterviewIds = findProfile.progress
+    .filter((item) => !item.isCompleted)
+    .map((item) => item.interviewId);
+
+  if (incompleteInterviewIds.length === 0) {
+    return [];
+  }
+
+  // Fetch interview details from MockInterviewModel
+  const incompleteInterviews = await MockInterviewModel.find({
+    _id: { $in: incompleteInterviewIds },
+  }).lean();
+
+  return incompleteInterviews;
+};
+
+
 export const MockInterviewsService = {
   create_mock_interview,
   update_mock_interview,
@@ -614,4 +641,6 @@ export const MockInterviewsService = {
 
   genarateQuestionSet_ByAi,
   genarateSingleQuestion_ByAi_for_Retake,
+
+  getIncompleteInterviews
 };
