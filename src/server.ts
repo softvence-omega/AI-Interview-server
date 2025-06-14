@@ -10,6 +10,7 @@ import planSeeder from './seeder/planSeeder';
 import './modules/notifications/notifications.utill';
 import skillsSeeder from './seeder/skillsSeeder';
 import LoopPakageCleaner from './util/pakageClinner';
+import initializeLandingPage from './seeder/landingpageSeeder';
 
 
 
@@ -23,6 +24,7 @@ async function main() {
     await mongoose.connect(config.mongoose_uri);
     await adminSeeder();
     await planSeeder();
+    await initializeLandingPage()
 
 
     // await skillsSeeder();
