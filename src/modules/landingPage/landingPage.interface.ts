@@ -1,19 +1,19 @@
 export type TBanner = {
-  title: string;
-  detail: string;
+  title?: string;
+  detail?: string;
   companyList: string[];
 };
 
-export type TFeatherCard = {
+export type TFeatureCard = {
   title: string;
   detail: string;
   img: string;
 };
 
-export type TFeathers = {
+export type TFeatures = {
   title: string;
   detail: string;
-  cards: TFeatherCard[];
+  cards: TFeatureCard[];
 };
 
 export type TGuideCard = {
@@ -34,7 +34,7 @@ export type TAiCorner = {
 
 export type LandingPage = {
   banner?: TBanner;
-  feathers?: TFeathers;
+  features?: TFeatures;
   guide?: TGuide;
   aiCorner?: TAiCorner;
 };
