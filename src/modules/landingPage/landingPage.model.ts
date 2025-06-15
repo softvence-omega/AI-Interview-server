@@ -1,12 +1,5 @@
 import { model, Schema } from 'mongoose';
-import { LandingPage, TAiCorner, TBanner, TFeatherCard, TFeathers, TGuide, TGuideCard } from './landingPage.interface';
-
-// Mongoose schema for TFeatherCard
-const FeatherCardSchema = new Schema<TFeatherCard>({
-  title: { type: String, required: true, default: 'Default Card Title' },
-  detail: { type: String, required: true, default: 'Default Card Detail' },
-  img: { type: String, required: false }, // Optional, no default image
-});
+import { LandingPage, TAiCorner, TBanner, TFeatureCard, TFeatures, TGuide, TGuideCard } from './landingPage.interface';
 
 // Mongoose schema for TBanner
 const BannerSchema = new Schema<TBanner>({
@@ -15,11 +8,18 @@ const BannerSchema = new Schema<TBanner>({
   companyList: { type: [String], required: true, default: [] },
 });
 
+// Mongoose schema for TFeatherCard
+const FeatureCardSchema = new Schema<TFeatureCard>({
+  title: { type: String, required: true, default: 'Default Card Title' },
+  detail: { type: String, required: true, default: 'Default Card Detail' },
+  img: { type: String, required: false },
+});
+
 // Mongoose schema for TFeathers
-const FeathersSchema = new Schema<TFeathers>({
-  title: { type: String, required: true, default: 'Default Feathers Title' },
-  detail: { type: String, required: true, default: 'Default Feathers Detail' },
-  cards: { type: [FeatherCardSchema], required: true, default: [] },
+const FeaturesSchema = new Schema<TFeatures>({
+  title: { type: String, required: true, default: 'Default Features Title' },
+  detail: { type: String, required: true, default: 'Default Features Detail' },
+  cards: { type: [FeatureCardSchema], required: true, default: [] },
 });
 
 // Mongoose schema for TGuideCard
@@ -44,7 +44,7 @@ const AiCornerSchema = new Schema<TAiCorner>({
 // Mongoose schema for LandingPage
 const LandingPageSchema = new Schema<LandingPage>({
   banner: { type: BannerSchema, required: false, default: {} },
-  feathers: { type: FeathersSchema, required: false, default: {} },
+  features: { type: FeaturesSchema, required: false, default: {} },
   guide: { type: GuideSchema, required: false, default: {} },
   aiCorner: { type: AiCornerSchema, required: false, default: {} },
 });
