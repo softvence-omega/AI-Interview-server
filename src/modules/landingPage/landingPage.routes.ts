@@ -27,7 +27,7 @@
 // routes/landingPage.routes.ts
 import express from "express";
 import { upload } from '../../util/uploadImgToCludinary';
-import { getAllLandingData, updateLandingPageController } from "./landingPage.controller";
+import { deleteCompanyLogoByIndex, getAllLandingData, updateLandingPageController } from "./landingPage.controller";
 
 const landingPageRouter = express.Router();
 
@@ -37,6 +37,9 @@ landingPageRouter.put("/update", upload.fields([
   { name: "featureCardImages", maxCount: 10 },
 ]), updateLandingPageController);
 
-landingPageRouter.get("/landingPageData", getAllLandingData)
+landingPageRouter.get("/landingPageData", getAllLandingData);
+
+// Delete company logo by index
+landingPageRouter.delete('/company-logo/:index', deleteCompanyLogoByIndex);
 
 export default landingPageRouter;

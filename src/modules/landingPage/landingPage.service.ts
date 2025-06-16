@@ -147,18 +147,30 @@ const updateLandingPage = async (
   companyListFiles?: Express.Multer.File[],
   featureCardFiles?: Express.Multer.File[]
 ) => {
-  // 1. Upload companyList images
+  // 1. Fetch the existing landing page to preserve current data
+  const existingPage = await LandingPageModel.findOne({});
+
+  // 2. Upload companyList images and append to existing images
   if (companyListFiles?.length) {
     const uploadedCompanyList = await uploadMultipleImages(
       companyListFiles.map((f) => f.path)
     );
     data.banner = {
       ...data.banner,
-      companyList: uploadedCompanyList,
+      companyList: [
+        ...(existingPage?.banner?.companyList || []),
+        ...uploadedCompanyList,
+      ],
+    };
+  } else {
+    // Preserve existing companyList if no new files are uploaded
+    data.banner = {
+      ...data.banner,
+      companyList: existingPage?.banner?.companyList || data.banner?.companyList || [],
     };
   }
 
-  // 2. Upload feature card images and attach to cards
+  // 3. Upload feature card images and attach to cards
   if (featureCardFiles?.length && data.features?.cards?.length) {
     const uploadedCardImages = await uploadMultipleImages(
       featureCardFiles.map((f) => f.path)
@@ -171,7 +183,7 @@ const updateLandingPage = async (
     }));
   }
 
-  // 3. Update or create landing page
+  // 4. Update or create landing page
   const updated = await LandingPageModel.findOneAndUpdate({}, data, {
     new: true,
     upsert: true,
@@ -184,9 +196,44 @@ const getLandingPageData = async () => {
   return await LandingPageModel.find({});
 }
 
+const deleteCompanyLogoByIndex = async (index: number) => {
+  // 1. Fetch the existing landing page
+  const existingPage = await LandingPageModel.findOne({});
+
+  if (!existingPage?.banner?.companyList) {
+    throw new Error('No company logos found to delete');
+  }
+
+  if (index < 0 || index >= existingPage.banner.companyList.length) {
+    throw new Error('Invalid index provided');
+  }
+
+  // 2. Remove the image at the specified index
+  const updatedCompanyList = existingPage.banner.companyList.filter(
+    (_, idx) => idx !== index
+  );
+
+  // 3. Update the landing page with the new companyList
+  const updated = await LandingPageModel.findOneAndUpdate(
+    {},
+    {
+      $set: {
+        'banner.companyList': updatedCompanyList,
+      },
+    },
+    {
+      new: true,
+      upsert: true,
+    }
+  );
+
+  return updated;
+};
+
 const landingPageService = {
   updateLandingPage,
   getLandingPageData,
+  deleteCompanyLogoByIndex
 };
 
 export default landingPageService;
