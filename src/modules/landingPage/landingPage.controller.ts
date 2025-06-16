@@ -146,3 +146,20 @@ export const getAllLandingData = async (req: Request, res: Response) => {
     data: result,
   })
 }
+
+
+export const deleteCompanyLogoByIndex = async (req: Request, res: Response) => {
+  try {
+    const index = parseInt(req.params.index, 10);
+    if (isNaN(index)) {
+      res.status(400).json({ error: 'Invalid index provided' });
+      return;
+    }
+    const updatedPage = await landingPageService.deleteCompanyLogoByIndex(index);
+    res.status(200).json(updatedPage);
+    return;
+  } catch (error) {
+    res.status(500).json({ error: (error as Error).message });
+    return;
+  }
+};
