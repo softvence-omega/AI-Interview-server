@@ -1,4 +1,3 @@
-import landingPageService from './landingPage.service';
 // import { Request, Response, NextFunction } from 'express';
 // import {
 //   updateBannerSection,
@@ -116,25 +115,63 @@ import landingPageService from './landingPage.service';
 import { Request, Response } from "express";
 import catchAsync from "../../util/catchAsync";
 import sendResponse from '../../util/sendResponse';
+import landingPageService from './landingPage.service';
 
-export const updateLandingPageController = catchAsync(async (req: Request, res: Response) => {
-  const data = JSON.parse(req.body.data);
-  const files = req.files as {
-    companyList?: Express.Multer.File[];
-    featureCardImages?: Express.Multer.File[];
-  };
+// export const updateLandingPageController = catchAsync(async (req: Request, res: Response) => {
+//   const data = JSON.parse(req.body.data);
+//   const files = req.files as {
+//     companyList?: Express.Multer.File[];
+//     featureCardImages?: Express.Multer.File[];
+//   };
 
-  const companyListFiles = files?.companyList || [];
-  const featureCardFiles = files?.featureCardImages || [];
+//   const companyListFiles = files?.companyList || [];
+//   const featureCardFiles = files?.featureCardImages || [];
 
-  const updated = await landingPageService.updateLandingPage(data, companyListFiles, featureCardFiles);
+//   const updated = await landingPageService.updateLandingPage(data, companyListFiles, featureCardFiles);
 
-  res.status(200).json({
-    success: true,
-    message: "Landing page updated successfully",
-    data: updated,
-  });
-});
+//   res.status(200).json({
+//     success: true,
+//     message: "Landing page updated successfully",
+//     data: updated,
+//   });
+// });
+
+// controller
+
+
+export const updateLandingPageController = catchAsync(
+  async (req: Request, res: Response) => {
+    const data = JSON.parse(req.body.data);
+    const files = req.files as {
+      companyList?: Express.Multer.File[];
+      card0Image?: Express.Multer.File[];
+      card1Image?: Express.Multer.File[];
+      card2Image?: Express.Multer.File[];
+      card3Image?: Express.Multer.File[];
+    };
+
+    const companyListFiles = files?.companyList || [];
+    // Map card image files to an array based on index
+    const featureCardFiles = [
+      files?.card0Image?.[0] || undefined,
+      files?.card1Image?.[0] || undefined,
+      files?.card2Image?.[0] || undefined,
+      files?.card3Image?.[0] || undefined,
+    ].filter((file): file is Express.Multer.File => !!file); // Remove undefined entries
+
+    const updated = await landingPageService.updateLandingPage(
+      data,
+      companyListFiles,
+      featureCardFiles
+    );
+
+    res.status(200).json({
+      success: true,
+      message: "Landing page updated successfully",
+      data: updated,
+    });
+  }
+);
 
 
 export const getAllLandingData = async (req: Request, res: Response) => {
