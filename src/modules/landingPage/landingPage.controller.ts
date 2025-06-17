@@ -1,4 +1,3 @@
-import landingPageService from './landingPage.service';
 // import { Request, Response, NextFunction } from 'express';
 // import {
 //   updateBannerSection,
@@ -116,6 +115,7 @@ import landingPageService from './landingPage.service';
 import { Request, Response } from "express";
 import catchAsync from "../../util/catchAsync";
 import sendResponse from '../../util/sendResponse';
+import landingPageService from './landingPage.service';
 
 export const updateLandingPageController = catchAsync(async (req: Request, res: Response) => {
   const data = JSON.parse(req.body.data);
