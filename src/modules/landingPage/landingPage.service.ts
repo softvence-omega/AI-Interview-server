@@ -3,7 +3,7 @@
 // import LandingPageModel from './landingPage.model';
 // import { LandingPage, TBanner, TFeathers, TFeatherCard, TGuide, TAiCorner } from './landingPage.interface';
 
-import { uploadMultipleImages } from "../../util/uploadImgToCludinary";
+import { uploadImgToCloudinary, uploadMultipleImages } from "../../util/uploadImgToCludinary";
 import { LandingPage } from "./landingPage.interface";
 import LandingPageModel from "./landingPage.model";
 
@@ -142,12 +142,138 @@ import LandingPageModel from "./landingPage.model";
 // services/landingPage.service.ts
 
 
+// const updateLandingPage = async (
+//   data: Partial<LandingPage>,
+//   companyListFiles?: Express.Multer.File[],
+//   featureCardFiles?: Express.Multer.File[]
+// ) => {
+//   // 1. Fetch the existing landing page to preserve current data
+//   const existingPage = await LandingPageModel.findOne({});
+
+//   // 2. Upload companyList images and append to existing images
+//   if (companyListFiles?.length) {
+//     const uploadedCompanyList = await uploadMultipleImages(
+//       companyListFiles.map((f) => f.path)
+//     );
+//     data.banner = {
+//       ...data.banner,
+//       companyList: [
+//         ...(existingPage?.banner?.companyList || []),
+//         ...uploadedCompanyList,
+//       ],
+//     };
+//   } else {
+//     // Preserve existing companyList if no new files are uploaded
+//     data.banner = {
+//       ...data.banner,
+//       companyList: existingPage?.banner?.companyList || data.banner?.companyList || [],
+//     };
+//   }
+
+//   // 3. Upload feature card images and attach to cards
+//   //?  && data.features?.cards?.length
+
+//   if (featureCardFiles?.length) {
+//     const uploadedCardImages = await uploadMultipleImages(
+//       featureCardFiles.map((f) => f.path)
+//     );
+
+//     // Match uploaded images to feature cards by index
+//     if(data.features?.cards?.length) {
+//       data.features.cards = data.features.cards.map((card, idx) => ({
+//         ...card,
+//         img: uploadedCardImages[idx] || card.img || "",
+//       }));
+//     }
+//   }
+
+//   // 4. Update or create landing page
+//   const updated = await LandingPageModel.findOneAndUpdate({}, data, {
+//     new: true,
+//     upsert: true,
+//   });
+
+//   return updated;
+// };
+
+// const updateLandingPage = async (
+//   data: Partial<LandingPage>,
+//   companyListFiles?: Express.Multer.File[],
+//   featureCardFiles?: Express.Multer.File[]
+// ) => {
+//   // 1. Fetch existing landing page to preserve data
+//   const existingPage = await LandingPageModel.findOne({});
+
+//   // 2. Upload companyList images and append to existing images
+//   if (companyListFiles?.length) {
+//     const uploadedCompanyList = await uploadMultipleImages(
+//       companyListFiles.map((f) => f.path)
+//     );
+//     data.banner = {
+//       ...data.banner,
+//       companyList: [
+//         ...(existingPage?.banner?.companyList || []),
+//         ...uploadedCompanyList,
+//       ],
+//     };
+//   } else {
+//     data.banner = {
+//       ...data.banner,
+//       companyList:
+//         existingPage?.banner?.companyList || data.banner?.companyList || [],
+//     };
+//   }
+
+//   // 3. Upload feature card images and assign to corresponding cards
+//   if (featureCardFiles?.length && data.features?.cards?.length) {
+//     // Ensure the number of files doesn't exceed the number of cards
+//     if (featureCardFiles.length > data.features.cards.length) {
+//       throw new Error(
+//         `Too many feature card images provided. Expected at most ${data.features.cards.length} images, but received ${featureCardFiles.length}.`
+//       );
+//     }
+
+//     // Process each card and assign image if available
+//     for (let i = 0; i < data.features.cards.length; i++) {
+//       const card = data.features.cards[i];
+//       const file = featureCardFiles[i];
+
+//       if (file) {
+//         const fileName = `feature-card-${i}-${Date.now()}`;
+//         const uploadResult = await uploadImgToCloudinary(fileName, file.path);
+//         card.img = uploadResult.secure_url; // Assign uploaded image URL
+//       } else if (existingPage?.features?.cards?.[i]?.img) {
+//         // Preserve existing image if no new file is provided
+//         card.img = existingPage.features.cards[i].img;
+//       } else {
+//         // Default to empty string if no image exists
+//         card.img = card.img || '';
+//       }
+//     }
+//   } else if (data.features?.cards?.length) {
+//     // If no new images but cards exist, preserve or set default images
+//     data.features.cards.forEach((card, i) => {
+//       card.img =
+//         existingPage?.features?.cards?.[i]?.img || card.img || '';
+//     });
+//   }
+
+//   // 4. Update or create landing page document
+//   const updated = await LandingPageModel.findOneAndUpdate({}, data, {
+//     new: true,
+//     upsert: true,
+//   });
+
+//   return updated;
+// };
+
 const updateLandingPage = async (
   data: Partial<LandingPage>,
   companyListFiles?: Express.Multer.File[],
   featureCardFiles?: Express.Multer.File[]
 ) => {
-  // 1. Fetch the existing landing page to preserve current data
+
+  // 1. Fetch existing landing page to preserve data
   const existingPage = await LandingPageModel.findOne({});
 
   // 2. Upload companyList images and append to existing images
@@ -163,27 +289,53 @@ const updateLandingPage = async (
       ],
     };
   } else {
-    // Preserve existing companyList if no new files are uploaded
     data.banner = {
       ...data.banner,
-      companyList: existingPage?.banner?.companyList || data.banner?.companyList || [],
+      companyList:
+        existingPage?.banner?.companyList || data.banner?.companyList || [],
     };
   }
 
-  // 3. Upload feature card images and attach to cards
-  if (featureCardFiles?.length && data.features?.cards?.length) {
-    const uploadedCardImages = await uploadMultipleImages(
-      featureCardFiles.map((f) => f.path)
-    );
+  // 3. Handle feature card images
+  if (data.features?.cards?.length) {
 
-    // Match uploaded images to feature cards by index
-    data.features.cards = data.features.cards.map((card, idx) => ({
-      ...card,
-      img: uploadedCardImages[idx] || card.img,
-    }));
+    if (featureCardFiles?.length) {
+      // Process each provided file based on its fieldname
+      for (const file of featureCardFiles) {
+        // Extract index from fieldname (e.g., 'card1Image' -> 1)
+        const match = file.fieldname.match(/^card(\d+)Image$/);
+        if (!match) {
+          continue;
+        }
+        const index = parseInt(match[1], 10);
+
+        if (index >= data.features.cards.length) {
+          continue;
+        }
+
+        const card = data.features.cards[index];
+        const fileName = `feature-card-${index}-${Date.now()}`;
+        const uploadResult = await uploadImgToCloudinary(fileName, file.path);
+        card.img = uploadResult.secure_url;
+      }
+
+      // Preserve images for cards without new uploads
+      data.features.cards.forEach((card, i) => {
+        if (!featureCardFiles.some(f => f.fieldname === `card${i}Image`)) {
+          card.img = existingPage?.features?.cards?.[i]?.img || card.img || '';
+        }
+      });
+    } else {
+      // No new images provided, preserve all existing images
+      data.features.cards.forEach((card, i) => {
+        card.img = existingPage?.features?.cards?.[i]?.img || card.img || '';
+      });
+    }
+  } else {
+    throw new Error('No feature cards provided in data');
   }
 
-  // 4. Update or create landing page
+  // 4. Update or create landing page document
   const updated = await LandingPageModel.findOneAndUpdate({}, data, {
     new: true,
     upsert: true,
@@ -191,6 +343,7 @@ const updateLandingPage = async (
 
   return updated;
 };
+
 
 const getLandingPageData = async () => {
   return await LandingPageModel.find({});

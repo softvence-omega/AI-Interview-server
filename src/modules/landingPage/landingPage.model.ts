@@ -12,7 +12,7 @@ const BannerSchema = new Schema<TBanner>({
 const FeatureCardSchema = new Schema<TFeatureCard>({
   title: { type: String, required: true, default: 'Default Card Title' },
   detail: { type: String, required: true, default: 'Default Card Detail' },
-  img: { type: String, required: false },
+  img: { type: String, required: false, default: '' },
 });
 
 // Mongoose schema for TFeathers

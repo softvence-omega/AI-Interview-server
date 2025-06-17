@@ -32,10 +32,23 @@ import { deleteCompanyLogoByIndex, getAllLandingData, updateLandingPageControlle
 const landingPageRouter = express.Router();
 
 // Route: /api/landing/update
-landingPageRouter.put("/update", upload.fields([
-  { name: "companyList", maxCount: 10 },
-  { name: "featureCardImages", maxCount: 10 },
-]), updateLandingPageController);
+// landingPageRouter.put("/update", upload.fields([
+//   { name: "companyList", maxCount: 10 },
+//   { name: "featureCardImages", maxCount: 10 },
+// ]), updateLandingPageController);
+
+landingPageRouter.put(
+  "/update",
+  upload.fields([
+    { name: "companyList", maxCount: 10 },
+    { name: "card0Image", maxCount: 1 },
+    { name: "card1Image", maxCount: 1 },
+    { name: "card2Image", maxCount: 1 },
+    { name: "card3Image", maxCount: 1 },
+  ]),
+  updateLandingPageController
+);
+
 
 landingPageRouter.get("/landingPageData", getAllLandingData);
 
