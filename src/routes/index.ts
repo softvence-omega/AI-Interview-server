@@ -15,6 +15,7 @@ import stripeRoutes from '../modules/payment/stripe/stripe.route';
 import SkillsRoutes from '../modules/skills/skill.route';
 import websiteRoutes from '../modules/websiteConfig/websiteconfig.route';
 import landingPageRouter from '../modules/landingPage/landingPage.routes';
+import contactRoutes from '../modules/contact/contact.route';
 
 const Routes = express.Router();
 // Array of module routes
@@ -70,6 +71,10 @@ const moduleRouts = [
   {
     path: '/landingPage',
     router: landingPageRouter,
+  },
+  {
+    path: '/contact',
+    router: contactRoutes,
   }
 ];
 
