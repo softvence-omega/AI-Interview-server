@@ -87,7 +87,7 @@ export const savePaymentToDB = async (sessionId: string) => {
     title: 'Payment Successful',
     message: `Thank you for your payment.`,
     ctaText: 'Visit Dashboard',
-    ctaLink: 'https://your-app-url.com/dashboard',
+    ctaLink: 'https://cerulean-pavlova-50e690.netlify.app/userDashboard/mockInterview',
   });
   let notificationMessage = 'Your payment was processed successfully.';
 
@@ -105,7 +105,7 @@ export const savePaymentToDB = async (sessionId: string) => {
         </ul>
       `,
       ctaText: 'Go to Dashboard',
-      ctaLink: 'https://your-app-url.com/dashboard',
+      ctaLink: 'https://cerulean-pavlova-50e690.netlify.app/userDashboard/mockInterview',
     });
     notificationMessage = 'Your account has been upgraded to the Premium Plan!';
   } else if (paymentData.planType === 'pay-per') {
@@ -118,7 +118,7 @@ export const savePaymentToDB = async (sessionId: string) => {
         Use it to practice and receive feedback.
       `,
       ctaText: 'Start Interview',
-      ctaLink: 'https://your-app-url.com/interview',
+      ctaLink: 'https://cerulean-pavlova-50e690.netlify.app/userDashboard/mockInterview',
     });
     notificationMessage = 'You have successfully purchased a Pay-Per-Interview credit.';
   }
