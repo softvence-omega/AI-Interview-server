@@ -6,6 +6,7 @@ import {
 import { sendEmail } from '../../util/sendEmail';
 import { ProfileModel } from '../user/user.model';
 import { sendSingleNotification } from '../firebaseSetup/sendPushNotification';
+import { generateEmailTemplate } from '../../util/emailTemplate';
 
 const getNotificationForNotificationBell = async(user_id: Types.ObjectId)=>{
   const result = await NotificationListModel.findOne(
@@ -138,12 +139,29 @@ const sendNotificationFromAdmin = async (payload: {
       await sendEmail(
         profile.email,
         'Admin Notification',
-        `
-        <h2>This notification is from AI Interview Admin</h2>
-        <p>${notificationMessage}</p>
-        <p>Thank you for being a part of our community</p>
-        `,
+        generateEmailTemplate({
+          title: '🔔 Important Notification from AI Interview Admin',
+          message: `
+            We hope you're doing well. Our admin team wanted to reach out with the following important message:
+            <br /><br />
+            <strong>${notificationMessage}</strong>
+            <br /><br />
+            Please take a moment to review this message and take action if required. Your active participation helps us improve your experience.
+          `,
+          ctaText: 'View Notification',
+          // ctaLink: 'https://your-app-url.com/notifications'
+        })
       );
+      
+      // await sendEmail(
+      //   profile.email,
+      //   'Admin Notification',
+      //   `
+      //   <h2>This notification is from AI Interview Admin</h2>
+      //   <p>${notificationMessage}</p>
+      //   <p>Thank you for being a part of our community</p>
+      //   `,
+      // );
 
       await sendSingleNotification(profile.user_id, 'Admin Notification',notificationMessage)
     }

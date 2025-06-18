@@ -8,6 +8,8 @@ import { sendEmail } from '../../util/sendEmail';
 import userServices from '../user/user.service';
 import { Types } from 'mongoose';
 import { error } from 'console';
+import { generateEmailTemplate } from '../../util/emailTemplate';
+import { sendSingleNotification } from '../firebaseSetup/sendPushNotification';
 
 const logIn = async (
   email: string,
@@ -171,6 +173,35 @@ const changePassword = async (
     if (!updatedUser) {
       throw new Error('Error updating password');
     }
+
+    console.log("FIND USEEEEERRRRRR ::::::: ",findUser);
+
+
+
+    const profile = {
+      email: findUser.email,
+      name: findUser.name || 'User',
+      user_id: findUser._id,
+    };
+    
+    const notificationMessage = `
+      Hello ${profile.name},<br /><br />
+      Your password has been successfully changed.<br />
+      If you did not perform this action, please reset your password immediately or contact support.<br /><br />
+      Your security is very important to us.
+    `;
+    
+    await sendEmail(
+      profile.email,
+      '🔒 Password Changed Notification',
+      generateEmailTemplate({
+        title: '🔒 Your Password Has Been Changed',
+        message: notificationMessage,
+        ctaText: 'Review Your Account Security',
+      })
+    );
+
+    await sendSingleNotification(profile.user_id, 'Password Changed Successfully',notificationMessage)
 
     return { success: true, message: 'Password changed successfully' };
   } catch (error: any) {
@@ -394,6 +425,22 @@ const otpcrossCheck = async (
     if (!updateUser) {
       throw Error('cant update password now, something went wrong');
     }
+
+
+
+    // Send email to user for password change
+    const emailContent = `
+    <p>Dear ${updateUser.name},</p>
+    <p>Your OTP has been verified successfully. You can now set a new password.</p>
+    <p>Thank you for using our service!</p>
+    <p>Best regards,</p>
+    <p>Your Company Name</p>
+    `;
+    const emailResponse = await sendEmail(
+      updateUser.email,
+      'OTP Verified - Set New Password',
+      emailContent,
+    );
   }
   else{
      updateUser = await UserModel.findOneAndUpdate(
@@ -403,6 +450,8 @@ const otpcrossCheck = async (
       },
       { new: true },
     );
+
+
   }
 
   return {

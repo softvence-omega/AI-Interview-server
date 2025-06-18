@@ -2,8 +2,11 @@ import { Request, Response } from 'express';
 import { createStripeCheckoutSession, stripeInstance } from './stripe.service';
 import Stripe from 'stripe';
 import { IPayment, Payment } from './stripe.model';
-import { ProfileModel } from '../../user/user.model';
+import { ProfileModel, UserModel } from '../../user/user.model';
 import { PlanModel } from '../../plan/plan.model';
+import { generateEmailTemplate } from '../../../util/emailTemplate';
+import { sendEmail } from '../../../util/sendEmail';
+import { sendSingleNotification } from '../../firebaseSetup/sendPushNotification';
 
 /**
  * Utility to save payment data to DB (used by both webhook and manual).
@@ -126,8 +129,69 @@ const savePaymentToDB = async (sessionId: string): Promise<{ success: boolean; m
 
   await ProfileModel.findOneAndUpdate({ user_id: userId }, updateFields, { new: true });
 
+  // ✅ Send Email + Notification
+  try {
+    const user = await UserModel.findById(userId);
+    if (!user) {
+      console.error('❌ User not found for sending email:', userId);
+      return { success: true, message: 'Payment saved, but user not found for notification' };
+    }
+
+    let emailSubject = '';
+    let emailBody = '';
+    let notificationMessage = '';
+
+    if (planName.toLowerCase().includes('premium')) {
+      emailSubject = '🎉 Your Plan Has Been Successfully Upgraded!';
+      emailBody = generateEmailTemplate({
+        title: '🎉 Your Plan Has Been Successfully Upgraded!',
+        message: `
+          Your account has been upgraded to the <strong>Premium Plan</strong>!
+          <ul style="margin-top: 10px; margin-bottom: 10px; padding-left: 20px;">
+            <li>✅ Unlimited interview simulations</li>
+            <li>✅ Personalized feedback</li>
+            <li>✅ Downloadable reports</li>
+            <li>✅ Exclusive AI tools</li>
+          </ul>
+        `,
+        ctaText: 'Go to Dashboard',
+        ctaLink: 'https://cerulean-pavlova-50e690.netlify.app/userDashboard/mockInterview',
+      });
+      notificationMessage = 'Your account has been upgraded to the Premium Plan!';
+    } else if (planName.toLowerCase().includes('pay-per')) {
+      emailSubject = '🎯 Interview Credit Purchased Successfully!';
+      emailBody = generateEmailTemplate({
+        title: '🎯 Interview Credit Purchased Successfully!',
+        message: `
+          You’ve purchased 1 interview simulation credit.<br /><br />
+          Use it to practice and boost your confidence with AI-powered feedback!
+        `,
+        ctaText: 'Start Practicing',
+        ctaLink: 'https://cerulean-pavlova-50e690.netlify.app/userDashboard/mockInterview',
+      });
+      notificationMessage = '1 Interview Credit added to your account.';
+    } else {
+      emailSubject = '✅ Payment Successful!';
+      emailBody = generateEmailTemplate({
+        title: '✅ Payment Successful!',
+        message: 'Thank you for your payment. You can now access your purchased features.',
+        ctaText: 'Go to Dashboard',
+        ctaLink: 'https://cerulean-pavlova-50e690.netlify.app/userDashboard/mockInterview',
+      });
+      notificationMessage = 'Your payment was successful!';
+    }
+
+    if (user.email) {
+      await sendEmail(user.email, emailSubject, emailBody);
+    }
+    await sendSingleNotification(user._id, emailSubject, notificationMessage);
+  } catch (error) {
+    console.error('❌ Failed to send payment email or notification:', error);
+  }
+
   return { success: true, message: 'Payment saved successfully' };
 };
+
 
 
 // const savePaymentToDB = async (sessionId: string): Promise<{ success: boolean; message: string }> => {

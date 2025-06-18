@@ -6,6 +6,7 @@ import { NotificationListModel, NotificationModel } from './notifications.model'
 import { sendEmail } from '../../util/sendEmail';
 import { profile } from 'console';
 import { sendSingleNotification } from '../firebaseSetup/sendPushNotification';
+import { generateEmailTemplate } from '../../util/emailTemplate';
 
 
 
@@ -73,13 +74,29 @@ export const unfinishedInterviewHandler = async () => {
         //send email from here
         await sendEmail(
           profile.email,
-          'Reminder Notification',
-          `
-          <h2>This notification is from AI Interview</h2>
-          <p>${notificationMessage}</p>
-          <p>Thank you for being a part of our community</p>
-          `
+          'Interview Progress Reminder',
+          generateEmailTemplate({
+            title: '⏰ Reminder: Continue Your Interview Practice',
+            message: `
+              This is a gentle reminder that your interview preparation is in progress, and regular practice leads to better results.
+              <br /><br />
+              <strong>${notificationMessage}</strong>
+              <br /><br />
+              Head back to your dashboard to resume your sessions and keep improving with confidence.
+            `,
+            ctaText: 'Resume Interview Practice',
+            // ctaLink: 'https://your-app-url.com/dashboard'
+          })
         );
+        // await sendEmail(
+        //   profile.email,
+        //   'Reminder Notification',
+        //   `
+        //   <h2>This notification is from AI Interview</h2>
+        //   <p>${notificationMessage}</p>
+        //   <p>Thank you for being a part of our community</p>
+        //   `
+        // );
 
         await sendSingleNotification(profile.user_id,"Interview Progress Reminder", notificationMessage)
 
@@ -145,15 +162,31 @@ const jobNotificationHandler = async () => {
     {
       continue
     }
-        await sendEmail(
-          email,
-          'Job Reminder Notification',
-          `
-          <h2>This notification is from AI Interview</h2>
-          <p>${message}</p>
-          <p>Thank you for being a part of our community</p>
-          `
-        );
+    await sendEmail(
+      email,
+      'Job Reminder Notification',
+      generateEmailTemplate({
+        title: '📌 Job Opportunity Reminder',
+        message: `
+          Just a heads-up! Here's a job or opportunity we think you should check out:
+          <br /><br />
+          <strong>${message}</strong>
+          <br /><br />
+          Take advantage of this opportunity and don’t forget to apply before the deadline.
+        `,
+        ctaText: 'View Job Listing',
+        // ctaLink: 'https://your-app-url.com/jobs'
+      })
+    );
+        // await sendEmail(
+        //   email,
+        //   'Job Reminder Notification',
+        //   `
+        //   <h2>This notification is from AI Interview</h2>
+        //   <p>${message}</p>
+        //   <p>Thank you for being a part of our community</p>
+        //   `
+        // );
 
         await sendSingleNotification(user_id,"Job Reminder Notification", message)
 
@@ -201,15 +234,37 @@ const upgradePlanReminderHandler = async () => {
       {
         continue
       }
-          await sendEmail(
-            user.email,
-            'Upgrade plan Notification',
-            `
-            <h2>This notification is from AI Interview</h2>
-            <p>${message}</p>
-            <p>Thank you for being a part of our community</p>
-            `
-          );
+
+      await sendEmail(
+        user.email,
+        '🚀 Upgrade Plan Notification',
+        generateEmailTemplate({
+          title: '🚀 Take Your Interview Prep to the Next Level!',
+          message: `
+            ${message}
+            <br /><br />
+            Upgrading to our <strong>Premium Plan</strong> unlocks:
+            <ul style="margin-top: 10px; margin-bottom: 10px; padding-left: 20px;">
+              <li>✅ Unlimited AI-powered interview simulations</li>
+              <li>✅ Personalized feedback and analytics</li>
+              <li>✅ Access to premium content and resources</li>
+              <li>✅ Priority support from our team</li>
+            </ul>
+            Don’t miss the chance to supercharge your preparation!
+          `,
+          ctaText: 'Upgrade Now',
+          ctaLink: 'https://cerulean-pavlova-50e690.netlify.app/pricing'
+        })
+      );
+          // await sendEmail(
+          //   user.email,
+          //   'Upgrade plan Notification',
+          //   `
+          //   <h2>This notification is from AI Interview</h2>
+          //   <p>${message}</p>
+          //   <p>Thank you for being a part of our community</p>
+          //   `
+          // );
 
 
           await sendSingleNotification(user.user_id,"Upgrade plan Notification", message)
