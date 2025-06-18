@@ -9,6 +9,9 @@ import { Resume } from '../resume/resume.model';
 import { Payment } from '../payment/payment.model';
 import { AssessmentModel } from '../vodeoAnalytics/video.model';
 import { NotificationListModel } from '../notifications/notifications.model';
+import { sendEmail } from '../../util/sendEmail';
+import { generateEmailTemplate } from '../../util/emailTemplate';
+import { sendSingleNotification } from '../firebaseSetup/sendPushNotification';
 
 const createUser = async (payload: Partial<TUser>, method?: string) => {
   // Validate password match
@@ -123,6 +126,34 @@ const createUser = async (payload: Partial<TUser>, method?: string) => {
       };
     }
 
+    // --- Send Welcome Email here ---
+
+    const notificationMessage = `
+    Hi ${fetchedUser.name || 'User'},<br /><br />
+    Thank you for registering with us! We're excited to have you on board.<br /><br />
+    Feel free to explore the platform and improve your interview skills.<br /><br />
+    Best wishes,<br />
+    The AI Interview Team
+  `;
+
+    await sendEmail(
+      fetchedUser.email,
+      'Welcome to AI Interview Platform!',
+      generateEmailTemplate({
+        title: '🎉 Welcome to AI Interview Platform!',
+        message: notificationMessage,
+        ctaText: 'Get Started',
+        ctaLink:
+          'https://cerulean-pavlova-50e690.netlify.app/userDashboard/mockInterview',
+      }),
+    );
+
+    await sendSingleNotification(
+      fetchedUser._id,
+      'Welcome to AI Interview',
+      notificationMessage,
+    );
+
     // Send OTP after transaction is complete
     const token = await authUtil.sendOTPviaEmail(fetchedUser);
 
@@ -187,7 +218,7 @@ const updateUserProfile = async (
   payload: Partial<TProfile> = {},
   imgFile?: Express.Multer.File,
 ) => {
-  const updatedProfileData = { ...payload }; 
+  const updatedProfileData = { ...payload };
 
   console.log('Image file received:', imgFile); // Debug log
 
