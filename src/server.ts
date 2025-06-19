@@ -21,7 +21,7 @@ async function main() {
     await adminSeeder();
     await planSeeder();
     await initializeLandingPage()
-    await skillsSeeder();
+    // await skillsSeeder();
 
     server = app.listen(config.port, () => {
       console.log(`AI Mock Interview server app listening on port ${config.port}`);
