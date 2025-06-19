@@ -12,11 +12,7 @@ import skillsSeeder from './seeder/skillsSeeder';
 import LoopPakageCleaner from './util/pakageClinner';
 import initializeLandingPage from './seeder/landingpageSeeder';
 
-
-
-
 let server: Server;
-
 
 async function main() {
   try {
@@ -25,12 +21,7 @@ async function main() {
     await adminSeeder();
     await planSeeder();
     await initializeLandingPage()
-
-
-    // await skillsSeeder();
-    
-
-
+    await skillsSeeder();
 
     server = app.listen(config.port, () => {
       console.log(`AI Mock Interview server app listening on port ${config.port}`);
