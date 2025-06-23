@@ -5,7 +5,7 @@ type TInterviewsAvailable = number | 'unlimited';
 
 export type TUser={
     name:string,
-    phone:string,
+    phone?:string,
     email:string,
     password:string,
     confirmPassword?:string
@@ -39,7 +39,7 @@ export type eachQuestionbankProgress = {
   
   export type TProfile = {
     name: string;
-    phone: string;
+    phone?: string;
     email: string;
     img?: string;
 

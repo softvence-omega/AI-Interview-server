@@ -7,7 +7,7 @@ import { date } from 'zod';
 const UserSchema = new Schema<TUser>(
   {
     name: { type: String, required: false, default: 'user' },
-    phone: { type: String, required: true, unique: false },
+    phone: { type: String, required: false, unique: false },
     email: { type: String, required: false, unique: false },
     password: { type: String, required: false },
     confirmPassword: { type: String, required: false },
@@ -63,7 +63,7 @@ const InterviewProgressSchema = new Schema({
 const ProfileSchema = new Schema(
   {
     name: { type: String, required: true },
-    phone: { type: String, required: true },
+    phone: { type: String, required: false },
     email: { type: String, required: false, unique: false },
     img: { type: String, default: "https://res.cloudinary.com/dpgcpei5u/image/upload/v1747546759/interviewProfile_jvo9jl.jpg" },
 
