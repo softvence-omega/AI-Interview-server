@@ -480,7 +480,7 @@ const otpcrossCheck = async (
   }
 
   return {
-    message: 'OTP verified successfully',
+    message: 'OTP verified successfully!',
     user: updateUser,
   };
 };
