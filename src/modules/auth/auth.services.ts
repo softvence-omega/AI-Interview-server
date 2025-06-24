@@ -364,6 +364,29 @@ const resetPassword = async (token: string, newPassword: string) => {
     throw Error('Error updating password');
   }
 
+  try {
+    console.log('Sending password reset email...');
+    await sendEmail(
+      decoded.email,
+      '🎉 Password Changed Successfully',
+      generateEmailTemplate({
+        title: 'Your Password Has Been Updated',
+        message: `
+          Dear ${findUser.name || 'User'},<br /><br />
+          Your password has been changed successfully. If this wasn’t you, please reset your password again immediately or contact our support.<br /><br />
+          Stay safe,<br />
+          The inPrep.ai Team
+        `,
+        ctaText: 'Login Now',
+        ctaLink: 'https://cerulean-pavlova-50e690.netlify.app/login',
+      })
+    );
+    console.log('✅ Password reset success email sent');
+  } catch (error) {
+    console.error('❌ Email sending failed:', error);
+  }
+  
+
   return {
     passwordChanged: true,
     message: 'Password reset successfully',
@@ -426,21 +449,23 @@ const otpcrossCheck = async (
       throw Error('cant update password now, something went wrong');
     }
 
-
-
     // Send email to user for password change
-    const emailContent = `
-    <p>Dear ${updateUser.name},</p>
-    <p>Your OTP has been verified successfully. You can now set a new password.</p>
-    <p>Thank you for using our service!</p>
-    <p>Best regards,</p>
-    <p>Your Company Name</p>
-    `;
-    const emailResponse = await sendEmail(
+    await sendEmail(
       updateUser.email,
-      'OTP Verified - Set New Password',
-      emailContent,
+      '✅ OTP Verified - Reset Your Password',
+      generateEmailTemplate({
+        title: 'OTP Verified Successfully',
+        message: `
+          Dear ${updateUser.name},<br /><br />
+          Your One-Time Password (OTP) has been verified successfully. You can now set your new password securely.<br /><br />
+          If you did not request this, please contact our support team immediately.<br /><br />
+          Thank you for using inPrep.ai!
+        `,
+        ctaText: 'Set New Password',
+        ctaLink: 'https://cerulean-pavlova-50e690.netlify.app/reset-password',
+      })
     );
+    
   }
   else{
      updateUser = await UserModel.findOneAndUpdate(
@@ -455,7 +480,7 @@ const otpcrossCheck = async (
   }
 
   return {
-    message: 'OTP verified successfully',
+    message: 'OTP verified successfully!',
     user: updateUser,
   };
 };
