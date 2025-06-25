@@ -16,6 +16,7 @@ import SkillsRoutes from '../modules/skills/skill.route';
 import websiteRoutes from '../modules/websiteConfig/websiteconfig.route';
 import landingPageRouter from '../modules/landingPage/landingPage.routes';
 import contactRoutes from '../modules/contact/contact.route';
+import positionRoues from '../modules/autoInterviewAndPosiionCreation/position.routes';
 
 const Routes = express.Router();
 // Array of module routes
@@ -75,6 +76,10 @@ const moduleRouts = [
   {
     path: '/contact',
     router: contactRoutes,
+  },
+  {
+    path: '/positions',
+    router: positionRoues,
   }
 ];
 
