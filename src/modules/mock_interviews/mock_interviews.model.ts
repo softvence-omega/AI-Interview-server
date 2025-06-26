@@ -50,11 +50,11 @@ const QuestionBankSchema = new Schema<TQuestion_Bank>({
     ref: 'MockInterview',
     required: true,
   },
-  img: { type: String, required: true, default:null },
+  img: { type: String, required: false, default:null },
   questionBank_name: { type: String, required: true },
-  duration: { type: Number, required: true },
-  difficulty_level: { type: String, required: true },
-  question_Type: { type: String, required: true },
+  duration: { type: Number, required: false , default:30 },
+  difficulty_level: { type: String, required: false, default: 'Easy' },
+  question_Type: { type: String, required: false , default:"MCQ"},
   description: { type: String, required: true },
   total_questions: { type: Number, required: false },
   what_to_expect: { type: [String], default: [] },
@@ -63,12 +63,10 @@ const QuestionBankSchema = new Schema<TQuestion_Bank>({
 
 // Mock Interview Schema
 const MockInterviewSchema = new Schema<TMock_Interviews>({
-  img: { type: String, required: true, default: 'img/link' },
+  img: { type: String, required: false, default: 'img/link' },
   interview_name: { type: String, required: true },
   total_Positions: { type: Number, required: false , default:0},
-  description: { type: String, required: true 
-
-  },
+  description: { type: String, required: true },
   isDeleted: { type: Boolean, default: false },
   question_bank_ids: [
     { type: mongoose.Schema.Types.ObjectId, ref: 'QuestionBank', default: [] },
