@@ -10,9 +10,17 @@ const getAllPositions =catchAsync(async(req,res)=>{
         data: result, // Replace with actual data fetching logic
     });
 })
+const getAllInterviews =catchAsync(async(req,res)=>{
+    const result = await positionServices.getAllInterviews();
+    res.status(200).json({
+        status: "success",
+        message: "All positions fetched successfully",
+        data: result, // Replace with actual data fetching logic
+    });
+})
 
 const positionController = {
-    getAllPositions
+    getAllPositions,getAllInterviews
 }
 
 export default positionController
