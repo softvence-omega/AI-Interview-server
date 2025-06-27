@@ -26,4 +26,11 @@ MockInterviewRoutes.post("/genarateSingleQuestion_ByAi_for_Retake",auth([userRol
 MockInterviewRoutes.get("/getIncompleteInterviews", auth([userRole.admin, userRole.user]),Mock_interviewsController.getIncompleteInterviews)
 
 
+
+
+
+
+// add question generation preference here=========>>>>>>>>>>
+
+
 export default MockInterviewRoutes;

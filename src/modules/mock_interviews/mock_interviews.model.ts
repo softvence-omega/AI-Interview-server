@@ -2,9 +2,50 @@ import mongoose, { Schema, model } from 'mongoose';
 import {
   TEach_Question,
   TMock_Interviews,
+  TMockInterviewTopicPreference,
   TQuestion_Bank,
   TQuestionList,
 } from './mock_interviews.interface';
+
+
+
+const mockInterviewTopicPreferenceSchema = new Schema<TMockInterviewTopicPreference>(
+  {
+    questionBank_id: {
+      type: Schema.Types.ObjectId,
+      ref: 'QuestionBank', // Reference to QuestionBank model
+      required: [true, 'Question bank ID is required'],
+    },
+    user_id: {
+      type: Schema.Types.ObjectId,
+      ref: 'UserCollection', // Reference to User model
+      required: [true, 'User ID is required'],
+    },
+    question_Type: {
+      type: String,
+      required: [true, 'Question type is required'],
+      trim: true,
+    },
+    difficulty_level: {
+      type: String,
+      required: [true, 'Difficulty level is required'],
+      trim: true,
+    },
+    what_to_expect: {
+      type: [String],
+      required: [true, 'What to expect is required'],
+      validate: {
+        validator: (arr: string[]) => arr.length > 0,
+        message: 'What to expect must contain at least one item',
+      },
+    },
+  },
+  {
+    timestamps: true, // Automatically adds createdAt and updatedAt fields
+  }
+);
+
+
 
 // Schema for each question inside a question bank
 const EachQuestionSchema = new Schema<TEach_Question>({
@@ -73,6 +114,8 @@ const MockInterviewSchema = new Schema<TMock_Interviews>({
   ],
 });
 
+
+
 // Models
 export const QuestionListModel = model<TQuestionList>(
   'QuestionList',
@@ -80,3 +123,7 @@ export const QuestionListModel = model<TQuestionList>(
 );
 export const QuestionBankModel = model('QuestionBank', QuestionBankSchema);
 export const MockInterviewModel = model('MockInterview', MockInterviewSchema);
+export const MocTopicPreferenceModel = model<TMockInterviewTopicPreference>(
+  'MockInterviewTopicPreference',
+  mockInterviewTopicPreferenceSchema
+);

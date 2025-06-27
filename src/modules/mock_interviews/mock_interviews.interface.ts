@@ -1,5 +1,13 @@
 import { Document, Types } from 'mongoose';
 
+export type TMockInterviewTopicPreference ={
+  questionBank_id:Types.ObjectId;
+  user_id:Types.ObjectId;
+  question_Type: string;
+  difficulty_level: string;
+  what_to_expect: string[];
+}
+
 export type TEach_Question = Document & {
   interview_id: Types.ObjectId;
   questionBank_id: Types.ObjectId;
