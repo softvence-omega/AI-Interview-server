@@ -17,15 +17,46 @@ import { Resume } from '../resume/resume.model';
 import config from '../../config';
 
 // ---------------- MOCK INTERVIEW ----------------
-const create_mock_interview = async (file: any, data: any) => {
-  if (!file) {
-    throw Error('img file is required yoooooooo');
+// const create_mock_interview = async (file: any, data: any) => {
+//   if (!file) {
+//     throw Error('img file is required yoooooooo');
+//   }
+//   const uploadImg = await uploadImgToCloudinary(file.name, file.path);
+//   console.log(uploadImg);
+
+//   const updateData = { ...data, img: uploadImg.secure_url };
+
+//   const result = await MockInterviewModel.create(updateData);
+//   return result;
+// };
+
+
+const create_mock_interview = async (data: any, file?: any) => {
+  // Validate data exists
+  if (!data) {
+    throw new Error('Data payload is missing');
   }
-  const uploadImg = await uploadImgToCloudinary(file.name, file.path);
-  console.log(uploadImg);
 
-  const updateData = { ...data, img: uploadImg.secure_url };
+  let updateData = { ...data };
 
+  // Handle file upload if provided
+  if (file) {
+    if (!file.name || !file.path) {
+      throw new Error('File object must contain name and path properties');
+    }
+
+    try {
+      const uploadImg = await uploadImgToCloudinary(file.name, file.path);
+      if (!uploadImg?.secure_url) {
+        throw new Error('Failed to retrieve secure_url from Cloudinary');
+      }
+      updateData = { ...data, img: uploadImg.secure_url };
+    } catch (error:any) {
+      throw new Error(`Image upload failed: ${error.message}`);
+    }
+  }
+
+  // Create record in MockInterviewModel
   const result = await MockInterviewModel.create(updateData);
   return result;
 };
@@ -169,17 +200,65 @@ const get_mock_interview = async (
 
 // ---------------- QUESTION BANK ----------------
 
-const create_question_bank = async (
-  file: any,
-  payload: Partial<TQuestion_Bank>,
-) => {
-  if (!file) {
-    throw Error('img file is required yoooooooo');
-  }
-  const uploadImg = await uploadImgToCloudinary(file.name, file.path);
-  console.log(uploadImg);
+// const create_question_bank = async (
+//   file: any,
+//   payload: Partial<TQuestion_Bank>,
+// ) => {
+//   if (!file) {
+//     throw Error('img file is required yoooooooo');
+//   }
+//   const uploadImg = await uploadImgToCloudinary(file.name, file.path);
+//   console.log(uploadImg);
 
-  const updateData = { ...payload, img: uploadImg.secure_url };
+//   const updateData = { ...payload, img: uploadImg.secure_url };
+//   // Step 1: Create the Question Bank
+//   const createdQuestionBank = await QuestionBankModel.create(updateData);
+
+//   // Step 2: Add the Question Bank ID to its corresponding Mock Interview
+//   if (payload.interview_id) {
+//     await MockInterviewModel.findByIdAndUpdate(
+//       payload.interview_id,
+//       {
+//         $addToSet: {
+//           question_bank_ids: createdQuestionBank._id, // Add to array
+//         },
+//         $inc: {
+//           total_Positions: 1, // Increment by 1
+//         },
+//       },
+//       { new: true },
+//     );
+//   }
+
+//   // Step 3: Return the created Question Bank
+//   return createdQuestionBank;
+// };
+
+
+
+const create_question_bank = async (
+  payload: Partial<TQuestion_Bank>,
+  file?: any
+) => {
+  let updateData = { ...payload };
+
+  // Handle file upload if provided
+  if (file) {
+    if (!file.name || !file.path) {
+      throw new Error('File object must contain name and path properties');
+    }
+
+    try {
+      const uploadImg = await uploadImgToCloudinary(file.name, file.path);
+      if (!uploadImg?.secure_url) {
+        throw new Error('Failed to retrieve secure_url from Cloudinary');
+      }
+      updateData = { ...payload, img: uploadImg.secure_url };
+    } catch (error:any) {
+      throw new Error(`Image upload failed: ${error.message}`);
+    }
+  }
+
   // Step 1: Create the Question Bank
   const createdQuestionBank = await QuestionBankModel.create(updateData);
 
@@ -195,13 +274,17 @@ const create_question_bank = async (
           total_Positions: 1, // Increment by 1
         },
       },
-      { new: true },
+      { new: true }
     );
   }
 
   // Step 3: Return the created Question Bank
   return createdQuestionBank;
 };
+
+
+
+
 
 const update_question_bank = async (id: Types.ObjectId, file?: any, payload?: any) => {
   const ALLOWED_FIELDS = [

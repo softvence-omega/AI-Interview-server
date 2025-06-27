@@ -33,7 +33,8 @@ const config = {
 
   OTP_TOKEN_DURATION: process.env.OTP_TOKEN_DURATION as string,
 
-  AI_BASE_URL:process.env.AI_BASE_URL as string
+  AI_BASE_URL:process.env.AI_BASE_URL as string,
+  ai_route_access_key:process.env.ai_route_access_key as string
 };
 export default config;
 
