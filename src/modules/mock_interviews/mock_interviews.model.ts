@@ -50,7 +50,7 @@ const QuestionBankSchema = new Schema<TQuestion_Bank>({
     ref: 'MockInterview',
     required: true,
   },
-  img: { type: String, required: false, default:null },
+  img: { type: String, required: false, default: 'https://res.cloudinary.com/dpgcpei5u/image/upload/v1750939089/103131-OMJDY9-759_qi0rbh.jpg' },
   questionBank_name: { type: String, required: true },
   duration: { type: Number, required: false , default:30 },
   difficulty_level: { type: String, required: false, default: 'Easy' },
@@ -63,7 +63,7 @@ const QuestionBankSchema = new Schema<TQuestion_Bank>({
 
 // Mock Interview Schema
 const MockInterviewSchema = new Schema<TMock_Interviews>({
-  img: { type: String, required: false, default: 'img/link' },
+  img: { type: String, required: false, default: 'https://res.cloudinary.com/dpgcpei5u/image/upload/v1750938963/3feb22_general_nuraghies_11_hv1fjx.jpg' },
   interview_name: { type: String, required: true },
   total_Positions: { type: Number, required: false , default:0},
   description: { type: String, required: true },
