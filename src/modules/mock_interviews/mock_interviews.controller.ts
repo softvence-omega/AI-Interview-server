@@ -10,13 +10,15 @@ const create_mock_interview = catchAsync(async (req: Request, res: Response) => 
   let file: Express.Multer.File | undefined;
   
   try {
-    if (!req.file) {
-      return res.status(400).json({ success: false, message: 'No file uploaded' });
-    }
+
 
     req.body = req.body.data ? JSON.parse(req.body.data) : {};
-    file = req.file;
-  } catch (error: any) {
+    if(req.file )
+    {
+      file = req.file;
+    }
+  } 
+  catch (error: any) {
     return res.status(error instanceof SyntaxError ? 400 : 500).json({
       success: false,
       message: error instanceof SyntaxError ? 'Invalid JSON in data' : 'Server error',
@@ -24,7 +26,7 @@ const create_mock_interview = catchAsync(async (req: Request, res: Response) => 
     });
   }
 
-  const result = await MockInterviewsService.create_mock_interview(file, req.body);
+  const result = await MockInterviewsService.create_mock_interview( req.body,file,);
 
   res.status(201).json({
     success: true,
@@ -32,6 +34,9 @@ const create_mock_interview = catchAsync(async (req: Request, res: Response) => 
     body: result,
   });
 });
+
+
+
 
 
 const update_mock_interview = catchAsync(
@@ -105,17 +110,44 @@ const get_mock_interview = catchAsync(async (req: Request, res: Response) => {
 
 // ---------------- QUESTION BANK ----------------
 
-const create_question_bank = catchAsync(async (req: Request, res: Response) => {
+// const create_question_bank = catchAsync(async (req: Request, res: Response) => {
 
-  let file: Express.Multer.File | undefined;
+//   let file: Express.Multer.File | undefined;
   
-  try {
-    if (!req.file) {
-      return res.status(400).json({ success: false, message: 'No file uploaded' });
-    }
+//   try {
+//     if (!req.file) {
+//       return res.status(400).json({ success: false, message: 'No file uploaded' });
+//     }
 
-    req.body = req.body.data ? JSON.parse(req.body.data) : {};
-    file = req.file;
+//     req.body = req.body.data ? JSON.parse(req.body.data) : {};
+//     file = req.file;
+//   } catch (error: any) {
+//     return res.status(error instanceof SyntaxError ? 400 : 500).json({
+//       success: false,
+//       message: error instanceof SyntaxError ? 'Invalid JSON in data' : 'Server error',
+//       error: error.message,
+//     });
+//   }
+
+
+
+//   const result = await MockInterviewsService.create_question_bank(file, req.body);
+//   res.status(201).json({
+//     success: true,
+//     message: 'Question bank created successfully',
+//     body: result,
+//   });
+// });
+
+
+
+
+const create_question_bank = catchAsync(async (req: Request, res: Response) => {
+  let payload
+
+  // Parse and validate request body
+  try {
+    payload = req.body.data ? JSON.parse(req.body.data) : {};
   } catch (error: any) {
     return res.status(error instanceof SyntaxError ? 400 : 500).json({
       success: false,
@@ -124,15 +156,33 @@ const create_question_bank = catchAsync(async (req: Request, res: Response) => {
     });
   }
 
+  // Validate payload
+  if (!payload || Object.keys(payload).length === 0) {
+    return res.status(400).json({
+      success: false,
+      message: 'Request payload is missing or empty',
+    });
+  }
 
-
-  const result = await MockInterviewsService.create_question_bank(file, req.body);
-  res.status(201).json({
-    success: true,
-    message: 'Question bank created successfully',
-    body: result,
-  });
+  // Call the service to create the question bank
+  try {
+    const result = await MockInterviewsService.create_question_bank(payload, req.file);
+    return res.status(201).json({
+      success: true,
+      message: 'Question bank created successfully',
+      body: result,
+    });
+  } catch (error: any) {
+    return res.status(500).json({
+      success: false,
+      message: 'Failed to create question bank',
+      error: error.message,
+    });
+  }
 });
+
+
+
 
 const update_question_bank = catchAsync(async (req: Request, res: Response) => {
   const question_bank_id = req.query.question_bank_id as string;

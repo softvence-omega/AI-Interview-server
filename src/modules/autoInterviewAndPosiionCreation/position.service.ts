@@ -144,11 +144,24 @@ const automateInterviewAndPositionCreation = async (payload: any) => {
     throw Error('user_id is missing');
   }
 
+  // call the user for the skill that he has 
+
+  // const userSkills = await 
+
+
+
+
   // Case 1: Both isInterviewMatched and isPositionMatched are true ======>>> just update the questionBank
   if (isInterviewMatched && isPositionMatched) {
     if (!interview_id || !position_id) {
       throw Error('Both interview_id and position_id are required when isInterviewMatched and isPositionMatched are true');
     }
+
+    
+
+    // calling update question bank from the mock interview
+    // const updateQuestionBank = await 
+
     return; 
   }
 
@@ -175,6 +188,8 @@ const automateInterviewAndPositionCreation = async (payload: any) => {
 
 
 };
+
+
 
 const positionServices = {
   getAllPositions,
