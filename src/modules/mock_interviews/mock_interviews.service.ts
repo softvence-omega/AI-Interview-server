@@ -42,9 +42,9 @@ const create_mock_interview = async (data: any, file?: any) => {
 
   // Handle file upload if provided
   if (file) {
-    if (!file.name || !file.path) {
-      throw new Error('File object must contain name and path properties');
-    }
+    // if (!file.name || !file.path) {
+    //   throw new Error('File object must contain name and path properties');
+    // }
 
     try {
       const uploadImg = await uploadImgToCloudinary(file.name, file.path);
