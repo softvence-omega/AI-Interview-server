@@ -4,6 +4,7 @@ import { sendEmail } from '../../../util/sendEmail';
 import { generateEmailTemplate } from '../../../util/emailTemplate';
 import { sendSingleNotification } from '../../firebaseSetup/sendPushNotification';
 import { UserModel } from '../../user/user.model';
+import config from '../../../config';
 
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY as string, {
   apiVersion: '2025-02-24.acacia',
@@ -26,8 +27,8 @@ export const createStripeCheckoutSession = async (
     payment_method_types: ['card'],
     line_items: [{ price: priceId, quantity: 1 }],
     success_url:
-      'http://localhost:5173/payment-status?status=success&session_id={CHECKOUT_SESSION_ID}',
-    cancel_url: 'http://localhost:5173/payment-status?status=cancel',
+      `${config.FRONTEND_URL}/payment-status?status=success&session_id={CHECKOUT_SESSION_ID}`,
+    cancel_url: `${config.FRONTEND_URL}/payment-status?status=cancel`,
     metadata: { userId },
   });
 
