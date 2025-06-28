@@ -31,6 +31,7 @@ MockInterviewRoutes.get("/getIncompleteInterviews", auth([userRole.admin, userRo
 
 
 // add question generation preference here=========>>>>>>>>>>
+MockInterviewRoutes.get("/getUserPreferenceBasedOnQuestionBankId", auth([userRole.admin, userRole.user]),Mock_interviewsController.getUserPreferenceBasedOnQuestionBankId)
 
 
 export default MockInterviewRoutes;
