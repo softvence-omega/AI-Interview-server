@@ -35,10 +35,6 @@ const create_mock_interview = catchAsync(async (req: Request, res: Response) => 
   });
 });
 
-
-
-
-
 const update_mock_interview = catchAsync(
   async (req: Request, res: Response) => {
     const interview_id = req.query.interview_id as string;
@@ -107,6 +103,8 @@ const get_mock_interview = catchAsync(async (req: Request, res: Response) => {
     body: result,
   });
 });
+
+
 
 // ---------------- QUESTION BANK ----------------
 
@@ -181,9 +179,6 @@ const create_question_bank = catchAsync(async (req: Request, res: Response) => {
   }
 });
 
-
-
-
 const update_question_bank = catchAsync(async (req: Request, res: Response) => {
   const question_bank_id = req.query.question_bank_id as string;
   const converted_QB_id = idConverter(question_bank_id);
@@ -248,9 +243,12 @@ const genarateQuestionSet_ByAi = catchAsync(async (req, res) => {
   const isRetake = req.query.isRetake as string;
   const converted_isRetake = isRetake === 'true' ? true : false;
 
+  const topicPreference = req.body
+
   const result = await MockInterviewsService.genarateQuestionSet_ByAi(
     converted_QB_id as Types.ObjectId,
     converted_user_id as Types.ObjectId,
+    topicPreference,
     converted_isRetake,
   );
 

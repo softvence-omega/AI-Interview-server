@@ -3,10 +3,11 @@
 import { startSession, Types } from 'mongoose';
 import {
   MockInterviewModel,
+  MocTopicPreferenceModel,
   QuestionBankModel,
   QuestionListModel,
 } from './mock_interviews.model';
-import { TMock_Interviews, TQuestion_Bank } from './mock_interviews.interface';
+import { TMock_Interviews, TMockInterviewTopicPreference, TQuestion_Bank } from './mock_interviews.interface';
 import idConverter from '../../util/idConvirter';
 import mockInterviewUtill from './mock_interview.utill';
 import progressUtill from '../../util/setAndUpdateprogress';
@@ -384,6 +385,7 @@ const get_question_bank = async (Query: any) => {
 const genarateQuestionSet_ByAi = async (
   questionBank_id: Types.ObjectId,
   user_id: Types.ObjectId,
+  topicPreference:Partial<TMockInterviewTopicPreference>,
   isRetake?: boolean,
 ) => {
   try {
@@ -520,10 +522,48 @@ const genarateQuestionSet_ByAi = async (
       });
     }
 
-    // Step 4: Prepare prompt and generate new questions
-    // const prompt = `${findQuestionBank.questionBank_name} ${findQuestionBank.what_to_expect.join(' ')}`;
 
-    const prompt = `${findQuestionBank?.questionBank_name || ''} ${findQuestionBank?.what_to_expect?.join(' ') || ''} minimum 5 questions with time limit`;
+    if(!topicPreference.what_to_expect){
+      throw new Error ("what to expect is required for question generation")
+    }
+    if(!topicPreference.question_Type) {
+      throw new Error('question_Type is required for question generation');
+    }
+    if(!topicPreference.difficulty_level) {
+      throw new Error('difficulty_level is required for question generation');
+    }
+    
+
+
+    // create question preference and if exist then update the preference 
+      // Create or update question preference
+      const createOrUpdateQuestionPreference = await MocTopicPreferenceModel.findOneAndUpdate(
+        {
+          questionBank_id: questionBank_id,
+          user_id: user_id,
+        },
+        {
+          $set: {
+            ...topicPreference,
+            questionBank_id: questionBank_id,
+            user_id: user_id,
+          },
+        },
+        {
+          upsert: true, // Create if not exists
+          new: true, // Return the updated document
+        }
+      );
+      if(!createOrUpdateQuestionPreference)
+      {
+        throw new Error ('Failed to create or update question preference during question generation');
+      }
+
+
+    // Step 4: Prepare prompt and generate new questions
+
+
+    const prompt = `${findQuestionBank?.questionBank_name || ''} ${topicPreference.what_to_expect.join(' ')} based on those give me minimum 8 question with time limit and question type will be ${topicPreference.question_Type}. and question difficulty will be ${topicPreference.difficulty_level} .if question_Type is MCQ MCQ question then give me 4 options for each question and make sure to include the correct answer in the options.`;
     const data = await mockInterviewUtill.generateQuestions(prompt);
 
     if (data.questions.length >= 0) {
@@ -588,6 +628,18 @@ const genarateQuestionSet_ByAi = async (
   }
 };
 
+
+
+
+
+
+
+
+
+
+
+
+
 const genarateSingleQuestion_ByAi_for_Retake = async (
   questionBank_id: Types.ObjectId,
   user_id: Types.ObjectId,
@@ -602,9 +654,19 @@ const genarateSingleQuestion_ByAi_for_Retake = async (
     if (!findQuestionBank) {
       throw new Error('Question bank not found');
     }
+    // find question generation preference here=========>>>>>>>>>>
+    const findQuestionPreference = await MocTopicPreferenceModel.findOne({
+      questionBank_id: questionBank_id,
+      user_id: user_id,
+    });
+
+    if (!findQuestionPreference) {
+      throw new Error('Question preference not found cant retake question');
+    }
+
 
     // Generate prompt for AI API
-    const prompt = `${findQuestionBank.questionBank_name} ${findQuestionBank.what_to_expect.join(' ')} based on those give me a single question with time limit and question type will be ${findQuestionBank.question_Type}. and question difficulty will be ${findQuestionBank.difficulty_level}`;
+    const prompt = `${findQuestionBank.questionBank_name} ${findQuestionPreference.what_to_expect.join(' ')} based on those give me single question with time limit and question type will be ${findQuestionPreference.question_Type}. and question difficulty will be ${findQuestionPreference.difficulty_level}.if question_Type is MCQ question then give me 4 options for each question and make sure to include the correct answer in the options.`;
     const encodedPrompt = encodeURIComponent(prompt);
 
     const url = `${config.AI_BASE_URL}/q_generator/generate-questions?topic=${encodedPrompt}`;
