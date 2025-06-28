@@ -299,6 +299,26 @@ res.status(200).json({
 
 })
 
+
+//===============get prefarance based on question bank id========================
+
+const getUserPreferenceBasedOnQuestionBankId= catchAsync(async (req: Request, res: Response) => {
+  const questionBank_id = req.query.questionBank_id as string;
+  const converted_QB_id = idConverter(questionBank_id);
+  const user_id = req.user.id as string;
+  const converted_user_id = idConverter(user_id);
+
+  const result = await MockInterviewsService.getUserPreferenceBasedOnQuestionBankId(
+    converted_QB_id as Types.ObjectId,
+    converted_user_id as Types.ObjectId,
+  );
+  res.status(200).json({
+    success: true,
+    message: 'User preference retrieved successfully',
+    body: result,
+  });
+});
+
 const Mock_interviewsController = {
   get_mock_interview,
   create_mock_interview,
@@ -313,7 +333,9 @@ const Mock_interviewsController = {
   genarateQuestionSet_ByAi,
   genarateSingleQuestion_ByAi_for_Retake,
 
-  getIncompleteInterviews
+  getIncompleteInterviews,
+
+  getUserPreferenceBasedOnQuestionBankId
 };
 
 export default Mock_interviewsController;

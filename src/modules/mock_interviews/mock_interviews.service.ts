@@ -7,7 +7,11 @@ import {
   QuestionBankModel,
   QuestionListModel,
 } from './mock_interviews.model';
-import { TMock_Interviews, TMockInterviewTopicPreference, TQuestion_Bank } from './mock_interviews.interface';
+import {
+  TMock_Interviews,
+  TMockInterviewTopicPreference,
+  TQuestion_Bank,
+} from './mock_interviews.interface';
 import idConverter from '../../util/idConvirter';
 import mockInterviewUtill from './mock_interview.utill';
 import progressUtill from '../../util/setAndUpdateprogress';
@@ -31,7 +35,6 @@ import config from '../../config';
 //   return result;
 // };
 
-
 const create_mock_interview = async (data: any, file?: any) => {
   // Validate data exists
   if (!data) {
@@ -52,7 +55,7 @@ const create_mock_interview = async (data: any, file?: any) => {
         throw new Error('Failed to retrieve secure_url from Cloudinary');
       }
       updateData = { ...data, img: uploadImg.secure_url };
-    } catch (error:any) {
+    } catch (error: any) {
       throw new Error(`Image upload failed: ${error.message}`);
     }
   }
@@ -62,11 +65,12 @@ const create_mock_interview = async (data: any, file?: any) => {
   return result;
 };
 
-const update_mock_interview = async (id: Types.ObjectId, file?: any, payload?: any) => {
-  const ALLOWED_FIELDS = [
-    'interview_name',
-    'description',
-  ];
+const update_mock_interview = async (
+  id: Types.ObjectId,
+  file?: any,
+  payload?: any,
+) => {
+  const ALLOWED_FIELDS = ['interview_name', 'description'];
 
   // Filter the payload to keep only allowed fields
   const filteredPayload: Partial<typeof payload> = {};
@@ -85,13 +89,9 @@ const update_mock_interview = async (id: Types.ObjectId, file?: any, payload?: a
   }
 
   // Update the document
-  const result = await MockInterviewModel.findByIdAndUpdate(
-    id,
-    updateData,
-    {
-      new: true,
-    },
-  );
+  const result = await MockInterviewModel.findByIdAndUpdate(id, updateData, {
+    new: true,
+  });
 
   if (!result) {
     throw new Error('Mock interview not found or update failed');
@@ -156,13 +156,21 @@ const get_mock_interview = async (
     if (query?.interview_name) {
       filter.interview_name = { $regex: query.interview_name, $options: 'i' };
     }
-    const interviews = await MockInterviewModel.find(filter).populate('question_bank_ids');
+    const interviews =
+      await MockInterviewModel.find(filter).populate('question_bank_ids');
     return interviews;
   } else {
-    const findSkills = await Resume.findOne({ user_id }).select('technicalSkills');
+    const findSkills = await Resume.findOne({ user_id }).select(
+      'technicalSkills',
+    );
 
-    if (!findSkills || !findSkills.technicalSkills || findSkills.technicalSkills.length === 0) {
-      const allInterviews = await MockInterviewModel.find(filter).populate('question_bank_ids');
+    if (
+      !findSkills ||
+      !findSkills.technicalSkills ||
+      findSkills.technicalSkills.length === 0
+    ) {
+      const allInterviews =
+        await MockInterviewModel.find(filter).populate('question_bank_ids');
       return {
         suggested: [],
         all_InterView: allInterviews,
@@ -172,13 +180,17 @@ const get_mock_interview = async (
     const skills = findSkills.technicalSkills; // Array of skills, e.g., ["JavaScript", "Python"]
 
     // Fetch all interviews with populated question_bank_ids
-    const allInterviews = await MockInterviewModel.find(filter).populate('question_bank_ids');
+    const allInterviews =
+      await MockInterviewModel.find(filter).populate('question_bank_ids');
 
     // Manually filter interviews based on skills matching what_to_expect
     const matchingInterviews = allInterviews.filter((interview) => {
       // Check if any question_bank_ids.what_to_expect contains any skill
       return interview.question_bank_ids.some((questionBank: any) => {
-        if (!questionBank.what_to_expect || !Array.isArray(questionBank.what_to_expect)) {
+        if (
+          !questionBank.what_to_expect ||
+          !Array.isArray(questionBank.what_to_expect)
+        ) {
           return false;
         }
         return questionBank.what_to_expect.some((expect: string) =>
@@ -235,11 +247,9 @@ const get_mock_interview = async (
 //   return createdQuestionBank;
 // };
 
-
-
 const create_question_bank = async (
   payload: Partial<TQuestion_Bank>,
-  file?: any
+  file?: any,
 ) => {
   let updateData = { ...payload };
 
@@ -255,7 +265,7 @@ const create_question_bank = async (
         throw new Error('Failed to retrieve secure_url from Cloudinary');
       }
       updateData = { ...payload, img: uploadImg.secure_url };
-    } catch (error:any) {
+    } catch (error: any) {
       throw new Error(`Image upload failed: ${error.message}`);
     }
   }
@@ -275,7 +285,7 @@ const create_question_bank = async (
           total_Positions: 1, // Increment by 1
         },
       },
-      { new: true }
+      { new: true },
     );
   }
 
@@ -283,11 +293,11 @@ const create_question_bank = async (
   return createdQuestionBank;
 };
 
-
-
-
-
-const update_question_bank = async (id: Types.ObjectId, file?: any, payload?: any) => {
+const update_question_bank = async (
+  id: Types.ObjectId,
+  file?: any,
+  payload?: any,
+) => {
   const ALLOWED_FIELDS = [
     'questionBank_name',
     'duration',
@@ -296,7 +306,7 @@ const update_question_bank = async (id: Types.ObjectId, file?: any, payload?: an
     'description',
     'what_to_expect',
   ];
-  
+
   // Filter the payload to keep only allowed fields
   const filteredPayload: Partial<typeof payload> = {};
   for (const key of ALLOWED_FIELDS) {
@@ -314,13 +324,9 @@ const update_question_bank = async (id: Types.ObjectId, file?: any, payload?: an
   }
 
   // Update the document
-  const result = await QuestionBankModel.findByIdAndUpdate(
-    id,
-    updateData,
-    {
-      new: true,
-    },
-  );
+  const result = await QuestionBankModel.findByIdAndUpdate(id, updateData, {
+    new: true,
+  });
 
   if (!result) {
     throw new Error('Question bank not found or update failed');
@@ -385,7 +391,7 @@ const get_question_bank = async (Query: any) => {
 const genarateQuestionSet_ByAi = async (
   questionBank_id: Types.ObjectId,
   user_id: Types.ObjectId,
-  topicPreference:Partial<TMockInterviewTopicPreference>,
+  topicPreference: Partial<TMockInterviewTopicPreference>,
   isRetake?: boolean,
 ) => {
   try {
@@ -402,8 +408,7 @@ const genarateQuestionSet_ByAi = async (
       isSummary: true,
     });
 
-
-    console.log("looking for summary   =============>", lookForSummary)
+    console.log('looking for summary   =============>', lookForSummary);
 
     //now return the history as summary is found
 
@@ -505,16 +510,12 @@ const genarateQuestionSet_ByAi = async (
       user_id: user_id,
     }).select('interviewsAvailable');
 
-    if (
-      !findIfthereIsCredit ||
-      findIfthereIsCredit.interviewsAvailable <= 0
-    ) {
+    if (!findIfthereIsCredit || findIfthereIsCredit.interviewsAvailable <= 0) {
       throw new Error(
         "You don't have enough credits to retake this question bank. consider purchasing a plan",
       );
     }
 
-    
     if (isRetake) {
       await AssessmentModel.deleteMany({
         questionBank_id: questionBank_id,
@@ -522,56 +523,60 @@ const genarateQuestionSet_ByAi = async (
       });
     }
 
-
-    if(!topicPreference.what_to_expect){
-      throw new Error ("what to expect is required for question generation")
+    if (!topicPreference.what_to_expect) {
+      throw new Error('what to expect is required for question generation');
     }
-    if(!topicPreference.question_Type) {
+    if (!topicPreference.question_Type) {
       throw new Error('question_Type is required for question generation');
     }
-    if(!topicPreference.difficulty_level) {
+    if (!topicPreference.difficulty_level) {
       throw new Error('difficulty_level is required for question generation');
     }
-    
 
+    // create question preference and if exist then update the preference
 
-    // create question preference and if exist then update the preference 
-      // Create or update question preference
-      const createOrUpdateQuestionPreference = await MocTopicPreferenceModel.findOneAndUpdate(
+    console.log("incomming data ======******===>>" , topicPreference)
+    // Create or update question preference
+    const createOrUpdateQuestionPreference =
+      await MocTopicPreferenceModel.findOneAndUpdate(
         {
           questionBank_id: questionBank_id,
           user_id: user_id,
         },
         {
-          $set: {
-            ...topicPreference,
-            questionBank_id: questionBank_id,
-            user_id: user_id,
-          },
+          what_to_expect: topicPreference.what_to_expect,
+          question_Type: topicPreference.question_Type,
+          difficulty_level: topicPreference.difficulty_level,
+          questionBank_id: questionBank_id,
+          user_id: user_id,
         },
         {
           upsert: true, // Create if not exists
           new: true, // Return the updated document
-        }
+        },
       );
-      if(!createOrUpdateQuestionPreference)
-      {
-        throw new Error ('Failed to create or update question preference during question generation');
-      }
+    if (!createOrUpdateQuestionPreference) {
+      throw new Error(
+        'Failed to create or update question preference during question generation',
+      );
+    }
 
+    console.log(
+      'updated preference*******************',
+      createOrUpdateQuestionPreference,
+    );
 
     // Step 4: Prepare prompt and generate new questions
 
-
-    const prompt = `${findQuestionBank?.questionBank_name || ''} ${topicPreference.what_to_expect.join(' ')} based on those give me minimum 8 question with time limit and question type will be ${topicPreference.question_Type}. and question difficulty will be ${topicPreference.difficulty_level} .if question_Type is MCQ MCQ question then give me 4 options for each question and make sure to include the correct answer in the options.`;
+    const prompt = `${findQuestionBank?.questionBank_name || ''} position. topics are${topicPreference.what_to_expect.join(' ')} based on those give me minimum 8 question with time limit and question type will be ${topicPreference.question_Type}. and question difficulty will be ${topicPreference.difficulty_level}.if question_Type is MCQ question then give me 4 options for each question and make sure to include the correct answer in the options.`;
     const data = await mockInterviewUtill.generateQuestions(prompt);
 
     if (data.questions.length >= 0) {
       const updateAvailableInterviewsCount =
         await ProfileModel.findOneAndUpdate(
           { user_id: user_id },
-          { 
-            $inc: { interviewsAvailable: -1 , interviewTaken:1}//interview taken updated here
+          {
+            $inc: { interviewsAvailable: -1, interviewTaken: 1 }, //interview taken updated here
           },
           { new: true },
         );
@@ -628,18 +633,6 @@ const genarateQuestionSet_ByAi = async (
   }
 };
 
-
-
-
-
-
-
-
-
-
-
-
-
 const genarateSingleQuestion_ByAi_for_Retake = async (
   questionBank_id: Types.ObjectId,
   user_id: Types.ObjectId,
@@ -664,9 +657,15 @@ const genarateSingleQuestion_ByAi_for_Retake = async (
       throw new Error('Question preference not found cant retake question');
     }
 
+    console.log("i am from single retake  >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>",findQuestionPreference )
 
     // Generate prompt for AI API
-    const prompt = `${findQuestionBank.questionBank_name} ${findQuestionPreference.what_to_expect.join(' ')} based on those give me single question with time limit and question type will be ${findQuestionPreference.question_Type}. and question difficulty will be ${findQuestionPreference.difficulty_level}.if question_Type is MCQ question then give me 4 options for each question and make sure to include the correct answer in the options.`;
+    const prompt = `${findQuestionBank.questionBank_name}position. topics are ${findQuestionPreference.what_to_expect.join(' ')} based on those give me single question with time limit and question type will be ${findQuestionPreference.question_Type}. and question difficulty will be ${findQuestionPreference.difficulty_level}.if question_Type is MCQ question then give me 4 options for each question and make sure to include the correct answer in the options.`;
+
+
+    console.log("promt for single retake =====================>", prompt);
+
+
     const encodedPrompt = encodeURIComponent(prompt);
 
     const url = `${config.AI_BASE_URL}/q_generator/generate-questions?topic=${encodedPrompt}`;
@@ -746,7 +745,6 @@ const genarateSingleQuestion_ByAi_for_Retake = async (
   }
 };
 
-
 const getIncompleteInterviews = async (user_id: Types.ObjectId) => {
   // Find profile by user_id
   const findProfile = await ProfileModel.findOne({ user_id: user_id }).lean();
@@ -773,6 +771,20 @@ const getIncompleteInterviews = async (user_id: Types.ObjectId) => {
 };
 
 
+
+//========get user preference based on question bank id========================
+
+const getUserPreferenceBasedOnQuestionBankId = async (
+  questionBank_id: Types.ObjectId,
+  user_id: Types.ObjectId,
+) => {
+ const findQuestionPreference = await MocTopicPreferenceModel.findOne({
+    questionBank_id: questionBank_id,
+    user_id: user_id,
+  });
+  return findQuestionPreference;
+}
+
 export const MockInterviewsService = {
   create_mock_interview,
   update_mock_interview,
@@ -787,5 +799,6 @@ export const MockInterviewsService = {
   genarateQuestionSet_ByAi,
   genarateSingleQuestion_ByAi_for_Retake,
 
-  getIncompleteInterviews
+  getIncompleteInterviews,
+  getUserPreferenceBasedOnQuestionBankId
 };
