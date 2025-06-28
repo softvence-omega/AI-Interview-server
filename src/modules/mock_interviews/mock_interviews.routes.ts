@@ -19,7 +19,7 @@ MockInterviewRoutes.post('/create_question_bank',auth([userRole.admin]),upload.s
 MockInterviewRoutes.post('/update_question_bank',auth([userRole.admin]),upload.single("file"), Mock_interviewsController.update_question_bank);
 MockInterviewRoutes.delete('/delete_question_bank',auth([userRole.admin]), Mock_interviewsController.delete_question_bank);
 
-MockInterviewRoutes.get("/genarateQuestionSet_ByAi",auth([userRole.admin, userRole.user]), Mock_interviewsController.genarateQuestionSet_ByAi)
+MockInterviewRoutes.post("/genarateQuestionSet_ByAi",auth([userRole.admin, userRole.user]), Mock_interviewsController.genarateQuestionSet_ByAi)
 MockInterviewRoutes.post("/genarateSingleQuestion_ByAi_for_Retake",auth([userRole.admin, userRole.user]), Mock_interviewsController.genarateSingleQuestion_ByAi_for_Retake)
 
 
