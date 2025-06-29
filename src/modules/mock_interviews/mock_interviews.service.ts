@@ -388,6 +388,265 @@ const get_question_bank = async (Query: any) => {
 
 // ..................GENARATE QUESTION BY AI.........................
 
+// const genarateQuestionSet_ByAi = async (
+//   questionBank_id: Types.ObjectId,
+//   user_id: Types.ObjectId,
+//   topicPreference: Partial<TMockInterviewTopicPreference>,
+//   isRetake?: boolean,
+// ) => {
+//   try {
+  
+//     // Step 1: Check for existing question list
+//     const existing = await QuestionListModel.findOne({
+//       user_id: user_id,
+//       question_bank_id: questionBank_id,
+//     });
+
+
+//     //check if interview was finished or not
+//     const lookForSummary = await AssessmentModel.findOne({
+//       user_id: user_id,
+//       questionBank_id: questionBank_id,
+//       isSummary: true,
+//     });
+
+
+//     console.log('looking for summary   =============>', lookForSummary);
+
+
+//     //<<<<<+++++++++++++++ now return the history as summary is found ++++++++++++>>>>>>>>>
+//     if (existing && lookForSummary && !isRetake) {
+//       const returnHistory = await AssessmentModel.find({
+//         user_id: user_id,
+//         questionBank_id: questionBank_id,
+//       });
+//       return {
+//         message: 'History found',
+//         history: returnHistory,
+//       };
+//     }
+
+
+
+//     // Step 2: Get question bank to check if question  bank is really there or not 
+//     const findQuestionBank = await QuestionBankModel.findOne({
+//       _id: questionBank_id,
+//     });
+//     if (!findQuestionBank) {
+//       throw new Error("Can't generate question set, no question bank found");
+//     }
+
+
+//     //<<<<<+++++++++++++find remaining questions ++++++++++++++>>>>>>>
+//     if (!isRetake && existing)
+//     {
+//       // Fetch user profile
+//       const profile = await ProfileModel.findOne({
+//         user_id: user_id,
+//         'progress.interviewId': findQuestionBank.interview_id,
+//       });
+
+//       // Find the specific progress entry
+//       const progressEntry = profile?.progress.find(
+//         (p) =>
+//           p.interviewId.toString() === findQuestionBank.interview_id.toString(),
+//       );
+
+//       // console.log("progress entry*****", progressEntry);
+
+//       const qbProgress = progressEntry?.questionBank_AndProgressTrack.find(
+//         (qb) => qb.questionBaank_id.toString() === questionBank_id.toString(),
+//       );
+
+//       // console.log("qb progress****", qbProgress);
+
+//       const lastAnswered = qbProgress?.lastQuestionAnswered_id;
+
+//       console.log('last question answered***', lastAnswered);
+
+//       const findQuestionList = await QuestionListModel.findOne({
+//         user_id: user_id,
+//         question_bank_id: questionBank_id,
+//         interview_id: findQuestionBank.interview_id,
+//       }).select('question_Set');
+
+//       if (!findQuestionList) {
+//         throw new Error('Question list not found');
+//       }
+
+//       console.log('find question List &&&&&', findQuestionList);
+
+//       // ✅ Safely determine the index
+//       let index = -1; // Default to -1 for no progress
+//       if (lastAnswered) {
+//         const foundIndex = findQuestionList.question_Set.findIndex(
+//           (q: any) => q._id && q._id.toString() === lastAnswered.toString(),
+//         );
+//         index = foundIndex; // Use foundIndex directly, including -1 if not found
+//       }
+
+//       console.log('question index found:=>=>=>=>', index);
+
+//       // Get remaining questions
+//       let remainingQuestions: any = [];
+//       if (findQuestionList.question_Set && Array.isArray(findQuestionList.question_Set))
+//       {
+//         if (index >= 0)
+//         {
+//           // Valid question answered: exclude up to and including it
+//           remainingQuestions = findQuestionList.question_Set.slice(index + 1);
+//         }
+//         else
+//         {
+//           // No progress (index = -1): return full question set
+//           remainingQuestions = findQuestionList.question_Set;
+//         }
+//       }
+
+//       console.log('remaining questions', remainingQuestions);
+
+//       return {
+//         message: 'remaining questions',
+//         remainingQuestions,
+//       };
+//     }
+
+
+
+//     //check credit availability ===========>>>>>>>>>>>
+//     const findIfthereIsCredit = await ProfileModel.findOne({
+//       user_id: user_id,
+//     }).select('interviewsAvailable');
+
+//     if (!findIfthereIsCredit || findIfthereIsCredit.interviewsAvailable <= 0) {
+//       throw new Error(
+//         "You don't have enough credits to retake this question bank. consider purchasing a plan",
+//       );
+//     }
+
+
+// // <<<<<<<++++++++++++Step 3: If retake, delete previous assessment+++++++++>>>>>>>>
+//     if (isRetake) {
+//       await AssessmentModel.deleteMany({
+//         questionBank_id: questionBank_id,
+//         user_id: user_id,
+//       });
+//     }
+
+//     if (!topicPreference.what_to_expect) {
+//       throw new Error('what to expect is required for question generation');
+//     }
+//     if (!topicPreference.question_Type) {
+//       throw new Error('question_Type is required for question generation');
+//     }
+//     if (!topicPreference.difficulty_level) {
+//       throw new Error('difficulty_level is required for question generation');
+//     }
+
+//     // create question preference and if exist then update the preference
+
+//     console.log("incomming data ======******===>>" , topicPreference)
+//     // Create or update question preference
+//     const createOrUpdateQuestionPreference =
+//       await MocTopicPreferenceModel.findOneAndUpdate(
+//         {
+//           questionBank_id: questionBank_id,
+//           user_id: user_id,
+//         },
+//         {
+//           what_to_expect: topicPreference.what_to_expect,
+//           question_Type: topicPreference.question_Type,
+//           difficulty_level: topicPreference.difficulty_level,
+//           questionBank_id: questionBank_id,
+//           user_id: user_id,
+//         },
+//         {
+//           upsert: true, // Create if not exists
+//           new: true, // Return the updated document
+//         },
+//       );
+//     if (!createOrUpdateQuestionPreference) {
+//       throw new Error(
+//         'Failed to create or update question preference during question generation',
+//       );
+//     }
+
+//     console.log(
+//       'updated preference*******************',
+//       createOrUpdateQuestionPreference,
+//     );
+
+//     // Step 4: Prepare prompt and generate new questions
+
+//     const prompt = `${findQuestionBank?.questionBank_name || ''} position. topics are${topicPreference.what_to_expect.join(' ')} based on those give me minimum 8 question with time limit and question type will be ${topicPreference.question_Type}. and question difficulty will be ${topicPreference.difficulty_level}.if question_Type is MCQ question then give me 4 options for each question and make sure to include the correct answer in the options.`;
+
+//     const data = await mockInterviewUtill.generateQuestions(prompt);
+
+//     if (data.questions.length > 0) {
+//       const updateAvailableInterviewsCount =
+//         await ProfileModel.findOneAndUpdate(
+//           { user_id: user_id },
+//           {
+//             $inc: { interviewsAvailable: -1, interviewTaken: 1 }, //interview taken updated here
+//           },
+//           { new: true },
+//         );
+//       if (!updateAvailableInterviewsCount) {
+//         throw new Error('failed to update available interviews count');
+//       }
+//     }
+
+//     const modifyQuestionList = data.questions.map((item: any) => ({
+//       interview_id: findQuestionBank.interview_id,
+//       questionBank_id: questionBank_id,
+//       user_id: user_id,
+//       question: item.question,
+//       time_to_answer: item.time_limit,
+//       isRetake: !!isRetake,
+//     }));
+
+//     let result;
+
+//     // Step 5: Save or update question list
+//     if (isRetake && existing) {
+//       result = await QuestionListModel.findOneAndUpdate(
+//         {
+//           user_id: user_id,
+//           question_bank_id: questionBank_id,
+//         },
+//         {
+//           question_Set: modifyQuestionList,
+//           isRetake: true,
+//         },
+//         { new: true },
+//       );
+//     }
+//     else {
+//       result = await QuestionListModel.create({
+//         user_id: user_id,
+//         question_bank_id: questionBank_id,
+//         interview_id: findQuestionBank.interview_id,
+//         question_Set: modifyQuestionList,
+//         isRetake: false,
+//       });
+//     }
+
+//     // Step 6: Update progress
+//     await progressUtill.updateProgress(user_id, questionBank_id, isRetake);
+//     await progressUtill.updateInterviewIfAllTheQuestionBankCompleted(
+//       user_id,
+//       findQuestionBank.interview_id,
+//     );
+
+//     return result;
+//   }
+//   catch (error) {
+//     console.error('Error generating question set:', error);
+//     throw error;
+//   }
+// };
+
+
 const genarateQuestionSet_ByAi = async (
   questionBank_id: Types.ObjectId,
   user_id: Types.ObjectId,
@@ -395,13 +654,14 @@ const genarateQuestionSet_ByAi = async (
   isRetake?: boolean,
 ) => {
   try {
+
     // Step 1: Check for existing question list
     const existing = await QuestionListModel.findOne({
       user_id: user_id,
       question_bank_id: questionBank_id,
     });
 
-    //check if interview was finished or not
+    // Check if interview was finished or not
     const lookForSummary = await AssessmentModel.findOne({
       user_id: user_id,
       questionBank_id: questionBank_id,
@@ -410,8 +670,7 @@ const genarateQuestionSet_ByAi = async (
 
     console.log('looking for summary   =============>', lookForSummary);
 
-    //now return the history as summary is found
-
+    // Return history if summary is found and not a retake
     if (existing && lookForSummary && !isRetake) {
       const returnHistory = await AssessmentModel.find({
         user_id: user_id,
@@ -423,17 +682,15 @@ const genarateQuestionSet_ByAi = async (
       };
     }
 
-    // console.log("does it exist ..........................",existing)
-
-    // Step 2: Get question bank
+    // Step 2: Get question bank to check if it exists
     const findQuestionBank = await QuestionBankModel.findOne({
       _id: questionBank_id,
     });
-
     if (!findQuestionBank) {
       throw new Error("Can't generate question set, no question bank found");
     }
 
+    // Handle non-retake case with existing questions
     if (!isRetake && existing) {
       // Fetch user profile
       const profile = await ProfileModel.findOne({
@@ -447,13 +704,9 @@ const genarateQuestionSet_ByAi = async (
           p.interviewId.toString() === findQuestionBank.interview_id.toString(),
       );
 
-      // console.log("progress entry*****", progressEntry);
-
       const qbProgress = progressEntry?.questionBank_AndProgressTrack.find(
         (qb) => qb.questionBaank_id.toString() === questionBank_id.toString(),
       );
-
-      // console.log("qb progress****", qbProgress);
 
       const lastAnswered = qbProgress?.lastQuestionAnswered_id;
 
@@ -471,7 +724,7 @@ const genarateQuestionSet_ByAi = async (
 
       console.log('find question List &&&&&', findQuestionList);
 
-      // ✅ Safely determine the index
+      // Safely determine the index
       let index = -1; // Default to -1 for no progress
       if (lastAnswered) {
         const foundIndex = findQuestionList.question_Set.findIndex(
@@ -484,10 +737,7 @@ const genarateQuestionSet_ByAi = async (
 
       // Get remaining questions
       let remainingQuestions: any = [];
-      if (
-        findQuestionList.question_Set &&
-        Array.isArray(findQuestionList.question_Set)
-      ) {
+      if (findQuestionList.question_Set && Array.isArray(findQuestionList.question_Set)) {
         if (index >= 0) {
           // Valid question answered: exclude up to and including it
           remainingQuestions = findQuestionList.question_Set.slice(index + 1);
@@ -505,24 +755,18 @@ const genarateQuestionSet_ByAi = async (
       };
     }
 
-    // Step 3: If retake, delete previous assessment
+    // Check credit availability
     const findIfthereIsCredit = await ProfileModel.findOne({
       user_id: user_id,
     }).select('interviewsAvailable');
 
     if (!findIfthereIsCredit || findIfthereIsCredit.interviewsAvailable <= 0) {
       throw new Error(
-        "You don't have enough credits to retake this question bank. consider purchasing a plan",
+        "You don't have enough credits to retake this question bank. Consider purchasing a plan",
       );
     }
 
-    if (isRetake) {
-      await AssessmentModel.deleteMany({
-        questionBank_id: questionBank_id,
-        user_id: user_id,
-      });
-    }
-
+    // Validate topic preferences
     if (!topicPreference.what_to_expect) {
       throw new Error('what to expect is required for question generation');
     }
@@ -533,28 +777,25 @@ const genarateQuestionSet_ByAi = async (
       throw new Error('difficulty_level is required for question generation');
     }
 
-    // create question preference and if exist then update the preference
-
-    console.log("incomming data ======******===>>" , topicPreference)
     // Create or update question preference
-    const createOrUpdateQuestionPreference =
-      await MocTopicPreferenceModel.findOneAndUpdate(
-        {
-          questionBank_id: questionBank_id,
-          user_id: user_id,
-        },
-        {
-          what_to_expect: topicPreference.what_to_expect,
-          question_Type: topicPreference.question_Type,
-          difficulty_level: topicPreference.difficulty_level,
-          questionBank_id: questionBank_id,
-          user_id: user_id,
-        },
-        {
-          upsert: true, // Create if not exists
-          new: true, // Return the updated document
-        },
-      );
+    console.log("incomming data ======******===>>", topicPreference);
+    const createOrUpdateQuestionPreference = await MocTopicPreferenceModel.findOneAndUpdate(
+      {
+        questionBank_id: questionBank_id,
+        user_id: user_id,
+      },
+      {
+        what_to_expect: topicPreference.what_to_expect,
+        question_Type: topicPreference.question_Type,
+        difficulty_level: topicPreference.difficulty_level,
+        questionBank_id: questionBank_id,
+        user_id: user_id,
+      },
+      {
+        upsert: true, // Create if not exists
+        new: true, // Return the updated document
+      },
+    );
     if (!createOrUpdateQuestionPreference) {
       throw new Error(
         'Failed to create or update question preference during question generation',
@@ -566,26 +807,31 @@ const genarateQuestionSet_ByAi = async (
       createOrUpdateQuestionPreference,
     );
 
-    // Step 4: Prepare prompt and generate new questions
+    // Step 3: Prepare prompt and generate new questions
+    const prompt = `${findQuestionBank?.questionBank_name || ''} position. topics are ${topicPreference.what_to_expect.join(' ')} based on those give me minimum 8 question with time limit and question type will be ${topicPreference.question_Type}. and question difficulty will be ${topicPreference.difficulty_level}.if question_Type is MCQ question then give me 4 options for each question and make sure to include the correct answer in the options.`;
 
-    const prompt = `${findQuestionBank?.questionBank_name || ''} position. topics are${topicPreference.what_to_expect.join(' ')} based on those give me minimum 8 question with time limit and question type will be ${topicPreference.question_Type}. and question difficulty will be ${topicPreference.difficulty_level}.if question_Type is MCQ question then give me 4 options for each question and make sure to include the correct answer in the options.`;
     const data = await mockInterviewUtill.generateQuestions(prompt);
+    const questionsJson = JSON.parse(data.questions)
 
-    if (data.questions.length >= 0) {
-      const updateAvailableInterviewsCount =
-        await ProfileModel.findOneAndUpdate(
-          { user_id: user_id },
-          {
-            $inc: { interviewsAvailable: -1, interviewTaken: 1 }, //interview taken updated here
-          },
-          { new: true },
-        );
+    // Step 4: Update available interviews count
+    if (questionsJson.length > 0) {
+      const updateAvailableInterviewsCount = await ProfileModel.findOneAndUpdate(
+        { user_id: user_id },
+        {
+          $inc: { interviewsAvailable: -1, interviewTaken: 1 },
+        },
+        { new: true },
+      );
       if (!updateAvailableInterviewsCount) {
-        throw new Error('failed to update available interviews count');
+        throw new Error('Failed to update available interviews count');
       }
     }
 
-    const modifyQuestionList = data.questions.map((item: any) => ({
+
+    // console.log("here is the generate data =======#####====+====>>>>>>",typeof(data.questions),"data>>>>>>>>>>",data)
+    
+
+    const modifyQuestionList = questionsJson.map((item: any) => ({
       interview_id: findQuestionBank.interview_id,
       questionBank_id: questionBank_id,
       user_id: user_id,
@@ -596,7 +842,15 @@ const genarateQuestionSet_ByAi = async (
 
     let result;
 
-    // Step 5: Save or update question list
+    // Step 5: If retake, delete previous assessment *after* successful question generation
+    if (isRetake && questionsJson.length>0) {
+      await AssessmentModel.deleteMany({
+        questionBank_id: questionBank_id,
+        user_id: user_id,
+      });
+    }
+
+    // Step 6: Save or update question list
     if (isRetake && existing) {
       result = await QuestionListModel.findOneAndUpdate(
         {
@@ -619,7 +873,7 @@ const genarateQuestionSet_ByAi = async (
       });
     }
 
-    // Step 6: Update progress
+    // Step 7: Update progress
     await progressUtill.updateProgress(user_id, questionBank_id, isRetake);
     await progressUtill.updateInterviewIfAllTheQuestionBankCompleted(
       user_id,
@@ -633,6 +887,9 @@ const genarateQuestionSet_ByAi = async (
   }
 };
 
+
+
+
 const genarateSingleQuestion_ByAi_for_Retake = async (
   questionBank_id: Types.ObjectId,
   user_id: Types.ObjectId,
@@ -640,6 +897,7 @@ const genarateSingleQuestion_ByAi_for_Retake = async (
   question_id: Types.ObjectId,
 ) => {
   try {
+
     // Fetch question bank details for the prompt
     const findQuestionBank = await QuestionBankModel.findOne({
       _id: questionBank_id,
@@ -647,6 +905,7 @@ const genarateSingleQuestion_ByAi_for_Retake = async (
     if (!findQuestionBank) {
       throw new Error('Question bank not found');
     }
+
     // find question generation preference here=========>>>>>>>>>>
     const findQuestionPreference = await MocTopicPreferenceModel.findOne({
       questionBank_id: questionBank_id,
@@ -657,13 +916,13 @@ const genarateSingleQuestion_ByAi_for_Retake = async (
       throw new Error('Question preference not found cant retake question');
     }
 
-    console.log("i am from single retake  >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>",findQuestionPreference )
+    // console.log("i am from single retake  >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>",findQuestionPreference )
 
     // Generate prompt for AI API
     const prompt = `${findQuestionBank.questionBank_name}position. topics are ${findQuestionPreference.what_to_expect.join(' ')} based on those give me single question with time limit and question type will be ${findQuestionPreference.question_Type}. and question difficulty will be ${findQuestionPreference.difficulty_level}.if question_Type is MCQ question then give me 4 options for each question and make sure to include the correct answer in the options.`;
 
 
-    console.log("promt for single retake =====================>", prompt);
+    // console.log("promt for single retake =====================>", prompt);
 
 
     const encodedPrompt = encodeURIComponent(prompt);
@@ -689,8 +948,9 @@ const genarateSingleQuestion_ByAi_for_Retake = async (
 
     const data = await response.json();
     // Take the first question from the API response
+    const QuestionParse= JSON.parse(data.questions) 
 
-    console.log(data.questions[0].question);
+    console.log("here3333333333##########","data",data,"Parse data",typeof(QuestionParse),"first question",QuestionParse[0].question);
 
     // find that specific question and update the time limit and question
 
@@ -703,14 +963,14 @@ const genarateSingleQuestion_ByAi_for_Retake = async (
       },
       {
         $set: {
-          'question_Set.$.question': data.questions[0].question,
-          'question_Set.$.time_to_answer': data.questions[0].time_limit,
+          'question_Set.$.question': QuestionParse[0].question,
+          'question_Set.$.time_to_answer': QuestionParse[0].time_limit,
         },
       },
       { new: true },
     );
 
-    console.log('updated one', questionToUpdate);
+    console.log('updated one****************', questionToUpdate);
 
     if (!questionToUpdate) {
       throw new Error('Question not found or not updated');
