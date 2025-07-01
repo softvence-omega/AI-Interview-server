@@ -20,7 +20,7 @@ userRoutes.patch(
 );
 userRoutes.delete(
   '/selfDistuct',
-  auth([userRole.user],{requestOTP:true}),
+  auth([userRole.user]),
   userController.selfDistuct,
 );
 

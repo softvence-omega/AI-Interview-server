@@ -363,7 +363,7 @@ const deleteSingleUser = async (user_id: Types.ObjectId) => {
 };
 
 const selfDistuct = async (user_id: Types.ObjectId) => {
-  const result = deleteSingleUser(user_id);
+  const result = await deleteSingleUser(user_id);
   return result;
 };
 
