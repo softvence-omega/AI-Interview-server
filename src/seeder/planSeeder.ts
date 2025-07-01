@@ -44,7 +44,6 @@ const planSeeder = async () => {
       priceId: "price_1RQh5lAeQO2CXKLX0brJrWGJ",
       // priceId: "price_1RW9qlEY6Wsqp4kbjynhIyR9",
       features: [
-        "Unlimited Jobs Tracking",
         "Personalized Feedback",
         "Access to AI Feedback",
         "Progress Tracking",
