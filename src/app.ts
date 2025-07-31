@@ -10,7 +10,7 @@ import Routes from "./routes";
 app.use(express.json());
 
 app.use(cors({
-  origin: ['*', 'http://localhost:5173', 'https://cerulean-pavlova-50e690.netlify.app'],
+  origin: ['*', 'http://localhost:5173', 'https://cerulean-pavlova-50e690.netlify.app', 'https://ai-interview-client-eta.vercel.app'],
   methods: ['GET', 'POST', 'PUT', 'DELETE','PATCH'],
   allowedHeaders: ['Content-Type', 'Authorization'],
   credentials: true
