@@ -16,8 +16,6 @@ app.use(cors({
   credentials: true
 }));
 
-// app.use(cors())
-
 app.get("/", (req, res) => {
   res.send("Welcome to AI Mock Interview server..!");
 });
