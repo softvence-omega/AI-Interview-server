@@ -11,7 +11,7 @@ const jobRoutes = Router();
 
 jobRoutes.post('/addjob',auth([userRole.user]), jobController.saveJob);
 
-jobRoutes.get('/all-jobs', jobController.getAllJobs);
+jobRoutes.get('/all-jobs',auth([userRole.user]), jobController.getAllJobs);
 
 // New route to apply to a job
 jobRoutes.post('/apply/:jobId', auth([userRole.admin, userRole.user]), jobController.applyToJobController);

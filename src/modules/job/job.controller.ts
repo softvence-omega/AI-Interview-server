@@ -1,11 +1,12 @@
 import { Request, Response } from 'express';
 import { Job } from './job.model';
 import { ProfileModel } from '../user/user.model';
-import mongoose from 'mongoose';
+import mongoose, { Types } from 'mongoose';
 import {
   applyToJobService,
   getAllJobsWithAppliedStatusService,
 } from './job.service';
+import idConverter from '../../util/idConvirter';
 
 // Create or update job (if already exists by unique link)
 const saveJob = async (req: Request, res: Response) => {
@@ -18,7 +19,7 @@ const saveJob = async (req: Request, res: Response) => {
       return;
     }
 
-    const newJob = new Job(req.body);
+    const newJob = new Job({user_id:idConverter(req.user.id), ...req.body});
     await newJob.save();
 
     res.status(201).json({ message: 'Job saved successfully', job: newJob });
@@ -31,7 +32,7 @@ const saveJob = async (req: Request, res: Response) => {
 // Get all jobs
 const getAllJobs = async (_req: Request, res: Response) => {
   try {
-    const jobs = await Job.find().sort({ createdAt: -1 });
+    const jobs = await Job.find({user_id:idConverter(_req.user.id) as Types.ObjectId}).sort({ createdAt: -1 });
     res.status(200).json(jobs);
   } catch (error) {
     res.status(500).json({ message: 'Internal server error' });
