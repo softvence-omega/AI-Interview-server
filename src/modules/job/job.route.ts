@@ -5,7 +5,12 @@ import jobController from './job.controller';
 
 const jobRoutes = Router();
 
-jobRoutes.post('/addjob', jobController.saveJob);
+
+
+
+
+jobRoutes.post('/addjob',auth([userRole.user]), jobController.saveJob);
+
 jobRoutes.get('/all-jobs', jobController.getAllJobs);
 
 // New route to apply to a job

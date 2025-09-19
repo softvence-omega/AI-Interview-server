@@ -95,6 +95,7 @@ export const getAllJobsWithAppliedStatus = async (
     }
 
     const filters = {
+      user_id: userId,
       company: req.query.company as string,
       location: req.query.location as string,
       position: req.query.position as string,

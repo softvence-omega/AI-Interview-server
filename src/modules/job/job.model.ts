@@ -1,6 +1,7 @@
 import mongoose from 'mongoose';
 
 const JobSchema = new mongoose.Schema({
+  user_id: { type: mongoose.Schema.Types.ObjectId, ref: 'UserCollection' },
   title: String,
   company: String,
   location: String,
